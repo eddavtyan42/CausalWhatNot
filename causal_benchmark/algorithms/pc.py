@@ -20,7 +20,7 @@ def run(
 ) -> Tuple[nx.DiGraph, Dict[str, object]]:
     if pc is None:
         raise ImportError(
-            "causal-learn is required for the PC algorithm. Install via `pip install causal-learn`."
+            "causal-learn is required for the PC algorithm. Install via pip install causal-learn."
         )
 
     start = time.perf_counter()

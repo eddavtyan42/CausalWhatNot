@@ -15,7 +15,7 @@ except Exception:
 def run(data: pd.DataFrame, score_func: str = "bic") -> Tuple[nx.DiGraph, Dict[str, object]]:
     if ges is None:
         raise ImportError(
-            "causal-learn is required for the GES algorithm. Install via `pip install causal-learn`."
+            "causal-learn is required for the GES algorithm. Install via pip install causal-learn."
         )
 
     start = time.perf_counter()
