@@ -18,7 +18,11 @@ except Exception as e:  # pragma: no cover - import failure tested via runtime
     ) from e
 
 
-def run(data: pd.DataFrame, w_threshold: float = 0.1, **kwargs) -> Tuple[nx.DiGraph, Dict[str, object]]:
+def run(
+    data: pd.DataFrame,
+    threshold: float = 0.1,
+    **kwargs,
+) -> Tuple[nx.DiGraph, Dict[str, object]]:
     """Run NOTEARS on a dataframe.
 
     Parameters
@@ -39,7 +43,7 @@ def run(data: pd.DataFrame, w_threshold: float = 0.1, **kwargs) -> Tuple[nx.DiGr
         raise ValueError("NOTEARS cannot handle missing values.")
 
     start = time.perf_counter()
-    sm = from_pandas(data, w_threshold=w_threshold, **kwargs)
+    sm = from_pandas(data, w_threshold=threshold, **kwargs)
     runtime = time.perf_counter() - start
 
     # `sm` is a StructureModel (a DiGraph) with weight attributes

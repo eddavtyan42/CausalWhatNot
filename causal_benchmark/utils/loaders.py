@@ -11,6 +11,29 @@ import numpy as np
 # Predefined edges and state counts for benchmark networks to avoid shipping
 # large BIF files. These were extracted from the original network definitions.
 
+# Canonical 8-node Asia network
+ASIA_EDGES: list[tuple[str, str]] = [
+    ("VisitAsia", "Tuberculosis"),
+    ("Smoking", "LungCancer"),
+    ("Smoking", "Bronchitis"),
+    ("Tuberculosis", "Either"),
+    ("LungCancer", "Either"),
+    ("Either", "Xray"),
+    ("Either", "Dyspnea"),
+    ("Bronchitis", "Dyspnea"),
+]
+
+ASIA_STATES: dict[str, int] = {
+    "VisitAsia": 2,
+    "Tuberculosis": 2,
+    "Smoking": 2,
+    "LungCancer": 2,
+    "Bronchitis": 2,
+    "Either": 2,
+    "Xray": 2,
+    "Dyspnea": 2,
+}
+
 SACHS_EDGES: list[tuple[str, str]] = [
     ("Erk", "Akt"),
     ("PKA", "Akt"),
@@ -217,21 +240,14 @@ def load_dataset(name: str, n_samples: int = 10000, force: bool = False) -> Tupl
     data_path = data_dir / f"{name}_data.csv"
 
     if name == 'asia':
-        edges_path = data_dir / "asia_edges.txt"
+        G = nx.DiGraph()
+        G.add_edges_from(ASIA_EDGES)
+        states = ASIA_STATES
         if data_path.exists() and not force:
             df = pd.read_csv(data_path)
         else:
-            rng = np.random.default_rng(0)
-            A = rng.normal(size=n_samples)
-            B = A + rng.normal(size=n_samples)
-            C = B + A + rng.normal(size=n_samples)
-            df = pd.DataFrame({'A': A, 'B': B, 'C': C})
+            df = _sample_discrete(G, states, n_samples)
             df.to_csv(data_path, index=False)
-        G = nx.DiGraph()
-        with open(edges_path) as f:
-            for line in f:
-                u, v = line.strip().split(',')
-                G.add_edge(u, v)
         return df, G
 
     elif name == "sachs":
