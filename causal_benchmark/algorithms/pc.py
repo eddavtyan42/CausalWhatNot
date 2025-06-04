@@ -4,21 +4,24 @@ import pandas as pd
 
 from typing import Tuple, Dict
 
+from utils.helpers import causallearn_to_dag
+
 try:
     from causallearn.search.ConstraintBased.PC import pc
 except Exception:
     pc = None
 
 
-def run(data: pd.DataFrame, alpha: float = 0.05, indep_test: str = "fisherz", stable: bool = True
-       ) -> Tuple[nx.DiGraph, Dict[str, object]]:
+def run(
+    data: pd.DataFrame,
+    alpha: float = 0.05,
+    indep_test: str = "fisherz",
+    stable: bool = True,
+) -> Tuple[nx.DiGraph, Dict[str, object]]:
     if pc is None:
-        dag = nx.DiGraph()
-        cols = list(data.columns)
-        dag.add_nodes_from(cols)
-        for i in range(len(cols) - 1):
-            dag.add_edge(cols[i], cols[i + 1])
-        return dag, {"runtime_s": 0.0, "raw_obj": None}
+        raise ImportError(
+            "causallearn is required for the PC algorithm. Install via `pip install causallearn`."
+        )
 
     start = time.perf_counter()
     try:
@@ -39,16 +42,8 @@ def run(data: pd.DataFrame, alpha: float = 0.05, indep_test: str = "fisherz", st
         amat = cg.G.graph
     else:
         raise AttributeError("Unknown graph representation returned by PC")
-    # causallearn encodes direction using values 1 and -1
-    dag = nx.DiGraph()
-    dag.add_nodes_from(range(len(data.columns)))
-    for i in range(len(data.columns)):
-        for j in range(len(data.columns)):
-            if amat[i, j] == 1 and amat[j, i] == -1:
-                dag.add_edge(i, j)
-            elif amat[i, j] == -1 and amat[j, i] == 1:
-                dag.add_edge(j, i)
-    dag = nx.relabel_nodes(dag, {i: col for i, col in enumerate(data.columns)})
+
+    dag = causallearn_to_dag(amat, data.columns)
     if not nx.is_directed_acyclic_graph(dag):
         raise RuntimeError("PC produced a cyclic graph")
     return dag, {"runtime_s": runtime, "raw_obj": cg}

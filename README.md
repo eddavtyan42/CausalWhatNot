@@ -1,6 +1,6 @@
 # CausalWhatNot
 
-![python](https://img.shields.io/badge/python-3.10%2B-blue)
+![python](https://img.shields.io/badge/python-3.10-blue)
 
 A reproducible benchmarking framework for causal discovery algorithms. CausalWhatNot allows researchers and practitioners to compare multiple structure learning methods on standard benchmark datasets using a consistent set of metrics.
 
@@ -10,7 +10,7 @@ The project orchestrates data generation, algorithm execution and metric computa
 
 * **PC** – constraint-based search using conditional independence tests
 * **GES** – greedy equivalence search with a BIC score
-* **NOTEARS** – continuous optimization approach via the CausalNex backend
+* **NOTEARS** – continuous optimization approach implemented with CausalNex
 * **COSMO** – priority-based regression implementation inspired by smooth acyclic orientations
 
 Results are saved as adjacency matrices and summary metrics so experiments can be reproduced exactly.
@@ -21,11 +21,15 @@ Results are saved as adjacency matrices and summary metrics so experiments can b
 * Bootstrap evaluation with precision, recall, F1 and structural hamming distance (SHD)
 * Easily extensible for new algorithms or datasets
 * Deterministic sampling with fixed seeds for reproducibility
-* Python 3.10+ compatible and tested with `pytest`
+* Developed and tested with **Python 3.10**. NOTEARS currently requires Python <3.11 due to the CausalNex dependency.
 
 ## Installation
 
-Clone the repository and install the dependencies using either `pip` or `conda`:
+Clone the repository and install the dependencies using either `pip` or `conda`.
+
+NOTEARS relies on the CausalNex library which currently only supports Python <3.11
+and requires PyTorch (installed automatically with CausalNex). A Python 3.10
+environment is therefore recommended for full functionality:
 
 ```bash
 git clone https://github.com/EDavtyan/CausalWhatNot.git
@@ -56,7 +60,7 @@ python -m causal_benchmark.experiments.run_benchmark --config causal_benchmark/e
 
 This will evaluate each algorithm on all datasets listed in the YAML config. Outputs are written to `causal_benchmark/results/` or to a custom directory via the `--out-dir` option. Each run produces:
 
-* `outputs/{dataset}_{algorithm}.csv` – learned adjacency matrices
+* `outputs/{dataset}_{algorithm}.csv` – learned adjacency matrices with node labels
 * `logs/{dataset}_{algorithm}.log` – per-run status and metrics
 * `summary_metrics.csv` – aggregate metrics (mean and std if bootstrapping)
 
@@ -81,8 +85,10 @@ All datasets are generated programmatically so no large files are required.
 |-----------|----------------|----------------|
 | **PC**    | Constraint-based search | `causallearn` |
 | **GES**   | Greedy equivalence search | `causallearn` |
-| **NOTEARS** | Continuous optimization with acyclicity constraint | `causalnex` backend |
+| **NOTEARS** | Continuous optimization with acyclicity constraint | CausalNex |
 | **COSMO** | Regression-based approach enforcing an ordering | numpy / networkx |
+
+PC and GES require the `causallearn` package. If it is not installed these algorithms will raise an `ImportError` when run.
 
 Each `run()` function returns a networkx `DiGraph` and timing information. Algorithms raise an error if a cycle is detected or required dependencies are missing.
 
