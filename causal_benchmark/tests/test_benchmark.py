@@ -7,6 +7,7 @@ import pandas as pd
 import pytest
 
 from experiments import run_benchmark
+from utils.loaders import load_dataset
 
 
 @pytest.mark.timeout(30)
@@ -19,6 +20,9 @@ def test_run_benchmark(tmp_path):
     cfg_path = tmp_path / 'cfg.yaml'
     with open(cfg_path, 'w') as f:
         yaml.safe_dump(cfg, f)
+
+    # Ensure Asia data is generated with a small sample size for the test
+    load_dataset('asia', n_samples=200, force=True)
 
     run_benchmark.run(str(cfg_path), output_dir=tmp_path)
 
@@ -45,6 +49,8 @@ def test_run_benchmark_notears(tmp_path):
     cfg_path = tmp_path / 'cfg.yaml'
     with open(cfg_path, 'w') as f:
         yaml.safe_dump(cfg, f)
+
+    load_dataset('asia', n_samples=200, force=True)
 
     run_benchmark.run(str(cfg_path), output_dir=tmp_path)
 
