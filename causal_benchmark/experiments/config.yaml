@@ -1,6 +1,7 @@
 datasets:
   - asia
-  - sachs
+  - name: sachs
+    n_samples: 5000
   - alarm
   - child
 algorithms:

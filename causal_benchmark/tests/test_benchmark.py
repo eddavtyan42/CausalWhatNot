@@ -19,7 +19,7 @@ from utils.loaders import load_dataset
 @pytest.mark.timeout(30)
 def test_run_benchmark(tmp_path):
     cfg = {
-        'datasets': ['asia'],
+        'datasets': [{'name': 'asia', 'n_samples': 200}],
         'algorithms': {'pc': {}, 'ges': {}},
         'bootstrap_runs': 0,
     }
@@ -48,7 +48,7 @@ def test_run_benchmark_notears(tmp_path):
         pytest.skip('causalnex not installed')
 
     cfg = {
-        'datasets': ['asia'],
+        'datasets': [{'name': 'asia', 'n_samples': 200}],
         'algorithms': {'notears': {}},
         'bootstrap_runs': 0,
     }
