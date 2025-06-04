@@ -1,6 +1,12 @@
 import sys, os
 sys.path.append(os.path.dirname(os.path.dirname(__file__)))
 
+from utils.loaders import load_dataset
+
+# Ensure the Asia dataset exists for the benchmark tests. This avoids
+# interference from previous tests that may remove the generated file.
+load_dataset('asia', n_samples=500, force=True)
+
 from pathlib import Path
 import yaml
 import pandas as pd
