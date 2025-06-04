@@ -65,6 +65,7 @@ This will evaluate each algorithm on all datasets listed in the YAML config. Out
 * `summary_metrics.csv` – aggregate metrics (mean and std if bootstrapping)
 
 Edit `experiments/config.yaml` to select datasets, algorithms, algorithm parameters or the number of `bootstrap_runs`.
+Each dataset entry can optionally include `n_samples` to control how many rows are generated.
 
 ## Datasets
 

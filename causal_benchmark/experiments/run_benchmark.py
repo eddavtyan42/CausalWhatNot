@@ -35,8 +35,17 @@ def run(config_path: str, output_dir: str | Path | None = None):
 
     summary_rows = []
 
-    for dataset in cfg.get('datasets', []):
-        data, true_graph = load_dataset(dataset)
+    for ds_cfg in cfg.get('datasets', []):
+        if isinstance(ds_cfg, dict):
+            dataset = ds_cfg.get('name')
+            n_samples = ds_cfg.get('n_samples')
+            if n_samples is not None:
+                data, true_graph = load_dataset(dataset, n_samples=n_samples, force=True)
+            else:
+                data, true_graph = load_dataset(dataset)
+        else:
+            dataset = ds_cfg
+            data, true_graph = load_dataset(dataset)
 
         for algo_name, params in cfg.get('algorithms', {}).items():
             mod = importlib.import_module(f'algorithms.{algo_name}')
