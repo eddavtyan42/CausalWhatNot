@@ -10,6 +10,7 @@ import sys, os
 sys.path.append(str(Path(__file__).resolve().parents[1]))
 
 from utils.loaders import load_dataset
+from utils.helpers import edge_differences
 from metrics.metrics import shd, precision_recall_f1
 
 
@@ -59,6 +60,10 @@ def run(config_path: str, output_dir: str | Path | None = None):
             run_metrics = []
             run_times = []
             errors = []
+            diff_path = logs_dir / f'{dataset}_{algo_name}_diff.txt'
+            # start a fresh diff file for this dataset/algorithm
+            with open(diff_path, 'w'):
+                pass
             for b in range(bootstrap if bootstrap > 0 else 1):
                 d_run = data.sample(len(data), replace=True, random_state=b) if bootstrap > 0 else data
                 with concurrent.futures.ThreadPoolExecutor(max_workers=1) as ex:
@@ -83,6 +88,14 @@ def run(config_path: str, output_dir: str | Path | None = None):
                 if graph is not None:
                     metrics = precision_recall_f1(graph, true_graph)
                     metrics['shd'] = shd(graph, true_graph)
+                    extra, missing, rev = edge_differences(graph, true_graph)
+                    with open(diff_path, 'a') as df:
+                        for e in extra:
+                            df.write(f'extra {e[0]}->{e[1]}\n')
+                        for e in missing:
+                            df.write(f'missing {e[0]}->{e[1]}\n')
+                        for e in rev:
+                            df.write(f'reversed {e[0]}->{e[1]}\n')
                     if bootstrap == 0:
                         adj_path = outputs_dir / f'{dataset}_{algo_name}.csv'
                         mat = nx.to_numpy_array(graph, nodelist=data.columns)

@@ -36,6 +36,8 @@ def test_run_benchmark(tmp_path):
     assert set(summary['algorithm']) == {'pc', 'ges'}
     assert (tmp_path / 'logs' / 'asia_pc.log').exists()
     assert (tmp_path / 'logs' / 'asia_ges.log').exists()
+    assert (tmp_path / 'logs' / 'asia_pc_diff.txt').exists()
+    assert (tmp_path / 'logs' / 'asia_ges_diff.txt').exists()
     assert summary['precision'].between(0, 1).all()
     assert summary['recall'].between(0, 1).all()
 
@@ -63,6 +65,7 @@ def test_run_benchmark_notears(tmp_path):
     summary = pd.read_csv(tmp_path / 'summary_metrics.csv')
     assert set(summary['algorithm']) == {'notears'}
     assert (tmp_path / 'logs' / 'asia_notears.log').exists()
+    assert (tmp_path / 'logs' / 'asia_notears_diff.txt').exists()
     assert summary['precision'].between(0, 1).all()
     assert summary['recall'].between(0, 1).all()
 
