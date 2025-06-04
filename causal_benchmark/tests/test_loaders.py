@@ -7,7 +7,8 @@ from utils.loaders import load_dataset
 def test_asia_loader():
     df, G = load_dataset("asia", n_samples=500, force=True)
     assert df.shape == (500, len(G.nodes()))
-    assert ("A", "B") in G.edges()
+    assert len(G.nodes()) == 8
+    assert len(G.edges()) == 8
 
 
 def test_sachs_loader():

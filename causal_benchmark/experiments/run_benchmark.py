@@ -4,6 +4,7 @@ import yaml
 from pathlib import Path
 import pandas as pd
 import networkx as nx
+import numpy as np
 import sys, os
 sys.path.append(str(Path(__file__).resolve().parents[1]))
 
@@ -19,9 +20,18 @@ OUTPUTS_DIR.mkdir(parents=True, exist_ok=True)
 LOGS_DIR.mkdir(parents=True, exist_ok=True)
 
 
-def run(config_path: str):
+def run(config_path: str, output_dir: str | Path | None = None):
     with open(config_path) as f:
         cfg = yaml.safe_load(f)
+
+    base_dir = Path(output_dir) if output_dir is not None else RESULTS_DIR
+    outputs_dir = base_dir / 'outputs'
+    logs_dir = base_dir / 'logs'
+    base_dir.mkdir(exist_ok=True)
+    outputs_dir.mkdir(parents=True, exist_ok=True)
+    logs_dir.mkdir(parents=True, exist_ok=True)
+
+    bootstrap = int(cfg.get('bootstrap_runs', 0))
 
     summary_rows = []
 
@@ -30,38 +40,76 @@ def run(config_path: str):
 
         for algo_name, params in cfg.get('algorithms', {}).items():
             mod = importlib.import_module(f'algorithms.{algo_name}')
-            try:
-                graph, info = mod.run(data.copy(), **params)
-                err = ''
-            except Exception as e:
-                graph = None
-                info = {'runtime_s': 0}
-                err = str(e)
 
-            if graph is not None:
-                metrics = precision_recall_f1(graph, true_graph)
-                metrics['shd'] = shd(graph, true_graph)
-                adj_path = OUTPUTS_DIR / f'{dataset}_{algo_name}.csv'
-                pd.DataFrame(nx.to_numpy_array(graph, nodelist=data.columns)).to_csv(adj_path, index=False)
-            else:
-                metrics = {'precision': 0, 'recall': 0, 'f1': 0, 'shd': -1}
+            run_metrics = []
+            run_times = []
+            errors = []
+            for b in range(bootstrap if bootstrap > 0 else 1):
+                d_run = data.sample(len(data), replace=True, random_state=b) if bootstrap > 0 else data
+                try:
+                    graph, info = mod.run(d_run.copy(), **params)
+                    err = ''
+                except Exception as e:
+                    graph = None
+                    info = {'runtime_s': 0}
+                    err = str(e)
 
-            log_path = LOGS_DIR / f'{dataset}_{algo_name}.log'
+                if graph is not None:
+                    metrics = precision_recall_f1(graph, true_graph)
+                    metrics['shd'] = shd(graph, true_graph)
+                    if bootstrap == 0:
+                        adj_path = outputs_dir / f'{dataset}_{algo_name}.csv'
+                        pd.DataFrame(nx.to_numpy_array(graph, nodelist=data.columns)).to_csv(adj_path, index=False)
+                else:
+                    metrics = {'precision': 0, 'recall': 0, 'f1': 0, 'shd': -1}
+
+                run_metrics.append(metrics)
+                run_times.append(info['runtime_s'])
+                errors.append(err)
+
+            # Logging for all runs
+            log_path = logs_dir / f'{dataset}_{algo_name}.log'
             with open(log_path, 'w') as f:
-                f.write(err or 'OK')
+                for i, (m, err) in enumerate(zip(run_metrics, errors)):
+                    if err:
+                        f.write(f'run{i}: {err}\n')
+                    else:
+                        f.write(
+                            f"run{i}: precision={m['precision']:.3f}, recall={m['recall']:.3f}, f1={m['f1']:.3f}, shd={m['shd']}\n"
+                        )
 
-            row = {'dataset': dataset, 'algorithm': algo_name, **metrics, 'runtime_s': info['runtime_s']}
+            prec = np.array([m['precision'] for m in run_metrics])
+            rec = np.array([m['recall'] for m in run_metrics])
+            f1 = np.array([m['f1'] for m in run_metrics])
+            shd_vals = np.array([m['shd'] for m in run_metrics])
+            times = np.array(run_times)
+
+            row = {
+                'dataset': dataset,
+                'algorithm': algo_name,
+                'precision': prec.mean(),
+                'precision_std': prec.std(ddof=0),
+                'recall': rec.mean(),
+                'recall_std': rec.std(ddof=0),
+                'f1': f1.mean(),
+                'f1_std': f1.std(ddof=0),
+                'shd': shd_vals.mean(),
+                'shd_std': shd_vals.std(ddof=0),
+                'runtime_s': times.mean(),
+                'runtime_s_std': times.std(ddof=0),
+            }
             summary_rows.append(row)
 
     df = pd.DataFrame(summary_rows)
-    df.to_csv(RESULTS_DIR / 'summary_metrics.csv', index=False)
+    df.to_csv(base_dir / 'summary_metrics.csv', index=False)
 
 
 def main():
     parser = argparse.ArgumentParser()
     parser.add_argument('--config', default=str(Path(__file__).with_name('config.yaml')))
+    parser.add_argument('--out-dir', default=None)
     args = parser.parse_args()
-    run(args.config)
+    run(args.config, args.out_dir)
 
 
 if __name__ == '__main__':

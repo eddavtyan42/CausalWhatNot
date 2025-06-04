@@ -6,6 +6,6 @@ datasets:
 algorithms:
   pc: {}
   ges: {}
-  notears: {backend: causalnex}
+  notears: {backend: causalnex, threshold: 0.1}
   cosmo: {}
 bootstrap_runs: 0
