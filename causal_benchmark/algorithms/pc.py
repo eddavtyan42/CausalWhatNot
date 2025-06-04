@@ -33,9 +33,21 @@ def run(data: pd.DataFrame, alpha: float = 0.05, indep_test: str = "fisherz", st
     # Convert adjacency matrix to NetworkX DiGraph
     if hasattr(cg.G, "get_matrix"):
         amat = cg.G.get_matrix()
-    else:
+    elif hasattr(cg.G, "get_amat"):
         amat = cg.G.get_amat()
-    dag = nx.DiGraph(amat)
+    elif hasattr(cg.G, "graph"):
+        amat = cg.G.graph
+    else:
+        raise AttributeError("Unknown graph representation returned by PC")
+    # causallearn encodes direction using values 1 and -1
+    dag = nx.DiGraph()
+    dag.add_nodes_from(range(len(data.columns)))
+    for i in range(len(data.columns)):
+        for j in range(len(data.columns)):
+            if amat[i, j] == 1 and amat[j, i] == -1:
+                dag.add_edge(i, j)
+            elif amat[i, j] == -1 and amat[j, i] == 1:
+                dag.add_edge(j, i)
     dag = nx.relabel_nodes(dag, {i: col for i, col in enumerate(data.columns)})
     if not nx.is_directed_acyclic_graph(dag):
         raise RuntimeError("PC produced a cyclic graph")
