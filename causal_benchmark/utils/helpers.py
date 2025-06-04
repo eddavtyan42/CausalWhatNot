@@ -4,7 +4,7 @@ from typing import Iterable
 
 
 def causallearn_to_dag(amat: np.ndarray, nodes: Iterable) -> nx.DiGraph:
-    """Convert a causallearn adjacency matrix to a NetworkX ``DiGraph``.
+    """Convert a causal-learn adjacency matrix to a NetworkX ``DiGraph``.
 
     Parameters
     ----------

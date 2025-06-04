@@ -83,12 +83,12 @@ All datasets are generated programmatically so no large files are required.
 
 | Algorithm | Characteristics | Implementation |
 |-----------|----------------|----------------|
-| **PC**    | Constraint-based search | `causallearn` |
-| **GES**   | Greedy equivalence search | `causallearn` |
+| **PC**    | Constraint-based search | `causal-learn` |
+| **GES**   | Greedy equivalence search | `causal-learn` |
 | **NOTEARS** | Continuous optimization with acyclicity constraint | CausalNex |
 | **COSMO** | Regression-based approach enforcing an ordering | numpy / networkx |
 
-PC and GES require the `causallearn` package. If it is not installed these algorithms will raise an `ImportError` when run.
+PC and GES require the `causal-learn` package. Install it with `pip install causal-learn` or these algorithms will raise an `ImportError` when run.
 
 Each `run()` function returns a networkx `DiGraph` and timing information. Algorithms raise an error if a cycle is detected or required dependencies are missing.
 
@@ -124,7 +124,7 @@ This project is released under the MIT License. See the `LICENSE` file for detai
 
 This framework builds on excellent open-source projects including:
 
-* [causallearn](https://github.com/cmu-phil/causal-learn) for PC and GES
+* [causal-learn](https://github.com/cmu-phil/causal-learn) for PC and GES
 * [CausalNex](https://github.com/Microsoft/causalnex) powering NOTEARS
 * [NetworkX](https://networkx.org/) for graph structures
 
