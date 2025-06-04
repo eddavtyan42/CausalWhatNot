@@ -68,6 +68,12 @@ def run(config_path: str, output_dir: str | Path | None = None):
                 errors.append(err)
 
             # Logging for all runs
+            prec = np.array([m['precision'] for m in run_metrics])
+            rec = np.array([m['recall'] for m in run_metrics])
+            f1 = np.array([m['f1'] for m in run_metrics])
+            shd_vals = np.array([m['shd'] for m in run_metrics])
+            times = np.array(run_times)
+
             log_path = logs_dir / f'{dataset}_{algo_name}.log'
             with open(log_path, 'w') as f:
                 for i, (m, err) in enumerate(zip(run_metrics, errors)):
@@ -77,12 +83,14 @@ def run(config_path: str, output_dir: str | Path | None = None):
                         f.write(
                             f"run{i}: precision={m['precision']:.3f}, recall={m['recall']:.3f}, f1={m['f1']:.3f}, shd={m['shd']}\n"
                         )
-
-            prec = np.array([m['precision'] for m in run_metrics])
-            rec = np.array([m['recall'] for m in run_metrics])
-            f1 = np.array([m['f1'] for m in run_metrics])
-            shd_vals = np.array([m['shd'] for m in run_metrics])
-            times = np.array(run_times)
+                f.write(
+                    "summary: "
+                    f"precision={prec.mean():.3f}±{prec.std(ddof=0):.3f}, "
+                    f"recall={rec.mean():.3f}±{rec.std(ddof=0):.3f}, "
+                    f"f1={f1.mean():.3f}±{f1.std(ddof=0):.3f}, "
+                    f"shd={shd_vals.mean():.3f}±{shd_vals.std(ddof=0):.3f}, "
+                    f"runtime_s={times.mean():.2f}±{times.std(ddof=0):.2f}\n"
+                )
 
             row = {
                 'dataset': dataset,
