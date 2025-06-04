@@ -59,7 +59,8 @@ def run(config_path: str, output_dir: str | Path | None = None):
                     metrics['shd'] = shd(graph, true_graph)
                     if bootstrap == 0:
                         adj_path = outputs_dir / f'{dataset}_{algo_name}.csv'
-                        pd.DataFrame(nx.to_numpy_array(graph, nodelist=data.columns)).to_csv(adj_path, index=False)
+                        mat = nx.to_numpy_array(graph, nodelist=data.columns)
+                        pd.DataFrame(mat, index=data.columns, columns=data.columns).to_csv(adj_path)
                 else:
                     metrics = {'precision': 0, 'recall': 0, 'f1': 0, 'shd': -1}
 

@@ -42,6 +42,9 @@ def run(
     if data.isna().any().any():
         raise ValueError("NOTEARS cannot handle missing values.")
 
+    # Ignore legacy 'backend' parameter from old configs
+    kwargs.pop('backend', None)
+
     start = time.perf_counter()
     sm = from_pandas(data, w_threshold=threshold, **kwargs)
     runtime = time.perf_counter() - start

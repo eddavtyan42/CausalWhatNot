@@ -4,6 +4,8 @@ import pandas as pd
 
 from typing import Tuple, Dict
 
+from utils.helpers import causallearn_to_dag
+
 try:
     from causallearn.search.ScoreBased.GES import ges
 except Exception:
@@ -12,12 +14,9 @@ except Exception:
 
 def run(data: pd.DataFrame, score_func: str = "bic") -> Tuple[nx.DiGraph, Dict[str, object]]:
     if ges is None:
-        dag = nx.DiGraph()
-        cols = list(data.columns)
-        dag.add_nodes_from(cols)
-        for i in range(len(cols) - 1):
-            dag.add_edge(cols[i], cols[i + 1])
-        return dag, {"runtime_s": 0.0, "raw_obj": None}
+        raise ImportError(
+            "causallearn is required for the GES algorithm. Install via `pip install causallearn`."
+        )
 
     start = time.perf_counter()
     # map commonly used shorthand score names to those expected by causallearn
@@ -37,15 +36,8 @@ def run(data: pd.DataFrame, score_func: str = "bic") -> Tuple[nx.DiGraph, Dict[s
         amat = gs["G"].graph
     else:
         raise AttributeError("Unknown graph representation returned by GES")
-    dag = nx.DiGraph()
-    dag.add_nodes_from(range(len(data.columns)))
-    for i in range(len(data.columns)):
-        for j in range(len(data.columns)):
-            if amat[i, j] == 1 and amat[j, i] == -1:
-                dag.add_edge(i, j)
-            elif amat[i, j] == -1 and amat[j, i] == 1:
-                dag.add_edge(j, i)
-    dag = nx.relabel_nodes(dag, {i: col for i, col in enumerate(data.columns)})
+
+    dag = causallearn_to_dag(amat, data.columns)
     if not nx.is_directed_acyclic_graph(dag):
         raise RuntimeError("GES produced a cyclic graph")
     return dag, {"runtime_s": runtime, "raw_obj": gs}
