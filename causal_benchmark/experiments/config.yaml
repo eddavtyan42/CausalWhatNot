@@ -1,0 +1,8 @@
+datasets:
+  - asia
+algorithms:
+  pc: {}
+  ges: {}
+  notears: {backend: causalnex}
+  cosmo: {}
+bootstrap_runs: 0
