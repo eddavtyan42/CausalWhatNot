@@ -12,6 +12,7 @@ sys.path.append(str(Path(__file__).resolve().parents[1]))
 from utils.loaders import load_dataset
 from utils.helpers import edge_differences
 from metrics.metrics import shd, precision_recall_f1
+from metrics.bootstrap import bootstrap_edge_stability
 
 
 RESULTS_DIR = Path(__file__).resolve().parents[1] / 'results'
@@ -34,6 +35,7 @@ def run(config_path: str, output_dir: str | Path | None = None):
     logs_dir.mkdir(parents=True, exist_ok=True)
 
     bootstrap = int(cfg.get('bootstrap_runs', 0))
+    record_stability = bool(cfg.get('record_edge_stability', False))
 
     summary_rows = []
 
@@ -147,6 +149,29 @@ def run(config_path: str, output_dir: str | Path | None = None):
                 'runtime_s_std': times.std(ddof=0),
             }
             summary_rows.append(row)
+
+            if record_stability and bootstrap > 0:
+                freqs = bootstrap_edge_stability(
+                    lambda d: mod.run(d.copy(), **params),
+                    data,
+                    b=bootstrap,
+                    seed=0,
+                    n_jobs=-1,
+                )
+                stab_df = pd.DataFrame(
+                    [
+                        {
+                            'source': s,
+                            'target': t,
+                            'frequency': f,
+                        }
+                        for (s, t), f in freqs.items()
+                    ]
+                )
+                stab_df.to_csv(
+                    logs_dir / f'{dataset}_{algo_name}_stability.csv',
+                    index=False,
+                )
 
     df = pd.DataFrame(summary_rows)
     df.to_csv(base_dir / 'summary_metrics.csv', index=False)

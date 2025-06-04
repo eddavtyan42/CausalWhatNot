@@ -13,3 +13,4 @@ algorithms:
   cosmo:
     timeout_s: 60
 bootstrap_runs: 0
+record_edge_stability: false
