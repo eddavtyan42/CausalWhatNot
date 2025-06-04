@@ -64,8 +64,27 @@ This will evaluate each algorithm on all datasets listed in the YAML config. Out
 * `logs/{dataset}_{algorithm}.log` – per-run status and metrics
 * `summary_metrics.csv` – aggregate metrics (mean and std if bootstrapping)
 
-Edit `experiments/config.yaml` to select datasets, algorithms, algorithm parameters or the number of `bootstrap_runs`.
-Each dataset entry can optionally include `n_samples` to control how many rows are generated.
+## Configuration
+
+Edit `experiments/config.yaml` to select datasets, algorithms and the number of `bootstrap_runs`.
+Datasets may be listed as just the name or as a mapping with optional `n_samples`:
+
+```yaml
+datasets:
+  - asia            # uses the default number of samples
+  - name: alarm
+    n_samples: 2000
+```
+
+Algorithm parameters are specified in the `algorithms` section. A `timeout_s` option can be set to abort a run if it exceeds the given number of seconds:
+
+```yaml
+algorithms:
+  pc:
+    timeout_s: 30
+```
+
+When a timeout occurs the run is marked as failed and the error is logged.
 
 ## Datasets
 

@@ -5,6 +5,7 @@ from pathlib import Path
 import pandas as pd
 import networkx as nx
 import numpy as np
+import concurrent.futures
 import sys, os
 sys.path.append(str(Path(__file__).resolve().parents[1]))
 
@@ -36,32 +37,48 @@ def run(config_path: str, output_dir: str | Path | None = None):
     summary_rows = []
 
     for ds_cfg in cfg.get('datasets', []):
-        if isinstance(ds_cfg, dict):
+        if isinstance(ds_cfg, str):
+            dataset = ds_cfg
+            n_samples = None
+        elif isinstance(ds_cfg, dict):
             dataset = ds_cfg.get('name')
             n_samples = ds_cfg.get('n_samples')
-            if n_samples is not None:
-                data, true_graph = load_dataset(dataset, n_samples=n_samples, force=True)
-            else:
-                data, true_graph = load_dataset(dataset)
         else:
-            dataset = ds_cfg
+            raise ValueError(f'Invalid dataset entry: {ds_cfg}')
+
+        if n_samples is not None:
+            data, true_graph = load_dataset(dataset, n_samples=n_samples, force=True)
+        else:
             data, true_graph = load_dataset(dataset)
 
         for algo_name, params in cfg.get('algorithms', {}).items():
             mod = importlib.import_module(f'algorithms.{algo_name}')
+            params = dict(params or {})
+            timeout_s = params.pop('timeout_s', None)
 
             run_metrics = []
             run_times = []
             errors = []
             for b in range(bootstrap if bootstrap > 0 else 1):
                 d_run = data.sample(len(data), replace=True, random_state=b) if bootstrap > 0 else data
-                try:
-                    graph, info = mod.run(d_run.copy(), **params)
-                    err = ''
-                except Exception as e:
-                    graph = None
-                    info = {'runtime_s': 0}
-                    err = str(e)
+                with concurrent.futures.ThreadPoolExecutor(max_workers=1) as ex:
+                    fut = ex.submit(mod.run, d_run.copy(), **params)
+                    try:
+                        if timeout_s is None:
+                            graph, info = fut.result()
+                        else:
+                            graph, info = fut.result(timeout=timeout_s)
+                        err = ''
+                    except concurrent.futures.TimeoutError:
+                        fut.cancel()
+                        graph = None
+                        info = {'runtime_s': timeout_s or 0}
+                        err = 'timeout'
+                    except Exception as e:
+                        fut.cancel()
+                        graph = None
+                        info = {'runtime_s': 0}
+                        err = str(e)
 
                 if graph is not None:
                     metrics = precision_recall_f1(graph, true_graph)

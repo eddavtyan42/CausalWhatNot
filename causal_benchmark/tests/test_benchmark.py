@@ -65,3 +65,57 @@ def test_run_benchmark_notears(tmp_path):
     assert (tmp_path / 'logs' / 'asia_notears.log').exists()
     assert summary['precision'].between(0, 1).all()
     assert summary['recall'].between(0, 1).all()
+
+
+@pytest.mark.timeout(30)
+def test_dataset_n_samples(tmp_path):
+    # Start with a dataset of a different size to verify overwrite
+    load_dataset('asia', n_samples=50, force=True)
+
+    cfg = {
+        'datasets': [{'name': 'asia', 'n_samples': 123}],
+        'algorithms': {'ges': {}},
+        'bootstrap_runs': 0,
+    }
+    cfg_path = tmp_path / 'cfg.yaml'
+    with open(cfg_path, 'w') as f:
+        yaml.safe_dump(cfg, f)
+
+    run_benchmark.run(str(cfg_path), output_dir=tmp_path)
+
+    data_path = Path(__file__).resolve().parents[1] / 'data' / 'asia' / 'asia_data.csv'
+    df = pd.read_csv(data_path)
+    assert len(df) == 123
+
+
+@pytest.mark.timeout(30)
+def test_algorithm_timeout(tmp_path, monkeypatch):
+    from algorithms import cosmo
+    import time
+    import networkx as nx
+
+    def slow_run(data, **_):
+        time.sleep(1)
+        g = nx.DiGraph()
+        g.add_nodes_from(data.columns)
+        return g, {'runtime_s': 1}
+
+    monkeypatch.setattr(cosmo, 'run', slow_run)
+
+    cfg = {
+        'datasets': ['asia'],
+        'algorithms': {'cosmo': {'timeout_s': 0.1}},
+        'bootstrap_runs': 0,
+    }
+    cfg_path = tmp_path / 'cfg.yaml'
+    with open(cfg_path, 'w') as f:
+        yaml.safe_dump(cfg, f)
+
+    load_dataset('asia', n_samples=100, force=True)
+
+    run_benchmark.run(str(cfg_path), output_dir=tmp_path)
+
+    summary = pd.read_csv(tmp_path / 'summary_metrics.csv')
+    assert summary['precision'].iloc[0] == 0
+    log_text = (tmp_path / 'logs' / 'asia_cosmo.log').read_text()
+    assert 'timeout' in log_text

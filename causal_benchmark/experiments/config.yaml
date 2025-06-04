@@ -1,12 +1,15 @@
 datasets:
-  - asia
+  # Each entry may be just the dataset name or a mapping with additional
+  # options. "n_samples" controls how many observations are generated.
+  - name: asia
   - name: sachs
     n_samples: 5000
-  - alarm
-  - child
+  - name: alarm
+  - name: child
 algorithms:
   pc: {}
   ges: {}
   notears: {threshold: 0.1}
-  cosmo: {}
+  cosmo:
+    timeout_s: 60
 bootstrap_runs: 0
