@@ -62,6 +62,7 @@ This will evaluate each algorithm on all datasets listed in the YAML config. Out
 
 * `outputs/{dataset}_{algorithm}.csv` – learned adjacency matrices with node labels
 * `logs/{dataset}_{algorithm}.log` – per-run status and metrics
+* `logs/{dataset}_{algorithm}_diff.txt` – edge discrepancies (extra/missing/reversed)
 * `summary_metrics.csv` – aggregate metrics (mean and std if bootstrapping)
 
 ## Configuration
