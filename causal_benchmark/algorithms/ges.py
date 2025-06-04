@@ -15,11 +15,11 @@ except Exception:
 def run(data: pd.DataFrame, score_func: str = "bic") -> Tuple[nx.DiGraph, Dict[str, object]]:
     if ges is None:
         raise ImportError(
-            "causallearn is required for the GES algorithm. Install via `pip install causallearn`."
+            "causal-learn is required for the GES algorithm. Install via `pip install causal-learn`."
         )
 
     start = time.perf_counter()
-    # map commonly used shorthand score names to those expected by causallearn
+    # map commonly used shorthand score names to those expected by causal-learn
     score_map = {
         "bic": "local_score_BIC",
         "bdeu": "local_score_BDeu",
