@@ -1,37 +1,271 @@
+from __future__ import annotations
+
 from pathlib import Path
-from typing import Tuple
+from typing import Tuple, Dict, List
+
+import gzip
 import pandas as pd
 import networkx as nx
 import numpy as np
+
+# Predefined edges and state counts for benchmark networks to avoid shipping
+# large BIF files. These were extracted from the original network definitions.
+
+SACHS_EDGES: list[tuple[str, str]] = [
+    ("Erk", "Akt"),
+    ("PKA", "Akt"),
+    ("Mek", "Erk"),
+    ("PKA", "Erk"),
+    ("PKA", "Jnk"),
+    ("PKC", "Jnk"),
+    ("PKA", "Mek"),
+    ("PKC", "Mek"),
+    ("Raf", "Mek"),
+    ("PKA", "P38"),
+    ("PKC", "P38"),
+    ("PIP3", "PIP2"),
+    ("Plcg", "PIP2"),
+    ("Plcg", "PIP3"),
+    ("PKC", "PKA"),
+    ("PKA", "Raf"),
+    ("PKC", "Raf"),
+]
+
+ALARM_EDGES: list[tuple[str, str]] = [
+    ("LVFAILURE", "HISTORY"),
+    ("LVEDVOLUME", "CVP"),
+    ("LVEDVOLUME", "PCWP"),
+    ("HYPOVOLEMIA", "LVEDVOLUME"),
+    ("LVFAILURE", "LVEDVOLUME"),
+    ("HYPOVOLEMIA", "STROKEVOLUME"),
+    ("LVFAILURE", "STROKEVOLUME"),
+    ("ERRLOWOUTPUT", "HRBP"),
+    ("HR", "HRBP"),
+    ("ERRCAUTER", "HREKG"),
+    ("HR", "HREKG"),
+    ("ERRCAUTER", "HRSAT"),
+    ("HR", "HRSAT"),
+    ("ANAPHYLAXIS", "TPR"),
+    ("ARTCO2", "EXPCO2"),
+    ("VENTLUNG", "EXPCO2"),
+    ("INTUBATION", "MINVOL"),
+    ("VENTLUNG", "MINVOL"),
+    ("FIO2", "PVSAT"),
+    ("VENTALV", "PVSAT"),
+    ("PVSAT", "SAO2"),
+    ("SHUNT", "SAO2"),
+    ("PULMEMBOLUS", "PAP"),
+    ("INTUBATION", "SHUNT"),
+    ("PULMEMBOLUS", "SHUNT"),
+    ("INTUBATION", "PRESS"),
+    ("KINKEDTUBE", "PRESS"),
+    ("VENTTUBE", "PRESS"),
+    ("MINVOLSET", "VENTMACH"),
+    ("DISCONNECT", "VENTTUBE"),
+    ("VENTMACH", "VENTTUBE"),
+    ("INTUBATION", "VENTLUNG"),
+    ("KINKEDTUBE", "VENTLUNG"),
+    ("VENTTUBE", "VENTLUNG"),
+    ("INTUBATION", "VENTALV"),
+    ("VENTLUNG", "VENTALV"),
+    ("VENTALV", "ARTCO2"),
+    ("ARTCO2", "CATECHOL"),
+    ("INSUFFANESTH", "CATECHOL"),
+    ("SAO2", "CATECHOL"),
+    ("TPR", "CATECHOL"),
+    ("CATECHOL", "HR"),
+    ("HR", "CO"),
+    ("STROKEVOLUME", "CO"),
+    ("CO", "BP"),
+    ("TPR", "BP"),
+]
+
+ALARM_STATES: dict[str, int] = {
+    "HISTORY": 2,
+    "CVP": 3,
+    "PCWP": 3,
+    "HYPOVOLEMIA": 2,
+    "LVEDVOLUME": 3,
+    "LVFAILURE": 2,
+    "STROKEVOLUME": 3,
+    "ERRLOWOUTPUT": 2,
+    "HRBP": 3,
+    "HREKG": 3,
+    "ERRCAUTER": 2,
+    "HRSAT": 3,
+    "INSUFFANESTH": 2,
+    "ANAPHYLAXIS": 2,
+    "TPR": 3,
+    "EXPCO2": 4,
+    "KINKEDTUBE": 2,
+    "MINVOL": 4,
+    "FIO2": 2,
+    "PVSAT": 3,
+    "SAO2": 3,
+    "PAP": 3,
+    "PULMEMBOLUS": 2,
+    "SHUNT": 2,
+    "INTUBATION": 3,
+    "PRESS": 4,
+    "DISCONNECT": 2,
+    "MINVOLSET": 3,
+    "VENTMACH": 4,
+    "VENTTUBE": 4,
+    "VENTLUNG": 4,
+    "VENTALV": 4,
+    "ARTCO2": 3,
+    "CATECHOL": 2,
+    "HR": 3,
+    "CO": 3,
+    "BP": 3,
+}
+
+CHILD_EDGES: list[tuple[str, str]] = [
+    ("DuctFlow", "HypDistrib"),
+    ("CardiacMixing", "HypDistrib"),
+    ("CardiacMixing", "HypoxiaInO2"),
+    ("LungParench", "HypoxiaInO2"),
+    ("LungParench", "CO2"),
+    ("LungParench", "ChestXray"),
+    ("LungFlow", "ChestXray"),
+    ("LungParench", "Grunting"),
+    ("Sick", "Grunting"),
+    ("LVH", "LVHreport"),
+    ("HypDistrib", "LowerBodyO2"),
+    ("HypoxiaInO2", "LowerBodyO2"),
+    ("HypoxiaInO2", "RUQO2"),
+    ("CO2", "CO2Report"),
+    ("ChestXray", "XrayReport"),
+    ("BirthAsphyxia", "Disease"),
+    ("Grunting", "GruntingReport"),
+    ("Disease", "Age"),
+    ("Sick", "Age"),
+    ("Disease", "LVH"),
+    ("Disease", "DuctFlow"),
+    ("Disease", "CardiacMixing"),
+    ("Disease", "LungParench"),
+    ("Disease", "LungFlow"),
+    ("Disease", "Sick"),
+]
+
+CHILD_STATES: dict[str, int] = {
+    "BirthAsphyxia": 2,
+    "HypDistrib": 2,
+    "HypoxiaInO2": 3,
+    "CO2": 3,
+    "ChestXray": 5,
+    "Grunting": 2,
+    "LVHreport": 2,
+    "LowerBodyO2": 3,
+    "RUQO2": 3,
+    "CO2Report": 2,
+    "XrayReport": 5,
+    "Disease": 6,
+    "GruntingReport": 2,
+    "Age": 3,
+    "LVH": 2,
+    "DuctFlow": 3,
+    "CardiacMixing": 4,
+    "LungParench": 3,
+    "LungFlow": 3,
+    "Sick": 2,
+}
 
 
 BASE_DIR = Path(__file__).resolve().parents[1] / 'data'
 
 
+
+
+def _sample_gaussian(G: nx.DiGraph, n: int, seed: int = 0) -> pd.DataFrame:
+    rng = np.random.default_rng(seed)
+    df = pd.DataFrame(index=range(n))
+    for node in nx.topological_sort(G):
+        parents = list(G.predecessors(node))
+        noise = rng.normal(size=n)
+        if parents:
+            w = rng.uniform(0.5, 1.5, size=len(parents))
+            df[node] = df[parents].to_numpy().dot(w) + noise
+        else:
+            df[node] = noise
+    return df
+
+
+def _sample_discrete(
+    G: nx.DiGraph, states: Dict[str, List[str] | int], n: int, seed: int = 0
+) -> pd.DataFrame:
+    """Sample discrete data by discretising Gaussian samples."""
+
+    cont = _sample_gaussian(G, n, seed)
+    df = pd.DataFrame(index=range(n))
+    for node in cont.columns:
+        state_info = states.get(node, [0, 1])
+        if isinstance(state_info, int):
+            k = state_info
+        else:
+            k = len(state_info)
+        quantiles = np.quantile(cont[node], np.linspace(0, 1, k + 1)[1:-1])
+        df[node] = np.digitize(cont[node], quantiles)
+    return df
+
 def load_dataset(name: str, n_samples: int = 10000, force: bool = False) -> Tuple[pd.DataFrame, nx.DiGraph]:
+    """Load or generate samples for one of the benchmark datasets."""
+
+    name = name.lower()
     data_dir = BASE_DIR / name
     data_dir.mkdir(parents=True, exist_ok=True)
     data_path = data_dir / f"{name}_data.csv"
-    edges_path = data_dir / f"{name}_edges.txt"
 
-    if data_path.exists() and not force:
-        df = pd.read_csv(data_path)
-    else:
-        if name.lower() == 'asia':
+    if name == 'asia':
+        edges_path = data_dir / "asia_edges.txt"
+        if data_path.exists() and not force:
+            df = pd.read_csv(data_path)
+        else:
             rng = np.random.default_rng(0)
             A = rng.normal(size=n_samples)
             B = A + rng.normal(size=n_samples)
             C = B + A + rng.normal(size=n_samples)
             df = pd.DataFrame({'A': A, 'B': B, 'C': C})
-        else:
-            raise ValueError(f"Unknown dataset {name}")
-        df.to_csv(data_path, index=False)
-        with open(edges_path, 'w') as f:
-            f.write('A,B\nA,C\nB,C\n')
+            df.to_csv(data_path, index=False)
+        G = nx.DiGraph()
+        with open(edges_path) as f:
+            for line in f:
+                u, v = line.strip().split(',')
+                G.add_edge(u, v)
+        return df, G
 
-    G = nx.DiGraph()
-    with open(edges_path) as f:
-        for line in f:
-            u, v = line.strip().split(',')
-            G.add_edge(u, v)
-    return df, G
+    elif name == "sachs":
+        # Build graph from predefined edges
+        G = nx.DiGraph()
+        G.add_edges_from(SACHS_EDGES)
+        if data_path.exists() and not force:
+            df = pd.read_csv(data_path)
+        else:
+            df = _sample_gaussian(G, n_samples)
+            df.to_csv(data_path, index=False)
+        return df, G
+
+    elif name == "alarm":
+        G = nx.DiGraph()
+        G.add_edges_from(ALARM_EDGES)
+        states = ALARM_STATES
+        if data_path.exists() and not force:
+            df = pd.read_csv(data_path)
+        else:
+            df = _sample_discrete(G, states, n_samples)
+            df.to_csv(data_path, index=False)
+        return df, G
+
+    elif name == "child":
+        G = nx.DiGraph()
+        G.add_edges_from(CHILD_EDGES)
+        states = CHILD_STATES
+        if data_path.exists() and not force:
+            df = pd.read_csv(data_path)
+        else:
+            df = _sample_discrete(G, states, n_samples)
+            df.to_csv(data_path, index=False)
+        return df, G
+
+    else:
+        raise ValueError(f"Unknown dataset: {name}")

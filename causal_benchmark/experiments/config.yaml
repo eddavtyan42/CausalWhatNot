@@ -1,5 +1,8 @@
 datasets:
   - asia
+  - sachs
+  - alarm
+  - child
 algorithms:
   pc: {}
   ges: {}
