@@ -1,0 +1,5 @@
+dataset,algorithm,precision,recall,f1,shd,runtime_s
+asia,pc,1.0,0.6666666666666666,0.8,1,0.0
+asia,ges,1.0,0.6666666666666666,0.8,1,0.0
+asia,notears,0.0,0.0,0.0,-1,0.0
+asia,cosmo,0.0,0.0,0.0,-1,0.0
