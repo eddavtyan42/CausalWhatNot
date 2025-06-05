@@ -98,6 +98,8 @@ Algorithm parameters are specified in the `algorithms` section. A `timeout_s` op
 algorithms:
   pc:
     timeout_s: 30
+  notears:
+    torch_seed: 0  # ensures deterministic NOTEARS results
 ```
 
 To compute edge stability across bootstraps use:
@@ -160,6 +162,7 @@ The benchmark reports:
 ## Reproducibility
 
 Sampling functions and algorithms use fixed random seeds so repeated runs yield identical datasets and results. All intermediate artifacts are stored in `results/` (or the directory specified by `--out-dir`) enabling full experiment replay.
+For NOTEARS you can additionally pass a `torch_seed` parameter to set the PyTorch RNG and enable deterministic behaviour.
 
 ## Development & Contribution
 

@@ -43,6 +43,22 @@ def test_notears_small():
     assert nx.is_directed_acyclic_graph(g)
 
 
+def test_notears_torch_seed_deterministic():
+    if notears is None:
+        pytest.skip('causalnex not installed')
+    df = pd.DataFrame(np.random.randn(100, 4), columns=list('ABCD'))
+    if sys.version_info >= (3, 11):
+        with pytest.raises(ImportError):
+            notears.run(df, torch_seed=1)
+        return
+    g1, info1 = notears.run(df, torch_seed=1)
+    g2, info2 = notears.run(df, torch_seed=1)
+    arr1 = nx.to_numpy_array(g1, nodelist=df.columns)
+    arr2 = nx.to_numpy_array(g2, nodelist=df.columns)
+    assert np.array_equal(arr1, arr2)
+    assert np.allclose(info1['weights'], info2['weights'])
+
+
 def test_cosmo_small():
     df = pd.DataFrame(np.random.randn(100, 3), columns=list('ABC'))
     g, _ = cosmo.run(df, seed=0)

@@ -10,7 +10,7 @@ datasets:
 algorithms:
   pc: {}
   ges: {}
-  notears: {threshold: 0.1}
+  notears: {threshold: 0.1, torch_seed: 0}
   cosmo:
     timeout_s: 60
     n_restarts: 1
