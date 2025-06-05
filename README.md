@@ -81,12 +81,12 @@ Datasets may be listed as just the name or as a mapping with optional `n_samples
 
 ```yaml
 datasets:
-  - asia            # uses the default number of samples
-  - name: alarm
-    n_samples: 2000
   - name: asia
     alias: asia_small
-    n_samples: 500
+    n_samples: 100
+  - name: asia
+    alias: asia_large
+    n_samples: 200
 ```
 
 The optional `alias` lets you keep results for multiple variants of the same
