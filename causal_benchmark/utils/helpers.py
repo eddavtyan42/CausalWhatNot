@@ -1,6 +1,7 @@
 import networkx as nx
 import numpy as np
 from typing import Iterable, Tuple, Set, Dict
+import json
 
 
 def causallearn_to_dag(amat: np.ndarray, nodes: Iterable) -> Tuple[nx.DiGraph, Dict[str, object]]:
@@ -60,4 +61,28 @@ def edge_differences(
     reversed_edges = {(u, v) for (u, v) in pred_edges if (v, u) in true_edges}
 
     return extra, missing, reversed_edges
+
+
+def dump_edge_differences_json(
+    extra: Iterable[Tuple[str, str]],
+    missing: Iterable[Tuple[str, str]],
+    reversed_edges: Iterable[Tuple[str, str]],
+    path: str,
+) -> None:
+    """Write edge difference lists to ``path`` in JSON format.
+
+    Parameters
+    ----------
+    extra, missing, reversed_edges : iterable of edge tuples
+        Edge lists to write out.
+    path : str
+        Destination file path.
+    """
+    data = {
+        "extra": [[u, v] for u, v in sorted(extra)],
+        "missing": [[u, v] for u, v in sorted(missing)],
+        "reversed": [[u, v] for u, v in sorted(reversed_edges)],
+    }
+    with open(path, "w") as f:
+        json.dump(data, f)
 

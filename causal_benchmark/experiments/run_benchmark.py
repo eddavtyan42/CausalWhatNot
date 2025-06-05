@@ -11,7 +11,7 @@ import sys, os
 sys.path.append(str(Path(__file__).resolve().parents[1]))
 
 from utils.loaders import load_dataset
-from utils.helpers import edge_differences
+from utils.helpers import edge_differences, dump_edge_differences_json
 from metrics.metrics import (
     shd,
     precision_recall_f1,
@@ -123,6 +123,8 @@ def run(config_path: str, output_dir: str | Path | None = None):
                             df.write(f"missing {e[0]}->{e[1]}\n")
                         for e in rev:
                             df.write(f"reversed {e[0]}->{e[1]}\n")
+                    diff_json_path = logs_dir / f"{alias}_{algo_name}_diff_run{b}.json"
+                    dump_edge_differences_json(extra, missing, rev, diff_json_path)
                     if bootstrap == 0:
                         adj_path = outputs_dir / f'{alias}_{algo_name}.csv'
                         mat = nx.to_numpy_array(graph, nodelist=data.columns)
