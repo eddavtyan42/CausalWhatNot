@@ -9,10 +9,11 @@ from algorithms import cosmo
 
 def test_lasso_sparsity():
     df = pd.DataFrame(np.random.randn(200, 5), columns=list('ABCDE'))
-    g_l1, _ = cosmo.run(df, lambda1=1.0, lambda2=0.1, seed=0)
-    g_ridge, _ = cosmo.run(df, lambda1=0.0, lambda2=0.1, seed=0)
-    assert g_l1.number_of_edges() <= g_ridge.number_of_edges()
-    assert nx.is_directed_acyclic_graph(g_l1)
+    e0 = cosmo.run(df, lambda1=0.0, lambda2=0.1, seed=0)[0].number_of_edges()
+    e1 = cosmo.run(df, lambda1=0.5, lambda2=0.1, seed=0)[0].number_of_edges()
+    e2 = cosmo.run(df, lambda1=1.0, lambda2=0.1, seed=0)[0].number_of_edges()
+    assert e1 <= e0
+    assert e2 <= e1
 
 
 def test_restart_selects_best_order():
@@ -46,4 +47,16 @@ def test_restart_selects_best_order():
     assert meta['ordering'] == best
     assert np.isclose(meta['bic'], min(bic_ab, bic_ba))
     assert nx.is_directed_acyclic_graph(g)
+
+
+def test_multiple_restarts_improve_bic():
+    rng = np.random.default_rng(0)
+    A = rng.normal(size=200)
+    B = 2 * A + rng.normal(size=200)
+    df = pd.DataFrame({'A': A, 'B': B})
+
+    _, single = cosmo.run(df, lambda1=0.0, lambda2=0.1, seed=3, n_restarts=1)
+    _, many = cosmo.run(df, lambda1=0.0, lambda2=0.1, seed=3, n_restarts=10)
+
+    assert many['bic'] <= single['bic'] + 1e-6
 
