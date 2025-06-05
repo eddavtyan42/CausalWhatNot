@@ -177,30 +177,7 @@ def test_orientation_metrics_summary(tmp_path):
 
 
 @pytest.mark.timeout(30)
-def test_dataset_aliases(tmp_path):
-    cfg = {
-        "datasets": [
-            {"name": "asia", "n_samples": 100, "alias": "asia_a"},
-            {"name": "asia", "n_samples": 200, "alias": "asia_b"},
-        ],
-        "algorithms": {"pc": {}},
-        "bootstrap_runs": 0,
-    }
-    cfg_path = tmp_path / "cfg.yaml"
-    with open(cfg_path, "w") as f:
-        yaml.safe_dump(cfg, f)
-
-    load_dataset("asia", n_samples=200, force=True)
-
-    run_benchmark.run(str(cfg_path), output_dir=tmp_path)
-
-    summary = pd.read_csv(tmp_path / 'summary_metrics.csv')
-    assert 'directed_precision' in summary.columns
-    assert summary['directed_precision'].between(0, 1).all()
-
-
-@pytest.mark.timeout(30)
-def test_dataset_aliases(tmp_path):
+def test_dataset_alias_files(tmp_path):
     cfg = {
         'datasets': [
             {'name': 'asia', 'n_samples': 100, 'alias': 'asia_a'},

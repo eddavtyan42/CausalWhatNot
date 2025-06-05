@@ -47,14 +47,14 @@ def run(config_path: str, output_dir: str | Path | None = None):
     summary_rows = []
 
     for ds_cfg in cfg.get("datasets", []):
-        if isinstance(ds_cfg, str):
-            dataset = ds_cfg
-            alias = dataset
-            n_samples = None
-        elif isinstance(ds_cfg, dict):
+        if isinstance(ds_cfg, dict):
             dataset = ds_cfg.get("name")
             alias = ds_cfg.get("alias", dataset)
             n_samples = ds_cfg.get("n_samples")
+        elif isinstance(ds_cfg, str):
+            dataset = ds_cfg
+            alias = dataset
+            n_samples = None
         else:
             raise ValueError(f"Invalid dataset entry: {ds_cfg}")
 
