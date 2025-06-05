@@ -45,11 +45,15 @@ def test_run_benchmark(tmp_path):
 @pytest.mark.timeout(60)
 def test_run_benchmark_notears(tmp_path):
     if sys.version_info >= (3, 11):
+        import pandas as pd
+        import numpy as np
+        import algorithms.notears as notears
+
         with pytest.raises(ImportError):
-            import algorithms.notears  # noqa: F401
+            notears.run(pd.DataFrame(np.zeros((10, 2)), columns=["a", "b"]))
         return
     try:
-        import algorithms.notears  # noqa: F401
+        import algorithms.notears as notears  # noqa: F401
     except Exception:
         pytest.skip('causalnex not installed')
 

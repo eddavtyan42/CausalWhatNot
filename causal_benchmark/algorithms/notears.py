@@ -2,6 +2,8 @@
 
 from __future__ import annotations
 
+__all__ = ["run"]
+
 import sys
 import time
 from typing import Tuple, Dict
@@ -9,17 +11,6 @@ from typing import Tuple, Dict
 import networkx as nx
 import numpy as np
 import pandas as pd
-
-if sys.version_info >= (3, 11):
-    raise ImportError("NOTEARS via CausalNex only supports Python <3.11")
-
-
-try:  # optional import; fail with helpful message if unavailable
-    from causalnex.structure.notears import from_pandas
-except Exception as e:  # pragma: no cover - import failure tested via runtime
-    raise ImportError(
-        "CausalNex is required for NOTEARS. Install via `pip install causalnex`."
-    ) from e
 
 
 def run(
@@ -34,6 +25,15 @@ def run(
     data : pd.DataFrame
         Numeric dataframe containing observational samples.
 
+    Other Parameters
+    ----------------
+    max_iter : int, optional
+        Maximum number of iterations (default from causalnex).
+    lambda1 : float, optional
+        L1 penalty parameter.
+    lambda2 : float, optional
+        L2 penalty parameter.
+
     Returns
     -------
     nx.DiGraph
@@ -46,8 +46,18 @@ def run(
     if data.isna().any().any():
         raise ValueError("NOTEARS cannot handle missing values.")
 
-    # Ignore legacy 'backend' parameter from old configs
-    kwargs.pop('backend', None)
+    if sys.version_info >= (3, 11):
+        raise ImportError("NOTEARS via CausalNex only supports Python <3.11")
+
+    try:
+        from causalnex.structure.notears import from_pandas
+    except Exception as e:  # pragma: no cover - import failure tested via runtime
+        raise ImportError(
+            "NOTEARS requires causalnex>=0.12 and torch. Install or remove 'notears' from config."
+        ) from e
+
+    # Ignore unsupported legacy parameter if present
+    kwargs.pop("backend", None)
 
     start = time.perf_counter()
     sm = from_pandas(data, w_threshold=threshold, **kwargs)
