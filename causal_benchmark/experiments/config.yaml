@@ -6,6 +6,7 @@ datasets:
     n_samples: 5000
   - name: alarm
   - name: child
+  - name: insurance
 algorithms:
   pc: {}
   ges: {}
