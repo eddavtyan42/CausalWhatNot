@@ -194,9 +194,32 @@ def test_dataset_aliases(tmp_path):
 
     run_benchmark.run(str(cfg_path), output_dir=tmp_path)
 
-    assert (tmp_path / "logs" / "asia_a_pc.log").exists()
-    assert (tmp_path / "logs" / "asia_b_pc.log").exists()
-    assert (tmp_path / "outputs" / "asia_a_pc.csv").exists()
-    assert (tmp_path / "outputs" / "asia_b_pc.csv").exists()
-    summary = pd.read_csv(tmp_path / "summary_metrics.csv")
-    assert set(summary["dataset"]) == {"asia_a", "asia_b"}
+    summary = pd.read_csv(tmp_path / 'summary_metrics.csv')
+    assert 'directed_precision' in summary.columns
+    assert summary['directed_precision'].between(0, 1).all()
+
+
+@pytest.mark.timeout(30)
+def test_dataset_aliases(tmp_path):
+    cfg = {
+        'datasets': [
+            {'name': 'asia', 'n_samples': 100, 'alias': 'asia_a'},
+            {'name': 'asia', 'n_samples': 200, 'alias': 'asia_b'},
+        ],
+        'algorithms': {'pc': {}},
+        'bootstrap_runs': 0,
+    }
+    cfg_path = tmp_path / 'cfg.yaml'
+    with open(cfg_path, 'w') as f:
+        yaml.safe_dump(cfg, f)
+
+    load_dataset('asia', n_samples=200, force=True)
+
+    run_benchmark.run(str(cfg_path), output_dir=tmp_path)
+
+    assert (tmp_path / 'logs' / 'asia_a_pc.log').exists()
+    assert (tmp_path / 'logs' / 'asia_b_pc.log').exists()
+    assert (tmp_path / 'outputs' / 'asia_a_pc.csv').exists()
+    assert (tmp_path / 'outputs' / 'asia_b_pc.csv').exists()
+    summary = pd.read_csv(tmp_path / 'summary_metrics.csv')
+    assert set(summary['dataset']) == {'asia_a', 'asia_b'}

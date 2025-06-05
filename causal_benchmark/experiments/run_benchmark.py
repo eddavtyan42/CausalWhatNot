@@ -73,7 +73,7 @@ def run(config_path: str, output_dir: str | Path | None = None):
             run_metrics = []
             run_times = []
             errors = []
-            diff_path = logs_dir / f"{alias}_{algo_name}_diff.txt"
+            diff_path = logs_dir / f'{alias}_{algo_name}_diff.txt'
             # start a fresh diff file for this dataset/algorithm
             with open(diff_path, "w"):
                 pass
@@ -124,7 +124,7 @@ def run(config_path: str, output_dir: str | Path | None = None):
                         for e in rev:
                             df.write(f"reversed {e[0]}->{e[1]}\n")
                     if bootstrap == 0:
-                        adj_path = outputs_dir / f"{alias}_{algo_name}.csv"
+                        adj_path = outputs_dir / f'{alias}_{algo_name}.csv'
                         mat = nx.to_numpy_array(graph, nodelist=data.columns)
                         pd.DataFrame(
                             mat, index=data.columns, columns=data.columns
