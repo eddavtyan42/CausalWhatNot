@@ -16,6 +16,7 @@ import pandas as pd
 def run(
     data: pd.DataFrame,
     threshold: float = 0.1,
+    torch_seed: int | None = None,
     **kwargs,
 ) -> Tuple[nx.DiGraph, Dict[str, object]]:
     """Run NOTEARS on a dataframe.
@@ -33,6 +34,9 @@ def run(
         L1 penalty parameter.
     lambda2 : float, optional
         L2 penalty parameter.
+    torch_seed : int, optional
+        If provided, sets the PyTorch RNG seed and enables deterministic
+        operations for reproducible results.
 
     Returns
     -------
@@ -55,6 +59,16 @@ def run(
         raise ImportError(
             "NOTEARS requires causalnex>=0.12 and torch. Install or remove 'notears' from config."
         ) from e
+
+    if torch_seed is not None:
+        try:
+            import torch
+        except Exception as e:  # pragma: no cover - optional dependency
+            raise ImportError(
+                "PyTorch is required to set torch_seed"
+            ) from e
+        torch.manual_seed(torch_seed)
+        torch.use_deterministic_algorithms(True)
 
     # Ignore unsupported legacy parameter if present
     kwargs.pop("backend", None)
