@@ -12,6 +12,7 @@ algorithms:
   notears: {threshold: 0.1}
   cosmo:
     timeout_s: 60
+    n_restarts: 1
 bootstrap_runs: 0
 record_edge_stability: false
 orientation_metrics: false
