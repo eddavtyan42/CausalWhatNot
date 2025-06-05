@@ -50,5 +50,9 @@ def run(
     dag, meta = causallearn_to_dag(amat, data.columns)
     if not nx.is_directed_acyclic_graph(dag):
         raise RuntimeError("PC produced a cyclic graph")
-    meta.update({"runtime_s": runtime, "raw_obj": cg})
+    meta.update({
+        "runtime_s": runtime,
+        "raw_obj": cg,
+        "indep_test": indep_test,
+    })
     return dag, meta

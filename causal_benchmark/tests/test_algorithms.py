@@ -84,3 +84,26 @@ def test_discrete_default_params(monkeypatch):
     ges.run(df, score_func='bic')
     assert recorded['ges'] == 'local_score_BIC'
 
+
+def test_alarm_discrete_metadata(monkeypatch):
+    df, _ = load_dataset('alarm', n_samples=50, force=True)
+
+    def dummy_pc(data, alpha=0.05, indep_test=None, stable=True):
+        class CG:
+            pass
+
+        CG.G = type('G', (), {'graph': np.zeros((data.shape[1], data.shape[1]))})()
+        return CG()
+
+    monkeypatch.setattr(pc, 'pc', dummy_pc)
+    _, meta_pc = pc.run(df)
+    assert meta_pc['indep_test'] == 'chisq'
+
+    def dummy_ges(data, score_func=None):
+        Gobj = type('G', (), {'graph': np.zeros((data.shape[1], data.shape[1]))})()
+        return {'G': Gobj}
+
+    monkeypatch.setattr(ges, 'ges', dummy_ges)
+    _, meta_ges = ges.run(df)
+    assert meta_ges['score_func'] == 'bdeu'
+
