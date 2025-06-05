@@ -198,6 +198,29 @@ CHILD_STATES: dict[str, int] = {
 BASE_DIR = Path(__file__).resolve().parents[1] / 'data'
 
 
+def is_discrete(df: pd.DataFrame) -> bool:
+    """Heuristically determine if all columns are discrete.
+
+    A column is considered discrete when it has an integer, boolean or
+    categorical dtype or when floating point values are all integer-like.
+    The function returns ``True`` only if every column satisfies this
+    condition.
+    """
+
+    for col in df.columns:
+        series = df[col]
+        if (
+            pd.api.types.is_integer_dtype(series)
+            or pd.api.types.is_bool_dtype(series)
+            or pd.api.types.is_categorical_dtype(series)
+        ):
+            continue
+        if pd.api.types.is_float_dtype(series):
+            vals = series.dropna()
+            if (vals == np.floor(vals)).all():
+                continue
+        return False
+    return True
 
 
 def _sample_gaussian(G: nx.DiGraph, n: int, seed: int = 0) -> pd.DataFrame:
