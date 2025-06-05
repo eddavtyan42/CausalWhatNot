@@ -136,6 +136,35 @@ def test_algorithm_timeout(tmp_path, monkeypatch):
 
 
 @pytest.mark.timeout(30)
+def test_algorithm_exception(tmp_path, monkeypatch):
+    from algorithms import cosmo
+    def bad_run(*_args, **_kwargs):
+        raise RuntimeError("boom")
+
+    monkeypatch.setattr(cosmo, "run", bad_run)
+
+    cfg = {
+        "datasets": ["asia"],
+        "algorithms": {"cosmo": {}},
+        "bootstrap_runs": 0,
+    }
+    cfg_path = tmp_path / "cfg.yaml"
+    with open(cfg_path, "w") as f:
+        yaml.safe_dump(cfg, f)
+
+    load_dataset("asia", n_samples=100, force=True)
+
+    run_benchmark.run(str(cfg_path), output_dir=tmp_path)
+
+    summary = pd.read_csv(tmp_path / "summary_metrics.csv")
+    assert summary["n_fail"].iloc[0] == 1
+    assert summary["n_timeout"].iloc[0] == 0
+    assert pd.isna(summary["precision"].iloc[0])
+    log_text = (tmp_path / "logs" / "asia_cosmo.log").read_text()
+    assert "boom" in log_text
+
+
+@pytest.mark.timeout(30)
 def test_diff_file_run_headers(tmp_path):
     cfg = {
         "datasets": ["asia"],
