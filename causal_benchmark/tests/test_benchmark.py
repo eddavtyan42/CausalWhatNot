@@ -10,6 +10,7 @@ load_dataset("asia", n_samples=500, force=True)
 
 from pathlib import Path
 import yaml
+import json
 import pandas as pd
 import pytest
 
@@ -39,6 +40,13 @@ def test_run_benchmark(tmp_path):
     assert (tmp_path / "logs" / "asia_ges.log").exists()
     assert (tmp_path / "logs" / "asia_pc_diff.txt").exists()
     assert (tmp_path / "logs" / "asia_ges_diff.txt").exists()
+    assert (tmp_path / "logs" / "asia_pc_diff_run0.json").exists()
+    assert (tmp_path / "logs" / "asia_ges_diff_run0.json").exists()
+    for p in [tmp_path / "logs" / "asia_pc_diff_run0.json", tmp_path / "logs" / "asia_ges_diff_run0.json"]:
+        data = json.loads(p.read_text())
+        assert set(data) == {"extra", "missing", "reversed"}
+        for lst in data.values():
+            assert isinstance(lst, list)
     assert summary["precision"].between(0, 1).all()
     assert summary["recall"].between(0, 1).all()
 
@@ -75,6 +83,9 @@ def test_run_benchmark_notears(tmp_path):
     assert set(summary["algorithm"]) == {"notears"}
     assert (tmp_path / "logs" / "asia_notears.log").exists()
     assert (tmp_path / "logs" / "asia_notears_diff.txt").exists()
+    assert (tmp_path / "logs" / "asia_notears_diff_run0.json").exists()
+    data = json.loads((tmp_path / "logs" / "asia_notears_diff_run0.json").read_text())
+    assert set(data) == {"extra", "missing", "reversed"}
     assert summary["precision"].between(0, 1).all()
     assert summary["recall"].between(0, 1).all()
 
@@ -182,6 +193,11 @@ def test_diff_file_run_headers(tmp_path):
     diff_lines = (tmp_path / "logs" / "asia_pc_diff.txt").read_text().splitlines()
     assert any(line.startswith("run0:") for line in diff_lines)
     assert any(line.startswith("run1:") for line in diff_lines)
+    for i in (0, 1):
+        p = tmp_path / "logs" / f"asia_pc_diff_run{i}.json"
+        assert p.exists()
+        data = json.loads(p.read_text())
+        assert set(data) == {"extra", "missing", "reversed"}
 
 
 @pytest.mark.timeout(30)
@@ -225,6 +241,8 @@ def test_dataset_alias_files(tmp_path):
 
     assert (tmp_path / 'logs' / 'asia_a_pc.log').exists()
     assert (tmp_path / 'logs' / 'asia_b_pc.log').exists()
+    assert (tmp_path / 'logs' / 'asia_a_pc_diff_run0.json').exists()
+    assert (tmp_path / 'logs' / 'asia_b_pc_diff_run0.json').exists()
     assert (tmp_path / 'outputs' / 'asia_a_pc.csv').exists()
     assert (tmp_path / 'outputs' / 'asia_b_pc.csv').exists()
     summary = pd.read_csv(tmp_path / 'summary_metrics.csv')
