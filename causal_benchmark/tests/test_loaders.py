@@ -29,3 +29,10 @@ def test_child_loader():
     assert df.shape == (1000, len(G.nodes()))
     assert len(G.nodes()) == 20
 
+
+def test_insurance_loader():
+    df, G = load_dataset("insurance", n_samples=500, force=True)
+    assert df.shape == (500, len(G.nodes()))
+    assert len(G.nodes()) == 27
+    assert len(G.edges()) == 52
+

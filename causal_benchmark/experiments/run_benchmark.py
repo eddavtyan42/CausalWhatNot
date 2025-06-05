@@ -257,7 +257,7 @@ def run(
         for algo_name, params in algo_items
     ]
 
-    summary_rows.extend(joblib.Parallel(n_jobs=parallel_jobs)(tasks))
+    summary_rows.extend(joblib.Parallel(n_jobs=parallel_jobs, prefer="threads")(tasks))
 
     df = pd.DataFrame(summary_rows)
     df.to_csv(base_dir / "summary_metrics.csv", index=False)

@@ -194,6 +194,92 @@ CHILD_STATES: dict[str, int] = {
     "Sick": 2,
 }
 
+# Insurance network with 27 variables
+INSURANCE_EDGES: list[tuple[str, str]] = [
+    ("SocioEcon", "GoodStudent"),
+    ("Age", "GoodStudent"),
+    ("Age", "SocioEcon"),
+    ("Age", "RiskAversion"),
+    ("SocioEcon", "RiskAversion"),
+    ("SocioEcon", "VehicleYear"),
+    ("RiskAversion", "VehicleYear"),
+    ("Accident", "ThisCarDam"),
+    ("RuggedAuto", "ThisCarDam"),
+    ("MakeModel", "RuggedAuto"),
+    ("VehicleYear", "RuggedAuto"),
+    ("Antilock", "Accident"),
+    ("Mileage", "Accident"),
+    ("DrivQuality", "Accident"),
+    ("SocioEcon", "MakeModel"),
+    ("RiskAversion", "MakeModel"),
+    ("DrivingSkill", "DrivQuality"),
+    ("RiskAversion", "DrivQuality"),
+    ("MakeModel", "Antilock"),
+    ("VehicleYear", "Antilock"),
+    ("Age", "DrivingSkill"),
+    ("SeniorTrain", "DrivingSkill"),
+    ("Age", "SeniorTrain"),
+    ("RiskAversion", "SeniorTrain"),
+    ("ThisCarDam", "ThisCarCost"),
+    ("CarValue", "ThisCarCost"),
+    ("Theft", "ThisCarCost"),
+    ("AntiTheft", "Theft"),
+    ("HomeBase", "Theft"),
+    ("CarValue", "Theft"),
+    ("MakeModel", "CarValue"),
+    ("VehicleYear", "CarValue"),
+    ("Mileage", "CarValue"),
+    ("RiskAversion", "HomeBase"),
+    ("SocioEcon", "HomeBase"),
+    ("RiskAversion", "AntiTheft"),
+    ("SocioEcon", "AntiTheft"),
+    ("OtherCarCost", "PropCost"),
+    ("ThisCarCost", "PropCost"),
+    ("Accident", "OtherCarCost"),
+    ("RuggedAuto", "OtherCarCost"),
+    ("SocioEcon", "OtherCar"),
+    ("Accident", "MedCost"),
+    ("Age", "MedCost"),
+    ("Cushioning", "MedCost"),
+    ("RuggedAuto", "Cushioning"),
+    ("Airbag", "Cushioning"),
+    ("MakeModel", "Airbag"),
+    ("VehicleYear", "Airbag"),
+    ("Accident", "ILiCost"),
+    ("DrivingSkill", "DrivHist"),
+    ("RiskAversion", "DrivHist"),
+]
+
+INSURANCE_STATES: dict[str, int] = {
+    "GoodStudent": 2,
+    "Age": 3,
+    "SocioEcon": 4,
+    "RiskAversion": 4,
+    "VehicleYear": 2,
+    "ThisCarDam": 4,
+    "RuggedAuto": 3,
+    "Accident": 4,
+    "MakeModel": 5,
+    "DrivQuality": 3,
+    "Mileage": 4,
+    "Antilock": 2,
+    "DrivingSkill": 3,
+    "SeniorTrain": 2,
+    "ThisCarCost": 4,
+    "Theft": 2,
+    "CarValue": 5,
+    "HomeBase": 4,
+    "AntiTheft": 2,
+    "PropCost": 4,
+    "OtherCarCost": 4,
+    "OtherCar": 2,
+    "MedCost": 4,
+    "Cushioning": 4,
+    "Airbag": 2,
+    "ILiCost": 4,
+    "DrivHist": 3,
+}
+
 
 BASE_DIR = Path(__file__).resolve().parents[1] / 'data'
 
@@ -270,6 +356,27 @@ def _sample_discrete(
         df[node] = np.digitize(cont[node], quantiles)
     return df
 
+
+def load_insurance(n_samples: int = 10000, force: bool = False) -> Tuple[pd.DataFrame, nx.DiGraph]:
+    """Generate or load the Insurance benchmark dataset."""
+
+    name = "insurance"
+    data_dir = BASE_DIR / name
+    data_dir.mkdir(parents=True, exist_ok=True)
+    data_path = data_dir / f"{name}_data.csv"
+
+    G = nx.DiGraph()
+    G.add_edges_from(INSURANCE_EDGES)
+    states = INSURANCE_STATES
+
+    if data_path.exists() and not force:
+        df = pd.read_csv(data_path)
+    else:
+        df = _sample_discrete(G, states, n_samples)
+        df.to_csv(data_path, index=False)
+
+    return df, G
+
 def load_dataset(name: str, n_samples: int = 10000, force: bool = False) -> Tuple[pd.DataFrame, nx.DiGraph]:
     """Load or generate samples for one of the benchmark datasets."""
 
@@ -321,6 +428,9 @@ def load_dataset(name: str, n_samples: int = 10000, force: bool = False) -> Tupl
             df = _sample_discrete(G, states, n_samples)
             df.to_csv(data_path, index=False)
         return df, G
+
+    elif name == "insurance":
+        return load_insurance(n_samples=n_samples, force=force)
 
     else:
         raise ValueError(f"Unknown dataset: {name}")
