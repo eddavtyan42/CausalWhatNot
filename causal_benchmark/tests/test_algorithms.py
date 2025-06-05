@@ -48,3 +48,39 @@ def test_cosmo_small():
     g, _ = cosmo.run(df, seed=0)
     assert set(g.nodes()) == set(df.columns)
     assert nx.is_directed_acyclic_graph(g)
+
+
+def test_discrete_default_params(monkeypatch):
+    df, _ = load_dataset('asia', n_samples=50, force=True)
+
+    recorded = {}
+
+    def dummy_pc(data, alpha=0.05, indep_test=None, stable=True):
+        recorded['pc'] = indep_test
+
+        class CG:
+            pass
+
+        CG.G = type('G', (), {'graph': np.zeros((data.shape[1], data.shape[1]))})()
+        return CG()
+
+    monkeypatch.setattr(pc, 'pc', dummy_pc)
+    pc.run(df)
+    assert recorded['pc'] == 'chisq'
+
+    pc.run(df, indep_test='fisherz')
+    assert recorded['pc'] == 'fisherz'
+
+    def dummy_ges(data, score_func=None):
+        recorded['ges'] = score_func
+
+        Gobj = type('G', (), {'graph': np.zeros((data.shape[1], data.shape[1]))})()
+        return {'G': Gobj}
+
+    monkeypatch.setattr(ges, 'ges', dummy_ges)
+    ges.run(df)
+    assert recorded['ges'] == 'local_score_BDeu'
+
+    ges.run(df, score_func='bic')
+    assert recorded['ges'] == 'local_score_BIC'
+

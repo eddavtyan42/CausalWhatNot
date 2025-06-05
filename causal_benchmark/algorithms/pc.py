@@ -5,6 +5,7 @@ import pandas as pd
 from typing import Tuple, Dict
 
 from utils.helpers import causallearn_to_dag
+from utils.loaders import is_discrete
 
 try:
     from causallearn.search.ConstraintBased.PC import pc
@@ -15,7 +16,7 @@ except Exception:
 def run(
     data: pd.DataFrame,
     alpha: float = 0.05,
-    indep_test: str = "fisherz",
+    indep_test: str | None = None,
     stable: bool = True,
 ) -> Tuple[nx.DiGraph, Dict[str, object]]:
     if pc is None:
@@ -23,12 +24,15 @@ def run(
             "causal-learn is required for the PC algorithm. Install via pip install causal-learn."
         )
 
+    if indep_test is None:
+        indep_test = "chisq" if is_discrete(data) else "fisherz"
+
     start = time.perf_counter()
     try:
         cg = pc(data.values, alpha=alpha, indep_test=indep_test, stable=stable)
     except Exception as e:
         if "singular" in str(e).lower():
-            cg = pc(data.values, alpha=alpha, indep_test="chi_square", stable=stable)
+            cg = pc(data.values, alpha=alpha, indep_test="chisq", stable=stable)
         else:
             raise
     runtime = time.perf_counter() - start

@@ -5,6 +5,7 @@ import pandas as pd
 from typing import Tuple, Dict
 
 from utils.helpers import causallearn_to_dag
+from utils.loaders import is_discrete
 
 try:
     from causallearn.search.ScoreBased.GES import ges
@@ -12,11 +13,16 @@ except Exception:
     ges = None
 
 
-def run(data: pd.DataFrame, score_func: str = "bic") -> Tuple[nx.DiGraph, Dict[str, object]]:
+def run(
+    data: pd.DataFrame, score_func: str | None = None
+) -> Tuple[nx.DiGraph, Dict[str, object]]:
     if ges is None:
         raise ImportError(
             "causal-learn is required for the GES algorithm. Install via pip install causal-learn."
         )
+
+    if score_func is None:
+        score_func = "bdeu" if is_discrete(data) else "bic"
 
     start = time.perf_counter()
     # map commonly used shorthand score names to those expected by causal-learn
