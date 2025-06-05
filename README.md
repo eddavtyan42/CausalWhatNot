@@ -107,6 +107,13 @@ bootstrap_runs: 20
 record_edge_stability: true
 ```
 
+Set `parallel_jobs` to run dataset/algorithm combinations concurrently. Use `-1` to
+utilise all available CPU cores:
+
+```yaml
+parallel_jobs: 4
+```
+
 When a timeout occurs the run is marked as failed and the error is logged.
 
 ## Datasets

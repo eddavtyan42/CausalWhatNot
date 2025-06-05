@@ -247,3 +247,42 @@ def test_dataset_alias_files(tmp_path):
     assert (tmp_path / 'outputs' / 'asia_b_pc.csv').exists()
     summary = pd.read_csv(tmp_path / 'summary_metrics.csv')
     assert set(summary['dataset']) == {'asia_a', 'asia_b'}
+
+
+@pytest.mark.timeout(30)
+def test_parallel_jobs_speedup(tmp_path, monkeypatch):
+    from algorithms import cosmo
+    import time
+    import networkx as nx
+
+    def slow_run(data, **_):
+        time.sleep(1)
+        g = nx.DiGraph()
+        g.add_nodes_from(data.columns)
+        return g, {"runtime_s": 1.0}
+
+    monkeypatch.setattr(cosmo, "run", slow_run)
+
+    cfg = {
+        'datasets': [
+            {'name': 'asia', 'n_samples': 10, 'alias': 'd1'},
+            {'name': 'asia', 'n_samples': 10, 'alias': 'd2'},
+        ],
+        'algorithms': {'cosmo': {}},
+        'bootstrap_runs': 0,
+    }
+    cfg_path = tmp_path / 'cfg.yaml'
+    with open(cfg_path, 'w') as f:
+        yaml.safe_dump(cfg, f)
+
+    load_dataset('asia', n_samples=10, force=True)
+
+    start = time.perf_counter()
+    run_benchmark.run(str(cfg_path), output_dir=tmp_path / 'seq', parallel_jobs=1)
+    t1 = time.perf_counter() - start
+
+    start = time.perf_counter()
+    run_benchmark.run(str(cfg_path), output_dir=tmp_path / 'par', parallel_jobs=2)
+    t2 = time.perf_counter() - start
+
+    assert t1 - t2 > 0.5
