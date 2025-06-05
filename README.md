@@ -134,6 +134,7 @@ The benchmark reports:
 
 * **Precision**, **Recall** and **F1** of predicted edges (orientation ignored by default)
 * **Structural Hamming Distance (SHD)** comparing the predicted and true graphs
+* When `orientation_metrics: true` in the config, **directed precision/recall/F1** and **SHD_dir** which treat edge orientation as essential
 * Mean and standard deviation of metrics when `bootstrap_runs` is greater than zero
 
 ## Reproducibility

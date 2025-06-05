@@ -150,3 +150,24 @@ def test_diff_file_run_headers(tmp_path):
     diff_lines = (tmp_path / 'logs' / 'asia_pc_diff.txt').read_text().splitlines()
     assert any(line.startswith('run0:') for line in diff_lines)
     assert any(line.startswith('run1:') for line in diff_lines)
+
+
+@pytest.mark.timeout(30)
+def test_orientation_metrics_summary(tmp_path):
+    cfg = {
+        'datasets': [{'name': 'asia', 'n_samples': 200}],
+        'algorithms': {'pc': {}},
+        'bootstrap_runs': 0,
+        'orientation_metrics': True,
+    }
+    cfg_path = tmp_path / 'cfg.yaml'
+    with open(cfg_path, 'w') as f:
+        yaml.safe_dump(cfg, f)
+
+    load_dataset('asia', n_samples=200, force=True)
+
+    run_benchmark.run(str(cfg_path), output_dir=tmp_path)
+
+    summary = pd.read_csv(tmp_path / 'summary_metrics.csv')
+    assert 'directed_precision' in summary.columns
+    assert summary['directed_precision'].between(0, 1).all()

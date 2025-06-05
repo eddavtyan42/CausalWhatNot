@@ -60,3 +60,20 @@ def precision_recall_f1(pred_graph: nx.DiGraph, true_graph: nx.DiGraph, undirect
     recall = tp / (tp + fn) if tp + fn > 0 else 0.0
     f1 = 2 * precision * recall / (precision + recall) if precision + recall > 0 else 0.0
     return {"precision": precision, "recall": recall, "f1": f1}
+
+
+def directed_precision_recall_f1(
+    pred_graph: nx.DiGraph, true_graph: nx.DiGraph
+) -> Dict[str, float]:
+    """Precision/recall/F1 considering edge orientation."""
+    base = precision_recall_f1(pred_graph, true_graph, undirected_ok=False)
+    return {
+        "directed_precision": base["precision"],
+        "directed_recall": base["recall"],
+        "directed_f1": base["f1"],
+    }
+
+
+def shd_dir(pred_graph: nx.DiGraph, true_graph: nx.DiGraph) -> int:
+    """Orientation-sensitive structural Hamming distance."""
+    return shd(pred_graph, true_graph, cpdag_mode=False)
