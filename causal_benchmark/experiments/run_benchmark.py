@@ -91,9 +91,10 @@ def run(config_path: str, output_dir: str | Path | None = None):
 
                 if graph is not None:
                     metrics = precision_recall_f1(graph, true_graph)
-                    metrics['shd'] = shd(graph, true_graph)
+                    metrics['shd'] = shd(graph, true_graph, pred_undirected=set(info.get('undirected_edges', [])))
                     extra, missing, rev = edge_differences(graph, true_graph)
                     with open(diff_path, 'a') as df:
+                        df.write(f'run{b}:\n')
                         for e in extra:
                             df.write(f'extra {e[0]}->{e[1]}\n')
                         for e in missing:
