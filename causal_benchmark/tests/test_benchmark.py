@@ -130,3 +130,23 @@ def test_algorithm_timeout(tmp_path, monkeypatch):
     assert summary['precision'].iloc[0] == 0
     log_text = (tmp_path / 'logs' / 'asia_cosmo.log').read_text()
     assert 'timeout' in log_text
+
+
+@pytest.mark.timeout(30)
+def test_diff_file_run_headers(tmp_path):
+    cfg = {
+        'datasets': ['asia'],
+        'algorithms': {'pc': {}},
+        'bootstrap_runs': 2,
+    }
+    cfg_path = tmp_path / 'cfg.yaml'
+    with open(cfg_path, 'w') as f:
+        yaml.safe_dump(cfg, f)
+
+    load_dataset('asia', n_samples=100, force=True)
+
+    run_benchmark.run(str(cfg_path), output_dir=tmp_path)
+
+    diff_lines = (tmp_path / 'logs' / 'asia_pc_diff.txt').read_text().splitlines()
+    assert any(line.startswith('run0:') for line in diff_lines)
+    assert any(line.startswith('run1:') for line in diff_lines)
