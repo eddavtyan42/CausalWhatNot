@@ -2,12 +2,16 @@
 
 from __future__ import annotations
 
+import sys
 import time
 from typing import Tuple, Dict
 
 import networkx as nx
 import numpy as np
 import pandas as pd
+
+if sys.version_info >= (3, 11):
+    raise ImportError("NOTEARS via CausalNex only supports Python <3.11")
 
 
 try:  # optional import; fail with helpful message if unavailable

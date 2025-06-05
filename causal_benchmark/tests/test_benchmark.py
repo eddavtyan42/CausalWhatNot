@@ -44,6 +44,10 @@ def test_run_benchmark(tmp_path):
 
 @pytest.mark.timeout(60)
 def test_run_benchmark_notears(tmp_path):
+    if sys.version_info >= (3, 11):
+        with pytest.raises(ImportError):
+            import algorithms.notears  # noqa: F401
+        return
     try:
         import algorithms.notears  # noqa: F401
     except Exception:

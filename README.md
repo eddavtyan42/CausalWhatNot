@@ -28,13 +28,18 @@ Results are saved as adjacency matrices and summary metrics so experiments can b
 
 Clone the repository and install the dependencies using either `pip` or `conda`.
 
-NOTEARS relies on the CausalNex library which currently only supports Python <3.11
+NOTEARS relies on the CausalNex library which currently only supports **Python <3.11**
 and requires PyTorch (installed automatically with CausalNex). A Python 3.10
-environment is therefore recommended for full functionality:
+environment is therefore recommended for full functionality. The
+`environment.yml` provided in `causal_benchmark/` pins `python=3.10`.
+
+To create a Python 3.10 virtual environment with `venv`:
 
 ```bash
 git clone https://github.com/EDavtyan/CausalWhatNot.git
 cd CausalWhatNot
+python3.10 -m venv .venv
+source .venv/bin/activate
 pip install -r causal_benchmark/requirements.txt
 ```
 
