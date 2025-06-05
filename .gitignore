@@ -1,0 +1,18 @@
+# Python cache and compiled files
+__pycache__/
+*.pyc
+
+# Benchmark data generated during tests
+causal_benchmark/data/*
+!causal_benchmark/data/README.md
+
+# Benchmark results
+causal_benchmark/results/
+
+# Other temporary files
+*.tmp
+*.log
+*.out
+*.bak
+*~
+.DS_Store
