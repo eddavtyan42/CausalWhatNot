@@ -19,6 +19,7 @@ Results are saved as adjacency matrices and summary metrics so experiments can b
 
 * Runs PC, GES, NOTEARS and COSMO on common benchmark datasets
 * Bootstrap evaluation with precision, recall, F1 and structural hamming distance (SHD)
+* Optional recording of edge stability frequencies across bootstrap runs
 * Easily extensible for new algorithms or datasets
 * Deterministic sampling with fixed seeds for reproducibility
 * Developed and tested with **Python 3.10**. NOTEARS currently requires Python <3.11 due to the CausalNex dependency.
@@ -63,11 +64,13 @@ This will evaluate each algorithm on all datasets listed in the YAML config. Out
 * `outputs/{dataset}_{algorithm}.csv` – learned adjacency matrices with node labels
 * `logs/{dataset}_{algorithm}.log` – per-run status and metrics
 * `logs/{dataset}_{algorithm}_diff.txt` – edge discrepancies (extra/missing/reversed)
+* `logs/{dataset}_{algorithm}_stability.csv` – bootstrap edge stability frequencies when enabled
 * `summary_metrics.csv` – aggregate metrics (mean and std if bootstrapping)
 
 ## Configuration
 
 Edit `experiments/config.yaml` to select datasets, algorithms and the number of `bootstrap_runs`.
+Set `record_edge_stability: true` to save edge frequencies computed over the bootstrap samples.
 Datasets may be listed as just the name or as a mapping with optional `n_samples`:
 
 ```yaml
@@ -83,6 +86,13 @@ Algorithm parameters are specified in the `algorithms` section. A `timeout_s` op
 algorithms:
   pc:
     timeout_s: 30
+```
+
+To compute edge stability across bootstraps use:
+
+```yaml
+bootstrap_runs: 20
+record_edge_stability: true
 ```
 
 When a timeout occurs the run is marked as failed and the error is logged.
