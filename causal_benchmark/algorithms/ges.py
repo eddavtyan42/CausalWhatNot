@@ -37,7 +37,8 @@ def run(data: pd.DataFrame, score_func: str = "bic") -> Tuple[nx.DiGraph, Dict[s
     else:
         raise AttributeError("Unknown graph representation returned by GES")
 
-    dag = causallearn_to_dag(amat, data.columns)
+    dag, meta = causallearn_to_dag(amat, data.columns)
     if not nx.is_directed_acyclic_graph(dag):
         raise RuntimeError("GES produced a cyclic graph")
-    return dag, {"runtime_s": runtime, "raw_obj": gs}
+    meta.update({"runtime_s": runtime, "raw_obj": gs})
+    return dag, meta

@@ -1,9 +1,9 @@
 import networkx as nx
 import numpy as np
-from typing import Iterable, Tuple, Set
+from typing import Iterable, Tuple, Set, Dict
 
 
-def causallearn_to_dag(amat: np.ndarray, nodes: Iterable) -> nx.DiGraph:
+def causallearn_to_dag(amat: np.ndarray, nodes: Iterable) -> Tuple[nx.DiGraph, Dict[str, object]]:
     """Convert a causal-learn adjacency matrix to a NetworkX ``DiGraph``.
 
     Parameters
@@ -15,13 +15,21 @@ def causallearn_to_dag(amat: np.ndarray, nodes: Iterable) -> nx.DiGraph:
     """
     dag = nx.DiGraph()
     dag.add_nodes_from(range(len(nodes)))
-    for i in range(len(nodes)):
-        for j in range(len(nodes)):
+    n = len(nodes)
+    undirected_edges: Set[Tuple[int, int]] = set()
+    for i in range(n):
+        for j in range(n):
             if amat[i, j] == 1 and amat[j, i] == -1:
                 dag.add_edge(i, j)
             elif amat[i, j] == -1 and amat[j, i] == 1:
                 dag.add_edge(j, i)
-    return nx.relabel_nodes(dag, {i: n for i, n in enumerate(nodes)})
+            elif amat[i, j] == 1 and amat[j, i] == 1 and i < j:
+                dag.add_edge(i, j)
+                undirected_edges.add((i, j))
+    name_map = {i: n for i, n in enumerate(nodes)}
+    dag = nx.relabel_nodes(dag, name_map)
+    undirected_named = {(name_map[i], name_map[j]) for (i, j) in undirected_edges}
+    return dag, {"undirected_edges": undirected_named}
 
 
 def edge_differences(

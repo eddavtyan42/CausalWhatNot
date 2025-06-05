@@ -11,7 +11,12 @@ sys.path.append(str(Path(__file__).resolve().parents[1]))
 
 from utils.loaders import load_dataset
 from utils.helpers import edge_differences
-from metrics.metrics import shd, precision_recall_f1
+from metrics.metrics import (
+    shd,
+    precision_recall_f1,
+    directed_precision_recall_f1,
+    shd_dir,
+)
 from metrics.bootstrap import bootstrap_edge_stability
 
 
@@ -36,6 +41,7 @@ def run(config_path: str, output_dir: str | Path | None = None):
 
     bootstrap = int(cfg.get('bootstrap_runs', 0))
     record_stability = bool(cfg.get('record_edge_stability', False))
+    orient_metrics = bool(cfg.get('orientation_metrics', False))
 
     summary_rows = []
 
@@ -91,9 +97,17 @@ def run(config_path: str, output_dir: str | Path | None = None):
 
                 if graph is not None:
                     metrics = precision_recall_f1(graph, true_graph)
-                    metrics['shd'] = shd(graph, true_graph)
+                    metrics['shd'] = shd(
+                        graph,
+                        true_graph,
+                        pred_undirected=set(info.get('undirected_edges', [])),
+                    )
+                    if orient_metrics:
+                        metrics.update(directed_precision_recall_f1(graph, true_graph))
+                        metrics['shd_dir'] = shd_dir(graph, true_graph)
                     extra, missing, rev = edge_differences(graph, true_graph)
                     with open(diff_path, 'a') as df:
+                        df.write(f'run{b}:\n')
                         for e in extra:
                             df.write(f'extra {e[0]}->{e[1]}\n')
                         for e in missing:
@@ -105,7 +119,21 @@ def run(config_path: str, output_dir: str | Path | None = None):
                         mat = nx.to_numpy_array(graph, nodelist=data.columns)
                         pd.DataFrame(mat, index=data.columns, columns=data.columns).to_csv(adj_path)
                 else:
-                    metrics = {'precision': 0, 'recall': 0, 'f1': 0, 'shd': -1}
+                    metrics = {
+                        'precision': 0,
+                        'recall': 0,
+                        'f1': 0,
+                        'shd': -1,
+                    }
+                    if orient_metrics:
+                        metrics.update(
+                            {
+                                'directed_precision': 0,
+                                'directed_recall': 0,
+                                'directed_f1': 0,
+                                'shd_dir': -1,
+                            }
+                        )
 
                 run_metrics.append(metrics)
                 run_times.append(info['runtime_s'])
@@ -116,6 +144,11 @@ def run(config_path: str, output_dir: str | Path | None = None):
             rec = np.array([m['recall'] for m in run_metrics])
             f1 = np.array([m['f1'] for m in run_metrics])
             shd_vals = np.array([m['shd'] for m in run_metrics])
+            if orient_metrics:
+                d_prec = np.array([m['directed_precision'] for m in run_metrics])
+                d_rec = np.array([m['directed_recall'] for m in run_metrics])
+                d_f1 = np.array([m['directed_f1'] for m in run_metrics])
+                shd_dir_vals = np.array([m['shd_dir'] for m in run_metrics])
             times = np.array(run_times)
 
             log_path = logs_dir / f'{dataset}_{algo_name}.log'
@@ -124,17 +157,33 @@ def run(config_path: str, output_dir: str | Path | None = None):
                     if err:
                         f.write(f'run{i}: {err}\n')
                     else:
-                        f.write(
-                            f"run{i}: precision={m['precision']:.3f}, recall={m['recall']:.3f}, f1={m['f1']:.3f}, shd={m['shd']}\n"
+                        line = (
+                            f"run{i}: precision={m['precision']:.3f}, recall={m['recall']:.3f}, f1={m['f1']:.3f}, shd={m['shd']}"
                         )
-                f.write(
+                        if orient_metrics:
+                            line += (
+                                f", directed_precision={m['directed_precision']:.3f},"
+                                f" directed_recall={m['directed_recall']:.3f},"
+                                f" directed_f1={m['directed_f1']:.3f},"
+                                f" shd_dir={m['shd_dir']}"
+                            )
+                        f.write(line + "\n")
+                summary_line = (
                     "summary: "
                     f"precision={prec.mean():.3f}±{prec.std(ddof=0):.3f}, "
                     f"recall={rec.mean():.3f}±{rec.std(ddof=0):.3f}, "
                     f"f1={f1.mean():.3f}±{f1.std(ddof=0):.3f}, "
                     f"shd={shd_vals.mean():.3f}±{shd_vals.std(ddof=0):.3f}, "
-                    f"runtime_s={times.mean():.2f}±{times.std(ddof=0):.2f}\n"
                 )
+                if orient_metrics:
+                    summary_line += (
+                        f"directed_precision={d_prec.mean():.3f}±{d_prec.std(ddof=0):.3f}, "
+                        f"directed_recall={d_rec.mean():.3f}±{d_rec.std(ddof=0):.3f}, "
+                        f"directed_f1={d_f1.mean():.3f}±{d_f1.std(ddof=0):.3f}, "
+                        f"shd_dir={shd_dir_vals.mean():.3f}±{shd_dir_vals.std(ddof=0):.3f}, "
+                    )
+                summary_line += f"runtime_s={times.mean():.2f}±{times.std(ddof=0):.2f}\n"
+                f.write(summary_line)
 
             row = {
                 'dataset': dataset,
@@ -150,6 +199,17 @@ def run(config_path: str, output_dir: str | Path | None = None):
                 'runtime_s': times.mean(),
                 'runtime_s_std': times.std(ddof=0),
             }
+            if orient_metrics:
+                row.update({
+                    'directed_precision': d_prec.mean(),
+                    'directed_precision_std': d_prec.std(ddof=0),
+                    'directed_recall': d_rec.mean(),
+                    'directed_recall_std': d_rec.std(ddof=0),
+                    'directed_f1': d_f1.mean(),
+                    'directed_f1_std': d_f1.std(ddof=0),
+                    'shd_dir': shd_dir_vals.mean(),
+                    'shd_dir_std': shd_dir_vals.std(ddof=0),
+                })
             summary_rows.append(row)
 
             if record_stability and bootstrap > 0:
