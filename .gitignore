@@ -3,8 +3,7 @@ __pycache__/
 *.pyc
 
 # Benchmark data generated during tests
-causal_benchmark/data/*
-!causal_benchmark/data/README.md
+causal_benchmark/data/
 
 # Benchmark results
 causal_benchmark/results/
