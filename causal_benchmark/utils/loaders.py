@@ -198,13 +198,24 @@ CHILD_STATES: dict[str, int] = {
 BASE_DIR = Path(__file__).resolve().parents[1] / 'data'
 
 
-def is_discrete(df: pd.DataFrame) -> bool:
-    """Heuristically determine if all columns are discrete.
+def is_discrete(df: pd.DataFrame, max_unique: int = 20) -> bool:
+    """Check if each column of ``df`` represents a discrete variable.
 
-    A column is considered discrete when it has an integer, boolean or
-    categorical dtype or when floating point values are all integer-like.
-    The function returns ``True`` only if every column satisfies this
-    condition.
+    A column is treated as discrete when it stores integral values
+    (including booleans and categoricals) and the number of unique
+    observed values does not exceed ``max_unique``. Float columns are
+    allowed if all non-missing values are integer-like. The dataframe is
+    considered discrete only when **all** columns satisfy these
+    conditions.
+
+    Parameters
+    ----------
+    df:
+        Input dataframe.
+    max_unique:
+        Maximum number of distinct values permitted for a column to be
+        regarded as discrete. Defaults to ``20`` which safely covers the
+        benchmark datasets.
     """
 
     for col in df.columns:
@@ -214,12 +225,17 @@ def is_discrete(df: pd.DataFrame) -> bool:
             or pd.api.types.is_bool_dtype(series)
             or pd.api.types.is_categorical_dtype(series)
         ):
-            continue
-        if pd.api.types.is_float_dtype(series):
+            pass
+        elif pd.api.types.is_float_dtype(series):
             vals = series.dropna()
-            if (vals == np.floor(vals)).all():
-                continue
-        return False
+            if not (vals == np.floor(vals)).all():
+                return False
+        else:
+            return False
+
+        if series.nunique(dropna=True) > max_unique:
+            return False
+
     return True
 
 
