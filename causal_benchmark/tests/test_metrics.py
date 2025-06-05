@@ -30,7 +30,6 @@ def test_shd_with_undirected_pred():
     assert metrics['precision'] == 1
     assert metrics['recall'] == 1
 
-
 def test_directed_metrics_orientation_error():
     true = nx.DiGraph([(0, 1)])
     pred = nx.DiGraph([(1, 0)])

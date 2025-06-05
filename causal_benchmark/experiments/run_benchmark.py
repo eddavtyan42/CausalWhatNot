@@ -97,6 +97,7 @@ def run(config_path: str, output_dir: str | Path | None = None):
 
                 if graph is not None:
                     metrics = precision_recall_f1(graph, true_graph)
+
                     metrics['shd'] = shd(
                         graph,
                         true_graph,
@@ -105,6 +106,7 @@ def run(config_path: str, output_dir: str | Path | None = None):
                     if orient_metrics:
                         metrics.update(directed_precision_recall_f1(graph, true_graph))
                         metrics['shd_dir'] = shd_dir(graph, true_graph)
+
                     extra, missing, rev = edge_differences(graph, true_graph)
                     with open(diff_path, 'a') as df:
                         df.write(f'run{b}:\n')
