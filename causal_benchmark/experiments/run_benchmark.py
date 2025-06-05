@@ -48,9 +48,11 @@ def run(config_path: str, output_dir: str | Path | None = None):
     for ds_cfg in cfg.get('datasets', []):
         if isinstance(ds_cfg, str):
             dataset = ds_cfg
+            alias = dataset
             n_samples = None
         elif isinstance(ds_cfg, dict):
             dataset = ds_cfg.get('name')
+            alias = ds_cfg.get('alias', dataset)
             n_samples = ds_cfg.get('n_samples')
         else:
             raise ValueError(f'Invalid dataset entry: {ds_cfg}')
@@ -70,7 +72,7 @@ def run(config_path: str, output_dir: str | Path | None = None):
             run_metrics = []
             run_times = []
             errors = []
-            diff_path = logs_dir / f'{dataset}_{algo_name}_diff.txt'
+            diff_path = logs_dir / f'{alias}_{algo_name}_diff.txt'
             # start a fresh diff file for this dataset/algorithm
             with open(diff_path, 'w'):
                 pass
@@ -117,7 +119,7 @@ def run(config_path: str, output_dir: str | Path | None = None):
                         for e in rev:
                             df.write(f'reversed {e[0]}->{e[1]}\n')
                     if bootstrap == 0:
-                        adj_path = outputs_dir / f'{dataset}_{algo_name}.csv'
+                        adj_path = outputs_dir / f'{alias}_{algo_name}.csv'
                         mat = nx.to_numpy_array(graph, nodelist=data.columns)
                         pd.DataFrame(mat, index=data.columns, columns=data.columns).to_csv(adj_path)
                 else:
@@ -153,7 +155,7 @@ def run(config_path: str, output_dir: str | Path | None = None):
                 shd_dir_vals = np.array([m['shd_dir'] for m in run_metrics])
             times = np.array(run_times)
 
-            log_path = logs_dir / f'{dataset}_{algo_name}.log'
+            log_path = logs_dir / f'{alias}_{algo_name}.log'
             with open(log_path, 'w') as f:
                 for i, (m, err) in enumerate(zip(run_metrics, errors)):
                     if err:
@@ -188,7 +190,7 @@ def run(config_path: str, output_dir: str | Path | None = None):
                 f.write(summary_line)
 
             row = {
-                'dataset': dataset,
+                'dataset': alias,
                 'algorithm': algo_name,
                 'precision': prec.mean(),
                 'precision_std': prec.std(ddof=0),
@@ -233,7 +235,7 @@ def run(config_path: str, output_dir: str | Path | None = None):
                     ]
                 )
                 stab_df.to_csv(
-                    logs_dir / f'{dataset}_{algo_name}_stability.csv',
+                    logs_dir / f'{alias}_{algo_name}_stability.csv',
                     index=False,
                 )
 
