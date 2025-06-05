@@ -22,6 +22,7 @@ Results are saved as adjacency matrices and summary metrics so experiments can b
 * Optional recording of edge stability frequencies across bootstrap runs
 * Easily extensible for new algorithms or datasets
 * Deterministic sampling with fixed seeds for reproducibility
+* Automatic use of chi-square and BDeu scoring when data is discrete
 * Developed and tested with **Python 3.10**. NOTEARS currently requires Python <3.11 due to the CausalNex dependency.
 
 ## Installation
@@ -131,6 +132,11 @@ All datasets are generated programmatically so no large files are required.
 | **COSMO** | Regression-based approach enforcing an ordering | numpy / networkx |
 
 PC and GES require the `causal-learn` package. Install it with `pip install causal-learn` or these algorithms will raise an `ImportError` when run.
+
+When the input data appears discrete (checked via `is_discrete()`), PC switches
+to a chi-square conditional independence test and GES uses the BDeu score. This
+behaviour can be overridden by explicitly providing `indep_test` or `score_func`
+to the respective `run()` functions.
 
 Each `run()` function returns a networkx `DiGraph` and timing information. Algorithms raise an error if a cycle is detected or required dependencies are missing.
 
