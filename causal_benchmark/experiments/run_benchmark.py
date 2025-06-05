@@ -56,6 +56,8 @@ def run(config_path: str, output_dir: str | Path | None = None):
 
         for algo_name, params in cfg.get('algorithms', {}).items():
             mod = importlib.import_module(f'algorithms.{algo_name}')
+            # individual algorithm modules may raise ImportError inside `run()`;
+            # those errors are captured below and logged per bootstrap run.
             params = dict(params or {})
             timeout_s = params.pop('timeout_s', None)
 

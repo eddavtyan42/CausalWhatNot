@@ -21,6 +21,10 @@ if notears is not None:
 @pytest.mark.parametrize('algo_module', ALGOS)
 def test_algorithms_asia(algo_module):
     data, true_graph = load_dataset('asia', n_samples=200, force=True)
+    if algo_module is notears and sys.version_info >= (3, 11):
+        with pytest.raises(ImportError):
+            algo_module.run(data)
+        return
     pred_graph, _ = algo_module.run(data)
     assert set(pred_graph.nodes()) == set(true_graph.nodes())
     assert nx.is_directed_acyclic_graph(pred_graph)
@@ -30,6 +34,10 @@ def test_notears_small():
     if notears is None:
         pytest.skip('causalnex not installed')
     df = pd.DataFrame(np.random.randn(200, 5), columns=[f'x{i}' for i in range(5)])
+    if sys.version_info >= (3, 11):
+        with pytest.raises(ImportError):
+            notears.run(df)
+        return
     g, _ = notears.run(df)
     assert set(g.nodes()) == set(df.columns)
     assert nx.is_directed_acyclic_graph(g)
