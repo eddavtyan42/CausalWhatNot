@@ -12,7 +12,7 @@ def run(
     lambda2: float = 0.1,
     max_iter: int = 1000,
     seed: int = 0,
-    n_restarts: int = 1,
+    n_restarts: int = 10,
     **_,
 ) -> Tuple[nx.DiGraph, Dict[str, object]]:
     """Simple COSMO-style learner using priority-based linear regression.
@@ -30,7 +30,7 @@ def run(
     seed : int, optional
         RNG seed controlling the random priority ordering.
     n_restarts : int, optional
-        Number of random orderings to try; the best by BIC is returned.
+        Number of random orderings to try (default 10); the best by BIC is returned.
     """
     rng = np.random.default_rng(seed)
     start = time.perf_counter()
