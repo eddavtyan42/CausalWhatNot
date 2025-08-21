@@ -74,6 +74,9 @@ def run(
     kwargs.pop("backend", None)
 
     start = time.perf_counter()
+    # Allow optional policy to handle rare cyclic outputs from backend
+    cycle_policy = kwargs.pop("cycle_policy", "repair")  # one of {"repair", "raise"}
+
     sm = from_pandas(data, w_threshold=threshold, **kwargs)
     runtime = time.perf_counter() - start
 
@@ -91,7 +94,41 @@ def run(
         i, j = cols.index(u), cols.index(v)
         W[i, j] = w
 
-    if not nx.is_directed_acyclic_graph(G):
-        raise RuntimeError("NOTEARS produced a cyclic graph")
+    meta: Dict[str, object] = {"runtime_s": runtime, "weights": W}
 
-    return G, {"runtime_s": runtime, "weights": W}
+    # Very rarely backend can yield cycles (due to thresholding/rounding).
+    # Respect policy: either raise or repair by removing weakest edges until DAG.
+    if not nx.is_directed_acyclic_graph(G):
+        if cycle_policy == "raise":
+            raise RuntimeError("NOTEARS produced a cyclic graph")
+        # Repair: iteratively remove the smallest-absolute-weight edge among all detected cycles
+        removed: list[tuple[str, str, float]] = []
+        # Cap iterations to number of edges to avoid infinite loops
+        max_iters = max(1, G.number_of_edges())
+        iters = 0
+        while not nx.is_directed_acyclic_graph(G) and iters < max_iters:
+            cycles = list(nx.simple_cycles(G))
+            if not cycles:
+                break
+            candidates: list[tuple[float, tuple[str, str]]] = []
+            for cyc in cycles:
+                cyc_edges = list(zip(cyc, cyc[1:] + [cyc[0]]))
+                for (u, v) in cyc_edges:
+                    w = abs(G[u][v].get("weight", 0.0))
+                    candidates.append((w, (u, v)))
+            if not candidates:
+                break
+            _, (u_min, v_min) = min(candidates, key=lambda x: x[0])
+            w_min = G[u_min][v_min].get("weight", 0.0)
+            G.remove_edge(u_min, v_min)
+            removed.append((u_min, v_min, float(w_min)))
+            # Zero-out corresponding entry in weight matrix for consistency
+            i, j = cols.index(u_min), cols.index(v_min)
+            W[i, j] = 0.0
+            iters += 1
+
+        meta["cycle_repaired"] = True
+        meta["cycles_removed"] = len(removed)
+        meta["removed_edges"] = removed
+
+    return G, meta

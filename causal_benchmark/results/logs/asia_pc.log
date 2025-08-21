@@ -1,1 +1,2 @@
-OK
+run0: precision=0.727, recall=1.000, f1=0.842, shd=8
+summary: precision=0.727±0.000, recall=1.000±0.000, f1=0.842±0.000, shd=8.000±0.000, runtime_s=0.04±0.00

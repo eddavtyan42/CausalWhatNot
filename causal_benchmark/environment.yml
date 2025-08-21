@@ -1,18 +1,18 @@
 name: causal_benchmark
 channels:
-  - defaults
   - conda-forge
+  - defaults
 dependencies:
   - python=3.10
   - pip
+  - numpy=1.23.5
+  - pandas=1.5.3
+  - networkx=2.8.8  # causalnex 0.12 requires networkx <3
+  - scikit-learn=1.2.2
+  - joblib=1.3.2
+  - pyyaml=6.0
   - pip:
       - causal-learn==0.1.3.6
-      - networkx==3.1
-      - pandas==1.5.3
-      - numpy==1.23.5
-      - pyyaml==6.0
-      - joblib==1.3.2
-      - causalnex>=0.12.0
-      - scikit-learn==1.6.1
+      - causalnex==0.12.0
       - pytest==8.3.5
       - pytest-timeout

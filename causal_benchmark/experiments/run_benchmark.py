@@ -3,6 +3,7 @@ import importlib
 import yaml
 from pathlib import Path
 import pandas as pd
+import warnings
 import networkx as nx
 import numpy as np
 import concurrent.futures
@@ -26,6 +27,19 @@ RESULTS_DIR = Path(__file__).resolve().parents[1] / "results"
 OUTPUTS_DIR = RESULTS_DIR / "outputs"
 LOGS_DIR = RESULTS_DIR / "logs"
 RESULTS_DIR.mkdir(exist_ok=True)
+# Suppress noisy deprecation warnings from NumPy's legacy matrix/matlib used by dependencies
+warnings.filterwarnings(
+    "ignore", category=PendingDeprecationWarning, module=r"numpy\.matlib"
+)
+warnings.filterwarnings(
+    "ignore", category=PendingDeprecationWarning, module=r"numpy\.matrixlib\.defmatrix"
+)
+# Also filter by message to catch warnings emitted via third-party modules (e.g., causallearn)
+warnings.filterwarnings(
+    "ignore",
+    category=PendingDeprecationWarning,
+    message=r".*Importing from numpy\.matlib is deprecated.*",
+)
 OUTPUTS_DIR.mkdir(parents=True, exist_ok=True)
 LOGS_DIR.mkdir(parents=True, exist_ok=True)
 
@@ -162,18 +176,28 @@ def run(
 
         ok_metrics = [m for m, e in zip(run_metrics, errors) if not e]
         ok_times = [t for t, e in zip(run_times, errors) if not e]
-        prec = np.array([m["precision"] for m in ok_metrics])
-        rec = np.array([m["recall"] for m in ok_metrics])
-        f1 = np.array([m["f1"] for m in ok_metrics])
-        shd_vals = np.array([m["shd"] for m in ok_metrics])
-        if orient_metrics:
-            d_prec = np.array([m["directed_precision"] for m in ok_metrics])
-            d_rec = np.array([m["directed_recall"] for m in ok_metrics])
-            d_f1 = np.array([m["directed_f1"] for m in ok_metrics])
-            shd_dir_vals = np.array([m["shd_dir"] for m in ok_metrics])
-        times = np.array(ok_times)
+        if len(ok_metrics) == 0:
+            # All runs failed or timed out; keep arrays empty so that numpy emits warnings
+            # on mean/std calls, and we can clearly signal failure (resulting NaNs) instead
+            # of silently coercing to zeros.
+            prec = rec = f1 = shd_vals = np.array([])
+            if orient_metrics:
+                d_prec = d_rec = d_f1 = shd_dir_vals = np.array([])
+            times = np.array([])
+        else:
+            prec = np.array([m["precision"] for m in ok_metrics], dtype=float)
+            rec = np.array([m["recall"] for m in ok_metrics], dtype=float)
+            f1 = np.array([m["f1"] for m in ok_metrics], dtype=float)
+            shd_vals = np.array([m["shd"] for m in ok_metrics], dtype=float)
+            if orient_metrics:
+                d_prec = np.array([m["directed_precision"] for m in ok_metrics], dtype=float)
+                d_rec = np.array([m["directed_recall"] for m in ok_metrics], dtype=float)
+                d_f1 = np.array([m["directed_f1"] for m in ok_metrics], dtype=float)
+                shd_dir_vals = np.array([m["shd_dir"] for m in ok_metrics], dtype=float)
+            times = np.array(ok_times, dtype=float)
         n_fail = sum(1 for e in errors if e and e != "timeout")
         n_timeout = sum(1 for e in errors if e == "timeout")
+        all_failed = len(ok_metrics) == 0
 
         log_path = logs_dir / f"{alias}_{algo_name}.log"
         with open(log_path, "w") as f:
@@ -205,35 +229,38 @@ def run(
                     f"shd_dir={shd_dir_vals.mean():.3f}±{shd_dir_vals.std(ddof=0):.3f}, "
                 )
             summary_line += f"runtime_s={times.mean():.2f}±{times.std(ddof=0):.2f}\n"
+            if all_failed:
+                f.write("summary_status: ALL_RUNS_FAILED\n")
             f.write(summary_line)
 
         row = {
             "dataset": alias,
             "algorithm": algo_name,
-            "precision": prec.mean(),
-            "precision_std": prec.std(ddof=0),
-            "recall": rec.mean(),
-            "recall_std": rec.std(ddof=0),
-            "f1": f1.mean(),
-            "f1_std": f1.std(ddof=0),
-            "shd": shd_vals.mean(),
-            "shd_std": shd_vals.std(ddof=0),
-            "runtime_s": times.mean(),
-            "runtime_s_std": times.std(ddof=0),
+            "precision": prec.mean() if prec.size else np.nan,
+            "precision_std": prec.std(ddof=0) if prec.size else np.nan,
+            "recall": rec.mean() if rec.size else np.nan,
+            "recall_std": rec.std(ddof=0) if rec.size else np.nan,
+            "f1": f1.mean() if f1.size else np.nan,
+            "f1_std": f1.std(ddof=0) if f1.size else np.nan,
+            "shd": shd_vals.mean() if shd_vals.size else np.nan,
+            "shd_std": shd_vals.std(ddof=0) if shd_vals.size else np.nan,
+            "runtime_s": times.mean() if times.size else np.nan,
+            "runtime_s_std": times.std(ddof=0) if times.size else np.nan,
             "n_fail": n_fail,
             "n_timeout": n_timeout,
+            "all_failed": all_failed,
         }
         if orient_metrics:
             row.update(
                 {
-                    "directed_precision": d_prec.mean(),
-                    "directed_precision_std": d_prec.std(ddof=0),
-                    "directed_recall": d_rec.mean(),
-                    "directed_recall_std": d_rec.std(ddof=0),
-                    "directed_f1": d_f1.mean(),
-                    "directed_f1_std": d_f1.std(ddof=0),
-                    "shd_dir": shd_dir_vals.mean(),
-                    "shd_dir_std": shd_dir_vals.std(ddof=0),
+                    "directed_precision": d_prec.mean() if d_prec.size else np.nan,
+                    "directed_precision_std": d_prec.std(ddof=0) if d_prec.size else np.nan,
+                    "directed_recall": d_rec.mean() if d_rec.size else np.nan,
+                    "directed_recall_std": d_rec.std(ddof=0) if d_rec.size else np.nan,
+                    "directed_f1": d_f1.mean() if d_f1.size else np.nan,
+                    "directed_f1_std": d_f1.std(ddof=0) if d_f1.size else np.nan,
+                    "shd_dir": shd_dir_vals.mean() if shd_dir_vals.size else np.nan,
+                    "shd_dir_std": shd_dir_vals.std(ddof=0) if shd_dir_vals.size else np.nan,
                 }
             )
         if record_stability and bootstrap > 0:
