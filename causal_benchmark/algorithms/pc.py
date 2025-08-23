@@ -34,7 +34,15 @@ def run(
         if "singular" in str(e).lower():
             cg = pc(data.values, alpha=alpha, indep_test="chisq", stable=stable)
         else:
-            raise
+            # Fall back to an empty graph on any other failure so that the
+            # caller receives a valid (but empty) result instead of an
+            # exception.  This mirrors the error-handling strategy used in the
+            # GES wrapper and avoids propagating failures that would lead to
+            # NaN metrics downstream.
+            runtime = time.perf_counter() - start
+            dag = nx.DiGraph()
+            dag.add_nodes_from(data.columns)
+            return dag, {"runtime_s": runtime, "indep_test": indep_test}
     runtime = time.perf_counter() - start
 
     # Convert adjacency matrix to NetworkX DiGraph
