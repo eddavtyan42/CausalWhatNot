@@ -1,2 +1,0 @@
-run0: precision=0.571, recall=1.000, f1=0.727, shd=12
-summary: precision=0.571±0.000, recall=1.000±0.000, f1=0.727±0.000, shd=12.000±0.000, runtime_s=0.46±0.00
