@@ -54,7 +54,8 @@ def test_run_benchmark(tmp_path):
 @pytest.mark.timeout(60)
 def test_run_benchmark_notears(tmp_path):
     if sys.version_info >= (3, 11):
-        import pandas as pd
+    # pandas already imported at module level; avoid redefining to prevent
+    # UnboundLocalError on Python <3.11 where this branch is skipped.
         import numpy as np
         import algorithms.notears as notears
 
