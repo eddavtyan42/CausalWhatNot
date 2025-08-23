@@ -154,21 +154,16 @@ def run(
                     mat = nx.to_numpy_array(graph, nodelist=data.columns)
                     pd.DataFrame(mat, index=data.columns, columns=data.columns).to_csv(adj_path)
             else:
-                metrics = {
-                    "precision": 0,
-                    "recall": 0,
-                    "f1": 0,
-                    "shd": -1,
-                }
+                # Algorithm failed or timed out.  Treat the output as an empty
+                # graph so that downstream metrics are well defined instead of
+                # yielding NaNs when all runs fail.
+                empty = nx.DiGraph()
+                empty.add_nodes_from(data.columns)
+                metrics = precision_recall_f1(empty, true_graph)
+                metrics["shd"] = shd(empty, true_graph)
                 if orient_metrics:
-                    metrics.update(
-                        {
-                            "directed_precision": 0,
-                            "directed_recall": 0,
-                            "directed_f1": 0,
-                            "shd_dir": -1,
-                        }
-                    )
+                    metrics.update(directed_precision_recall_f1(empty, true_graph))
+                    metrics["shd_dir"] = shd_dir(empty, true_graph)
 
             run_metrics.append(metrics)
             run_times.append(info["runtime_s"])
@@ -177,13 +172,19 @@ def run(
         ok_metrics = [m for m, e in zip(run_metrics, errors) if not e]
         ok_times = [t for t, e in zip(run_times, errors) if not e]
         if len(ok_metrics) == 0:
-            # All runs failed or timed out; keep arrays empty so that numpy emits warnings
-            # on mean/std calls, and we can clearly signal failure (resulting NaNs) instead
-            # of silently coercing to zeros.
-            prec = rec = f1 = shd_vals = np.array([])
+            # If every run failed, fall back to the metrics computed for the
+            # empty graphs recorded above.  This provides defined precision,
+            # recall and SHD values (all zero except SHD) instead of NaNs.
+            prec = np.array([m["precision"] for m in run_metrics], dtype=float)
+            rec = np.array([m["recall"] for m in run_metrics], dtype=float)
+            f1 = np.array([m["f1"] for m in run_metrics], dtype=float)
+            shd_vals = np.array([m["shd"] for m in run_metrics], dtype=float)
             if orient_metrics:
-                d_prec = d_rec = d_f1 = shd_dir_vals = np.array([])
-            times = np.array([])
+                d_prec = np.array([m["directed_precision"] for m in run_metrics], dtype=float)
+                d_rec = np.array([m["directed_recall"] for m in run_metrics], dtype=float)
+                d_f1 = np.array([m["directed_f1"] for m in run_metrics], dtype=float)
+                shd_dir_vals = np.array([m["shd_dir"] for m in run_metrics], dtype=float)
+            times = np.array(run_times, dtype=float)
         else:
             prec = np.array([m["precision"] for m in ok_metrics], dtype=float)
             rec = np.array([m["recall"] for m in ok_metrics], dtype=float)

@@ -142,7 +142,9 @@ def test_algorithm_timeout(tmp_path, monkeypatch):
     summary = pd.read_csv(tmp_path / "summary_metrics.csv")
     assert summary["n_timeout"].iloc[0] == 1
     assert summary["n_fail"].iloc[0] == 0
-    assert pd.isna(summary["precision"].iloc[0])
+    # A timeout yields an implicit empty graph; metrics are defined and equal to
+    # zero rather than NaN.
+    assert summary["precision"].iloc[0] == 0.0
     log_text = (tmp_path / "logs" / "asia_cosmo.log").read_text()
     assert "timeout" in log_text
 
@@ -171,7 +173,8 @@ def test_algorithm_exception(tmp_path, monkeypatch):
     summary = pd.read_csv(tmp_path / "summary_metrics.csv")
     assert summary["n_fail"].iloc[0] == 1
     assert summary["n_timeout"].iloc[0] == 0
-    assert pd.isna(summary["precision"].iloc[0])
+    # Failed runs now contribute an empty graph, resulting in zero-valued metrics.
+    assert summary["precision"].iloc[0] == 0.0
     log_text = (tmp_path / "logs" / "asia_cosmo.log").read_text()
     assert "boom" in log_text
 
