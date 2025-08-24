@@ -8,6 +8,7 @@ from utils.helpers import causallearn_to_dag
 from utils.loaders import is_discrete
 
 import numpy as np
+import logging
 
 try:
     from causallearn.search.ScoreBased.GES import ges
@@ -23,6 +24,7 @@ except Exception:
 def run(
     data: pd.DataFrame, score_func: str | None = None
 ) -> Tuple[nx.DiGraph, Dict[str, object]]:
+    logger = logging.getLogger("benchmark")
     if ges is None:
         raise ImportError(
             "causal-learn is required for the GES algorithm. Install via pip install causal-learn."
@@ -31,6 +33,7 @@ def run(
     if score_func is None:
         score_func = "bdeu" if is_discrete(data) else "bic"
 
+    logger.info("GES start: n=%d d=%d score_func=%s", len(data), data.shape[1], score_func)
     start = time.perf_counter()
     # map commonly used shorthand score names to those expected by causal-learn
     score_map = {
@@ -67,4 +70,5 @@ def run(
         "raw_obj": gs,
         "score_func": score_func,
     })
+    logger.info("GES end: edges=%d runtime_s=%.3f score_func=%s", dag.number_of_edges(), runtime, score_func)
     return dag, meta

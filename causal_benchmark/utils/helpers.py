@@ -2,6 +2,7 @@ import networkx as nx
 import numpy as np
 from typing import Iterable, Tuple, Set, Dict
 import json
+import logging
 
 
 def causallearn_to_dag(amat: np.ndarray, nodes: Iterable) -> Tuple[nx.DiGraph, Dict[str, object]]:
@@ -60,6 +61,11 @@ def edge_differences(
     missing = {e for e in true_edges if frozenset(e) not in pred_pairs}
     reversed_edges = {(u, v) for (u, v) in pred_edges if (v, u) in true_edges}
 
+    logger = logging.getLogger("benchmark")
+    logger.info(
+        "Edge diffs computed: pred_edges=%d true_edges=%d extra=%d missing=%d reversed=%d",
+        pred.number_of_edges(), true.number_of_edges(), len(extra), len(missing), len(reversed_edges)
+    )
     return extra, missing, reversed_edges
 
 
@@ -85,4 +91,5 @@ def dump_edge_differences_json(
     }
     with open(path, "w") as f:
         json.dump(data, f)
+    logging.getLogger("benchmark").info("Edge diffs JSON saved: file=%s", str(path))
 

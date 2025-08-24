@@ -6,6 +6,7 @@ from typing import Tuple, Dict
 
 from utils.helpers import causallearn_to_dag
 from utils.loaders import is_discrete
+import logging
 
 try:
     from causallearn.search.ConstraintBased.PC import pc
@@ -19,6 +20,7 @@ def run(
     indep_test: str | None = None,
     stable: bool = True,
 ) -> Tuple[nx.DiGraph, Dict[str, object]]:
+    logger = logging.getLogger("benchmark")
     if pc is None:
         raise ImportError(
             "causal-learn is required for the PC algorithm. Install via pip install causal-learn."
@@ -27,6 +29,7 @@ def run(
     if indep_test is None:
         indep_test = "chisq" if is_discrete(data) else "fisherz"
 
+    logger.info("PC start: n=%d d=%d alpha=%.4f indep_test=%s stable=%s", len(data), data.shape[1], alpha, indep_test, stable)
     start = time.perf_counter()
     try:
         cg = pc(data.values, alpha=alpha, indep_test=indep_test, stable=stable)
@@ -42,6 +45,7 @@ def run(
             runtime = time.perf_counter() - start
             dag = nx.DiGraph()
             dag.add_nodes_from(data.columns)
+            logger.warning("PC fell back to empty graph due to error: %s", str(e))
             return dag, {"runtime_s": runtime, "indep_test": indep_test}
     runtime = time.perf_counter() - start
 
@@ -63,4 +67,5 @@ def run(
         "raw_obj": cg,
         "indep_test": indep_test,
     })
+    logger.info("PC end: edges=%d runtime_s=%.3f indep_test=%s", dag.number_of_edges(), runtime, indep_test)
     return dag, meta

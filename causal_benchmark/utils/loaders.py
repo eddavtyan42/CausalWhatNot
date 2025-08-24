@@ -7,6 +7,7 @@ import gzip
 import pandas as pd
 import networkx as nx
 import numpy as np
+import logging
 
 # Predefined edges and state counts for benchmark networks to avoid shipping
 # large BIF files. These were extracted from the original network definitions.
@@ -326,6 +327,8 @@ def is_discrete(df: pd.DataFrame, max_unique: int = 20) -> bool:
 
 
 def _sample_gaussian(G: nx.DiGraph, n: int, seed: int = 0) -> pd.DataFrame:
+    logger = logging.getLogger("benchmark")
+    logger.info("Sample gaussian: nodes=%d edges=%d n=%d seed=%d", G.number_of_nodes(), G.number_of_edges(), n, seed)
     rng = np.random.default_rng(seed)
     df = pd.DataFrame(index=range(n))
     for node in nx.topological_sort(G):
@@ -343,7 +346,8 @@ def _sample_discrete(
     G: nx.DiGraph, states: Dict[str, List[str] | int], n: int, seed: int = 0
 ) -> pd.DataFrame:
     """Sample discrete data by discretising Gaussian samples."""
-
+    logger = logging.getLogger("benchmark")
+    logger.info("Sample discrete: nodes=%d edges=%d n=%d seed=%d", G.number_of_nodes(), G.number_of_edges(), n, seed)
     cont = _sample_gaussian(G, n, seed)
     df = pd.DataFrame(index=range(n))
     for node in cont.columns:
@@ -359,7 +363,7 @@ def _sample_discrete(
 
 def load_insurance(n_samples: int = 10000, force: bool = False) -> Tuple[pd.DataFrame, nx.DiGraph]:
     """Generate or load the Insurance benchmark dataset."""
-
+    logger = logging.getLogger("benchmark")
     name = "insurance"
     data_dir = BASE_DIR / name
     data_dir.mkdir(parents=True, exist_ok=True)
@@ -374,12 +378,13 @@ def load_insurance(n_samples: int = 10000, force: bool = False) -> Tuple[pd.Data
     else:
         df = _sample_discrete(G, states, n_samples)
         df.to_csv(data_path, index=False)
+    logger.info("Loaded dataset '%s': shape=%s edges=%d path=%s", name, str(df.shape), G.number_of_edges(), str(data_path))
 
     return df, G
 
 def load_dataset(name: str, n_samples: int = 10000, force: bool = False) -> Tuple[pd.DataFrame, nx.DiGraph]:
     """Load or generate samples for one of the benchmark datasets."""
-
+    logger = logging.getLogger("benchmark")
     name = name.lower()
     data_dir = BASE_DIR / name
     data_dir.mkdir(parents=True, exist_ok=True)
@@ -394,6 +399,7 @@ def load_dataset(name: str, n_samples: int = 10000, force: bool = False) -> Tupl
         else:
             df = _sample_discrete(G, states, n_samples)
             df.to_csv(data_path, index=False)
+        logger.info("Loaded dataset '%s': shape=%s edges=%d path=%s", name, str(df.shape), G.number_of_edges(), str(data_path))
         return df, G
 
     elif name == "sachs":
@@ -405,6 +411,7 @@ def load_dataset(name: str, n_samples: int = 10000, force: bool = False) -> Tupl
         else:
             df = _sample_gaussian(G, n_samples)
             df.to_csv(data_path, index=False)
+        logger.info("Loaded dataset '%s': shape=%s edges=%d path=%s", name, str(df.shape), G.number_of_edges(), str(data_path))
         return df, G
 
     elif name == "alarm":
@@ -416,6 +423,7 @@ def load_dataset(name: str, n_samples: int = 10000, force: bool = False) -> Tupl
         else:
             df = _sample_discrete(G, states, n_samples)
             df.to_csv(data_path, index=False)
+        logger.info("Loaded dataset '%s': shape=%s edges=%d path=%s", name, str(df.shape), G.number_of_edges(), str(data_path))
         return df, G
 
     elif name == "child":
@@ -427,9 +435,11 @@ def load_dataset(name: str, n_samples: int = 10000, force: bool = False) -> Tupl
         else:
             df = _sample_discrete(G, states, n_samples)
             df.to_csv(data_path, index=False)
+        logger.info("Loaded dataset '%s': shape=%s edges=%d path=%s", name, str(df.shape), G.number_of_edges(), str(data_path))
         return df, G
 
     elif name == "insurance":
+        logger.info("Loading dataset via helper: %s", name)
         return load_insurance(n_samples=n_samples, force=force)
 
     else:

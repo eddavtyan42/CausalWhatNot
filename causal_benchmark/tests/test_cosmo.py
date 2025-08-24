@@ -59,4 +59,3 @@ def test_multiple_restarts_improve_bic():
     _, many = cosmo.run(df, lambda1=0.0, lambda2=0.1, seed=3, n_restarts=10)
 
     assert many['bic'] <= single['bic'] + 1e-6
-

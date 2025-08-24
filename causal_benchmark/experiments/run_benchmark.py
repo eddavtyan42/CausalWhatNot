@@ -9,11 +9,13 @@ import numpy as np
 import concurrent.futures
 import joblib
 import sys, os
+import logging
 
 sys.path.append(str(Path(__file__).resolve().parents[1]))
 
 from utils.loaders import load_dataset
 from utils.helpers import edge_differences, dump_edge_differences_json
+from utils.logging_utils import setup_logging
 from metrics.metrics import (
     shd,
     precision_recall_f1,
@@ -59,6 +61,11 @@ def run(
     outputs_dir.mkdir(parents=True, exist_ok=True)
     logs_dir.mkdir(parents=True, exist_ok=True)
 
+    # Initialize centralized benchmark logger to a session log file
+    session_log = logs_dir / "benchmark_session.log"
+    logger = setup_logging(session_log)
+    logger.info("Benchmark run started: config=%s, out_dir=%s", config_path, str(base_dir))
+
     bootstrap = int(cfg.get("bootstrap_runs", 0))
     record_stability = bool(cfg.get("record_edge_stability", False))
     orient_metrics = bool(cfg.get("orientation_metrics", False))
@@ -79,10 +86,12 @@ def run(
         else:
             raise ValueError(f"Invalid dataset entry: {ds_cfg}")
 
+        logger.info("Loading dataset: name=%s alias=%s n_samples=%s", dataset, alias, str(n_samples))
         if n_samples is not None:
             data, true_graph = load_dataset(dataset, n_samples=n_samples, force=True)
         else:
             data, true_graph = load_dataset(dataset)
+        logger.info("Loaded dataset: alias=%s shape=%s nodes=%d edges=%d", alias, str(data.shape), true_graph.number_of_nodes(), true_graph.number_of_edges())
 
         dataset_infos.append((alias, data, true_graph))
 
@@ -92,6 +101,7 @@ def run(
     ]
 
     def process_pair(alias: str, data: pd.DataFrame, true_graph: nx.DiGraph, algo_name: str, params: dict):
+        logger.info("Starting algorithm: dataset=%s algo=%s params=%s", alias, algo_name, params)
         mod = importlib.import_module(f"algorithms.{algo_name}")
         params = dict(params)
         timeout_s = params.pop("timeout_s", None)
@@ -108,6 +118,7 @@ def run(
                 if bootstrap > 0
                 else data
             )
+            logger.info("Run start: dataset=%s algo=%s bootstrap=%d timeout_s=%s", alias, algo_name, b, str(timeout_s))
             with concurrent.futures.ThreadPoolExecutor(max_workers=1) as ex:
                 fut = ex.submit(mod.run, d_run.copy(), **params)
                 try:
@@ -121,13 +132,16 @@ def run(
                     graph = None
                     info = {"runtime_s": timeout_s or 0}
                     err = "timeout"
+                    logger.warning("Run timeout: dataset=%s algo=%s bootstrap=%d after %ss", alias, algo_name, b, str(timeout_s))
                 except Exception as e:
                     fut.cancel()
                     graph = None
                     info = {"runtime_s": 0}
                     err = str(e)
+                    logger.exception("Run error: dataset=%s algo=%s bootstrap=%d error=%s", alias, algo_name, b, err)
 
             if graph is not None:
+                logger.info("Run success: dataset=%s algo=%s bootstrap=%d runtime_s=%.3f", alias, algo_name, b, info.get("runtime_s", float('nan')))
                 metrics = precision_recall_f1(graph, true_graph)
                 metrics["shd"] = shd(
                     graph,
@@ -149,10 +163,12 @@ def run(
                         df.write(f"reversed {e[0]}->{e[1]}\n")
                 diff_json_path = logs_dir / f"{alias}_{algo_name}_diff_run{b}.json"
                 dump_edge_differences_json(extra, missing, rev, diff_json_path)
+                logger.info("Edge diffs written: dataset=%s algo=%s bootstrap=%d file=%s", alias, algo_name, b, str(diff_json_path))
                 if bootstrap == 0:
                     adj_path = outputs_dir / f"{alias}_{algo_name}.csv"
                     mat = nx.to_numpy_array(graph, nodelist=data.columns)
                     pd.DataFrame(mat, index=data.columns, columns=data.columns).to_csv(adj_path)
+                    logger.info("Adjacency saved: dataset=%s algo=%s file=%s", alias, algo_name, str(adj_path))
             else:
                 # Algorithm failed or timed out.  Treat the output as an empty
                 # graph so that downstream metrics are well defined instead of
@@ -164,6 +180,7 @@ def run(
                 if orient_metrics:
                     metrics.update(directed_precision_recall_f1(empty, true_graph))
                     metrics["shd_dir"] = shd_dir(empty, true_graph)
+                logger.info("Run produced empty graph: dataset=%s algo=%s bootstrap=%d", alias, algo_name, b)
 
             run_metrics.append(metrics)
             run_times.append(info["runtime_s"])
@@ -215,24 +232,44 @@ def run(
                             f" shd_dir={m['shd_dir']}"
                         )
                     f.write(line + "\n")
+            # Helper to format mean±std without emitting warnings on empty arrays
+            def fmt(arr: np.ndarray, p: int = 3) -> str:
+                if arr.size == 0:
+                    return "nan±nan"
+                return f"{arr.mean():.{p}f}±{arr.std(ddof=0):.{p}f}"
+
             summary_line = (
                 "summary: "
-                f"precision={prec.mean():.3f}±{prec.std(ddof=0):.3f}, "
-                f"recall={rec.mean():.3f}±{rec.std(ddof=0):.3f}, "
-                f"f1={f1.mean():.3f}±{f1.std(ddof=0):.3f}, "
-                f"shd={shd_vals.mean():.3f}±{shd_vals.std(ddof=0):.3f}, "
+                f"precision={fmt(prec)}, "
+                f"recall={fmt(rec)}, "
+                f"f1={fmt(f1)}, "
+                f"shd={fmt(shd_vals)}, "
             )
             if orient_metrics:
                 summary_line += (
-                    f"directed_precision={d_prec.mean():.3f}±{d_prec.std(ddof=0):.3f}, "
-                    f"directed_recall={d_rec.mean():.3f}±{d_rec.std(ddof=0):.3f}, "
-                    f"directed_f1={d_f1.mean():.3f}±{d_f1.std(ddof=0):.3f}, "
-                    f"shd_dir={shd_dir_vals.mean():.3f}±{shd_dir_vals.std(ddof=0):.3f}, "
+                    f"directed_precision={fmt(d_prec)}, "
+                    f"directed_recall={fmt(d_rec)}, "
+                    f"directed_f1={fmt(d_f1)}, "
+                    f"shd_dir={fmt(shd_dir_vals)}, "
                 )
-            summary_line += f"runtime_s={times.mean():.2f}±{times.std(ddof=0):.2f}\n"
+            # Runtime with 2 decimals
+            def fmt_time(arr: np.ndarray) -> str:
+                if arr.size == 0:
+                    return "nan±nan"
+                return f"{arr.mean():.2f}±{arr.std(ddof=0):.2f}"
+            summary_line += f"runtime_s={fmt_time(times)}\n"
             if all_failed:
                 f.write("summary_status: ALL_RUNS_FAILED\n")
             f.write(summary_line)
+        logger.info(
+            "Algorithm summary written: dataset=%s algo=%s file=%s n_runs=%d n_fail=%d n_timeout=%d",
+            alias,
+            algo_name,
+            str(log_path),
+            len(run_metrics),
+            n_fail,
+            n_timeout,
+        )
 
         row = {
             "dataset": alias,
@@ -276,6 +313,7 @@ def run(
                 {"source": s, "target": t, "frequency": f} for (s, t), f in freqs.items()
             ])
             stab_df.to_csv(logs_dir / f"{alias}_{algo_name}_stability.csv", index=False)
+            logger.info("Edge stability saved: dataset=%s algo=%s", alias, algo_name)
 
         return row
 
@@ -284,11 +322,14 @@ def run(
         for alias, data, true_graph in dataset_infos
         for algo_name, params in algo_items
     ]
-
+    logger.info("Launching parallel runs: tasks=%d parallel_jobs=%d", len(tasks), parallel_jobs)
     summary_rows.extend(joblib.Parallel(n_jobs=parallel_jobs, prefer="threads")(tasks))
+    logger.info("Parallel runs finished: gathered_rows=%d", len(summary_rows))
 
     df = pd.DataFrame(summary_rows)
-    df.to_csv(base_dir / "summary_metrics.csv", index=False)
+    summary_csv = base_dir / "summary_metrics.csv"
+    df.to_csv(summary_csv, index=False)
+    logger.info("Benchmark completed: summary=%s rows=%d", str(summary_csv), len(df))
 
 
 def main():

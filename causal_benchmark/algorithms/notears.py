@@ -11,6 +11,7 @@ from typing import Tuple, Dict
 import networkx as nx
 import numpy as np
 import pandas as pd
+import logging
 
 
 def run(
@@ -47,6 +48,11 @@ def run(
         weighted adjacency matrix.
     """
 
+    logger = logging.getLogger("benchmark")
+    logger.info(
+        "NOTEARS start: n=%d d=%d threshold=%.3f torch_seed=%s",
+        len(data), data.shape[1], threshold, str(torch_seed)
+    )
     if data.isna().any().any():
         raise ValueError("NOTEARS cannot handle missing values.")
 
@@ -131,4 +137,5 @@ def run(
         meta["cycles_removed"] = len(removed)
         meta["removed_edges"] = removed
 
+    logger.info("NOTEARS end: edges=%d runtime_s=%.3f cycles_fixed=%s", G.number_of_edges(), runtime, str(meta.get("cycle_repaired", False)))
     return G, meta
