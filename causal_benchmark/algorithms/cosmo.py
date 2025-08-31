@@ -4,6 +4,7 @@ from typing import Tuple, Dict
 import networkx as nx
 import numpy as np
 import pandas as pd
+import logging
 
 
 def run(
@@ -32,6 +33,11 @@ def run(
     n_restarts : int, optional
         Number of random orderings to try (default 10); the best by BIC is returned.
     """
+    logger = logging.getLogger("benchmark")
+    logger.info(
+        "COSMO start: n=%d d=%d lambda1=%.3f lambda2=%.3f max_iter=%d seed=%d restarts=%d",
+        len(data), data.shape[1], lambda1, lambda2, max_iter, seed, n_restarts,
+    )
     rng = np.random.default_rng(seed)
     start = time.perf_counter()
 
@@ -101,6 +107,7 @@ def run(
     if not nx.is_directed_acyclic_graph(G):
         raise RuntimeError("COSMO produced a cyclic graph")
 
+    logger.info("COSMO end: edges=%d runtime_s=%.3f bic=%.3f", G.number_of_edges(), runtime, float(best_bic))
     return G, {
         "runtime_s": runtime,
         "weights": best_W,

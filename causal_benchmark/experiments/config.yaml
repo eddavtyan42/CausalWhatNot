@@ -9,11 +9,19 @@ datasets:
   - name: insurance
 algorithms:
   pc: {}
-  ges: {}
-  notears: {threshold: 0.1, torch_seed: 0}
+  ges:
+    # default score for non-discrete datasets
+    score_func: bic
+    # prefer BDeu on 'sachs' to avoid empty graphs under BIC
+    per_dataset:
+      sachs: { score_func: bdeu }
+  notears:
+    # slightly higher threshold to reduce over-selection
+    threshold: 0.2
+    torch_seed: 0
   cosmo:
     timeout_s: 60
     n_restarts: 1
 bootstrap_runs: 0
 record_edge_stability: false
-orientation_metrics: false
+orientation_metrics: true
