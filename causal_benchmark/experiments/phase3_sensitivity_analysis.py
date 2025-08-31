@@ -42,6 +42,7 @@ def run(
     sample_size: int | None = None,
     bootstrap_runs: int = 0,
     n_jobs: int = -1,
+    diff_dir: Path | None = None,
 ):
     """Run sensitivity analysis across predefined scenarios.
 
@@ -157,6 +158,7 @@ def run(
                 graph = nx.DiGraph()
                 graph.add_nodes_from(data.columns)
                 runtime = float("nan")
+                info = {}
 
             freqs = bootstrap_edge_stability(
                 lambda d: func(d.copy()),
@@ -166,6 +168,8 @@ def run(
                 n_jobs=n_jobs,
             )
             key_freq = freqs.get(key_edge, 0.0)
+
+            bic = info.get("bic", float("nan"))
 
             # Algorithm vs truth
             metrics_t, extra_t, missing_t, reversed_t = compare_graphs(
@@ -177,6 +181,7 @@ def run(
                     "method": name,
                     "reference": "truth",
                     "runtime_s": runtime,
+                    "bic": bic,
                     **metrics_t,
                     "extra": sorted(list(extra_t)),
                     "missing": sorted(list(missing_t)),
@@ -195,6 +200,7 @@ def run(
                     "method": name,
                     "reference": "analyst",
                     "runtime_s": runtime,
+                    "bic": bic,
                     **metrics_a,
                     "extra": sorted(list(extra_a)),
                     "missing": sorted(list(missing_a)),
@@ -203,7 +209,20 @@ def run(
                 }
             )
 
-    return rows
+            if diff_dir is not None:
+                scenario_dir = Path(diff_dir) / dataset
+                scenario_dir.mkdir(parents=True, exist_ok=True)
+                log_path = scenario_dir / f"{name}.log"
+                with open(log_path, "w") as f:
+                    f.write(f"algorithm: {name}\n")
+                    f.write("vs truth:\n")
+                    f.write(f"  extra: {sorted(list(extra_t))}\n")
+                    f.write(f"  missing: {sorted(list(missing_t))}\n")
+                    f.write("vs analyst:\n")
+                    f.write(f"  extra: {sorted(list(extra_a))}\n")
+                    f.write(f"  missing: {sorted(list(missing_a))}\n")
+
+    return pd.DataFrame(rows)
 
 
 def main():
@@ -216,18 +235,38 @@ def main():
         "--n-jobs", type=int, default=-1, help="Parallel jobs for bootstrap runs"
     )
     parser.add_argument("--out", type=str, default=None, help="Output path for JSON results")
+    parser.add_argument(
+        "--out-dir",
+        type=str,
+        default=None,
+        help="Directory to write phase3_results.csv",
+    )
+    parser.add_argument(
+        "--diff-logs",
+        action="store_true",
+        help="Write per-algorithm diff logs to the output directory",
+    )
     args = parser.parse_args()
+
+    diff_dir = None
+    if args.diff_logs and args.out_dir is not None:
+        diff_dir = Path(args.out_dir) / "diff_logs"
 
     results = run(
         sample_size=args.n_samples,
         bootstrap_runs=args.bootstrap_runs,
         n_jobs=args.n_jobs,
+        diff_dir=diff_dir,
     )
+    if args.out_dir is not None:
+        out_dir = Path(args.out_dir)
+        out_dir.mkdir(parents=True, exist_ok=True)
+        results.to_csv(out_dir / "phase3_results.csv", index=False)
     if args.out is not None:
         out_path = Path(args.out)
         out_path.parent.mkdir(parents=True, exist_ok=True)
         with open(out_path, "w") as f:
-            json.dump(results, f, indent=2)
+            json.dump(results.to_dict(orient="records"), f, indent=2)
 
 
 if __name__ == "__main__":
