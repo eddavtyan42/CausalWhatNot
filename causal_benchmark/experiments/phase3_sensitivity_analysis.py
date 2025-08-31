@@ -16,6 +16,7 @@ from utils import create_mis_specified_graph
 from utils.loaders import load_dataset, is_discrete
 from utils.helpers import edge_differences
 from metrics.metrics import precision_recall_f1, shd
+from metrics.bootstrap import bootstrap_edge_stability
 from experiments.phase3_scenarios import SCENARIOS
 from causallearn.utils.cit import FisherZ, Chisq_or_Gsq
 
@@ -37,16 +38,21 @@ def compare_graphs(pred: nx.DiGraph, ref: nx.DiGraph):
     return metrics, extra, missing, reversed_edges
 
 
-def run(sample_size: int | None = None, bootstrap: int = 0):
+def run(
+    sample_size: int | None = None,
+    bootstrap_runs: int = 0,
+    n_jobs: int = -1,
+):
     """Run sensitivity analysis across predefined scenarios.
 
     Parameters
     ----------
     sample_size:
         Optional number of samples to load from each dataset.
-    bootstrap:
-        Number of bootstrap resamples per algorithm. If 0, a single run on the
-        original data is executed.
+    bootstrap_runs:
+        Number of bootstrap resamples per algorithm for edge stability.
+    n_jobs:
+        Parallel jobs for bootstrap resampling. ``-1`` uses all cores.
     """
     rows: list[dict] = []
     for dataset, scenario in SCENARIOS.items():
@@ -142,57 +148,60 @@ def run(sample_size: int | None = None, bootstrap: int = 0):
             "notears": notears.run,
             "cosmo": cosmo.run,
         }
+        key_edge = tuple(scenario["missing"]["edge"])
         for name, func in algorithms.items():
-            n_runs = bootstrap if bootstrap > 0 else 1
-            for b in range(n_runs):
-                d_run = (
-                    data.sample(len(data), replace=True, random_state=b)
-                    if bootstrap > 0
-                    else data
-                )
-                try:
-                    graph, info = func(d_run.copy())
-                    runtime = info.get("runtime_s", float("nan"))
-                except Exception as e:  # pragma: no cover - safeguard against optional deps
-                    graph = nx.DiGraph()
-                    graph.add_nodes_from(data.columns)
-                    runtime = float("nan")
+            try:
+                graph, info = func(data.copy())
+                runtime = info.get("runtime_s", float("nan"))
+            except Exception:  # pragma: no cover - safeguard against optional deps
+                graph = nx.DiGraph()
+                graph.add_nodes_from(data.columns)
+                runtime = float("nan")
 
-                # Algorithm vs truth
-                metrics_t, extra_t, missing_t, reversed_t = compare_graphs(
-                    graph, true_graph
-                )
-                rows.append(
-                    {
-                        "dataset": dataset,
-                        "method": name,
-                        "reference": "truth",
-                        "bootstrap": b,
-                        "runtime_s": runtime,
-                        **metrics_t,
-                        "extra": sorted(list(extra_t)),
-                        "missing": sorted(list(missing_t)),
-                        "reversed": sorted(list(reversed_t)),
-                    }
-                )
+            freqs = bootstrap_edge_stability(
+                lambda d: func(d.copy()),
+                data,
+                b=bootstrap_runs,
+                seed=0,
+                n_jobs=n_jobs,
+            )
+            key_freq = freqs.get(key_edge, 0.0)
 
-                # Algorithm vs analyst
-                metrics_a, extra_a, missing_a, reversed_a = compare_graphs(
-                    graph, analyst_graph
-                )
-                rows.append(
-                    {
-                        "dataset": dataset,
-                        "method": name,
-                        "reference": "analyst",
-                        "bootstrap": b,
-                        "runtime_s": runtime,
-                        **metrics_a,
-                        "extra": sorted(list(extra_a)),
-                        "missing": sorted(list(missing_a)),
-                        "reversed": sorted(list(reversed_a)),
-                    }
-                )
+            # Algorithm vs truth
+            metrics_t, extra_t, missing_t, reversed_t = compare_graphs(
+                graph, true_graph
+            )
+            rows.append(
+                {
+                    "dataset": dataset,
+                    "method": name,
+                    "reference": "truth",
+                    "runtime_s": runtime,
+                    **metrics_t,
+                    "extra": sorted(list(extra_t)),
+                    "missing": sorted(list(missing_t)),
+                    "reversed": sorted(list(reversed_t)),
+                    "key_edge_freq": key_freq,
+                }
+            )
+
+            # Algorithm vs analyst
+            metrics_a, extra_a, missing_a, reversed_a = compare_graphs(
+                graph, analyst_graph
+            )
+            rows.append(
+                {
+                    "dataset": dataset,
+                    "method": name,
+                    "reference": "analyst",
+                    "runtime_s": runtime,
+                    **metrics_a,
+                    "extra": sorted(list(extra_a)),
+                    "missing": sorted(list(missing_a)),
+                    "reversed": sorted(list(reversed_a)),
+                    "key_edge_freq": key_freq,
+                }
+            )
 
     return rows
 
@@ -200,11 +209,20 @@ def run(sample_size: int | None = None, bootstrap: int = 0):
 def main():
     parser = argparse.ArgumentParser(description="Phase 3 sensitivity analysis")
     parser.add_argument("--n-samples", type=int, default=None, help="Sample size for each dataset")
-    parser.add_argument("--bootstrap", type=int, default=0, help="Number of bootstrap runs")
+    parser.add_argument(
+        "--bootstrap-runs", type=int, default=0, help="Number of bootstrap runs"
+    )
+    parser.add_argument(
+        "--n-jobs", type=int, default=-1, help="Parallel jobs for bootstrap runs"
+    )
     parser.add_argument("--out", type=str, default=None, help="Output path for JSON results")
     args = parser.parse_args()
 
-    results = run(sample_size=args.n_samples, bootstrap=args.bootstrap)
+    results = run(
+        sample_size=args.n_samples,
+        bootstrap_runs=args.bootstrap_runs,
+        n_jobs=args.n_jobs,
+    )
     if args.out is not None:
         out_path = Path(args.out)
         out_path.parent.mkdir(parents=True, exist_ok=True)
