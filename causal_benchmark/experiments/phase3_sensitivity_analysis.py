@@ -4,16 +4,20 @@ from pathlib import Path
 import sys
 
 import networkx as nx
+import numpy as np
+import pandas as pd
+from scipy.stats import chi2_contingency
 
 # Allow running as a script
 sys.path.append(str(Path(__file__).resolve().parents[1]))
 
 from algorithms import pc, ges, notears, cosmo
 from utils import create_mis_specified_graph
-from utils.loaders import load_dataset
+from utils.loaders import load_dataset, is_discrete
 from utils.helpers import edge_differences
 from metrics.metrics import precision_recall_f1, shd
 from experiments.phase3_scenarios import SCENARIOS
+from causallearn.utils.cit import FisherZ, Chisq_or_Gsq
 
 
 def compare_graphs(pred: nx.DiGraph, ref: nx.DiGraph):
@@ -76,6 +80,61 @@ def run(sample_size: int | None = None, bootstrap: int = 0):
                 "reversed": sorted(list(reversed_edges)),
             }
         )
+
+        # CI tests for scenario edges
+        discrete = is_discrete(data)
+        alpha = 0.05
+        column_index = {c: i for i, c in enumerate(data.columns)}
+        for edge_type, edge in ("missing", scenario["missing"]["edge"]), (
+            "spurious",
+            scenario["spurious"]["edge"],
+        ):
+            u, v = edge
+            parents_v = set(true_graph.predecessors(v)) - {u}
+            cond_idx = [column_index[p] for p in parents_v]
+            u_idx = column_index[u]
+            v_idx = column_index[v]
+            if discrete:
+                tester = Chisq_or_Gsq(data.values, method_name="chisq")
+                p_val = tester(u_idx, v_idx, tuple(cond_idx))
+                if parents_v:
+                    total_stat = 0.0
+                    total_df = 0
+                    for _, g in data.groupby(list(parents_v)):
+                        table = pd.crosstab(g[u], g[v])
+                        if table.shape[0] > 1 and table.shape[1] > 1:
+                            stat, _, dof, _ = chi2_contingency(table, correction=False)
+                            total_stat += stat
+                            total_df += dof
+                    stat = total_stat
+                else:
+                    table = pd.crosstab(data[u], data[v])
+                    stat, _, _, _ = chi2_contingency(table, correction=False)
+                test_name = "chi_square"
+            else:
+                tester = FisherZ(data.values)
+                p_val = tester(u_idx, v_idx, tuple(cond_idx))
+                var = [u_idx, v_idx] + cond_idx
+                sub_corr = np.corrcoef(data.values[:, var].T)
+                inv = np.linalg.inv(sub_corr)
+                r = -inv[0, 1] / np.sqrt(abs(inv[0, 0] * inv[1, 1]))
+                if abs(r) >= 1:
+                    r = (1 - np.finfo(float).eps) * np.sign(r)
+                Z = 0.5 * np.log((1 + r) / (1 - r))
+                stat = np.sqrt(len(data) - len(cond_idx) - 3) * abs(Z)
+                test_name = "fisher_z"
+            rows.append(
+                {
+                    "dataset": dataset,
+                    "method": "ci_test",
+                    "edge_type": edge_type,
+                    "edge": [u, v],
+                    "ci_test": test_name,
+                    "statistic": float(stat),
+                    "p_value": float(p_val),
+                    "reject": bool(p_val < alpha),
+                }
+            )
 
         algorithms = {
             "pc": pc.run,
