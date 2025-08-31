@@ -95,10 +95,13 @@ def run(
 
         dataset_infos.append((alias, data, true_graph))
 
-    algo_items = [
-        (name, dict(params or {}))
-        for name, params in cfg.get("algorithms", {}).items()
-    ]
+    # Algorithms configuration can include optional per-dataset overrides, e.g.:
+    # algorithms:
+    #   ges:
+    #     per_dataset:
+    #       sachs: { score_func: bdeu }
+    #     score_func: bic  # default
+    cfg_algorithms = cfg.get("algorithms", {})
 
     def process_pair(alias: str, data: pd.DataFrame, true_graph: nx.DiGraph, algo_name: str, params: dict):
         logger.info("Starting algorithm: dataset=%s algo=%s params=%s", alias, algo_name, params)
@@ -317,11 +320,21 @@ def run(
 
         return row
 
-    tasks = [
-        joblib.delayed(process_pair)(alias, data, true_graph, algo_name, params)
-        for alias, data, true_graph in dataset_infos
-        for algo_name, params in algo_items
-    ]
+    def _merge_algo_params(algo_params: dict | None, alias: str) -> dict:
+        base = dict(algo_params or {})
+        # Extract and apply per-dataset overrides if present
+        per_ds = base.pop("per_dataset", {}) if isinstance(base, dict) else {}
+        if isinstance(per_ds, dict):
+            override = per_ds.get(alias, {})
+            if isinstance(override, dict):
+                base.update(override)
+        return base
+
+    tasks = []
+    for alias, data, true_graph in dataset_infos:
+        for algo_name, algo_params in cfg_algorithms.items():
+            params = _merge_algo_params(algo_params if isinstance(algo_params, dict) else {}, alias)
+            tasks.append(joblib.delayed(process_pair)(alias, data, true_graph, algo_name, params))
     logger.info("Launching parallel runs: tasks=%d parallel_jobs=%d", len(tasks), parallel_jobs)
     summary_rows.extend(joblib.Parallel(n_jobs=parallel_jobs, prefer="threads")(tasks))
     logger.info("Parallel runs finished: gathered_rows=%d", len(summary_rows))
