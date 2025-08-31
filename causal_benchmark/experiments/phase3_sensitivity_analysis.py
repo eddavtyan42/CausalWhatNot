@@ -4,7 +4,6 @@ from pathlib import Path
 import sys
 
 import networkx as nx
-import numpy as np
 
 # Allow running as a script
 sys.path.append(str(Path(__file__).resolve().parents[1]))
@@ -12,7 +11,26 @@ sys.path.append(str(Path(__file__).resolve().parents[1]))
 from algorithms import pc, ges, notears, cosmo
 from utils import create_mis_specified_graph
 from utils.loaders import load_dataset
+from utils.helpers import edge_differences
+from metrics.metrics import precision_recall_f1, shd
 from experiments.phase3_scenarios import SCENARIOS
+
+
+def compare_graphs(pred: nx.DiGraph, ref: nx.DiGraph):
+    """Compute comparison metrics and edge differences.
+
+    Returns
+    -------
+    tuple
+        ``(metrics, extra, missing, reversed_edges)`` where ``metrics`` is a
+        dictionary containing precision/recall/F1 and SHD, and the remaining
+        elements are sets of edge tuples.
+    """
+
+    metrics = precision_recall_f1(pred, ref)
+    metrics["shd"] = shd(pred, ref)
+    extra, missing, reversed_edges = edge_differences(pred, ref)
+    return metrics, extra, missing, reversed_edges
 
 
 def run(sample_size: int | None = None, bootstrap: int = 0):
@@ -26,56 +44,98 @@ def run(sample_size: int | None = None, bootstrap: int = 0):
         Number of bootstrap resamples per algorithm. If 0, a single run on the
         original data is executed.
     """
-    results: dict[str, dict] = {}
+    rows: list[dict] = []
     for dataset, scenario in SCENARIOS.items():
-        data, true_graph = load_dataset(dataset, n_samples=sample_size, force=sample_size is not None)
+        data, true_graph = load_dataset(
+            dataset, n_samples=sample_size, force=sample_size is not None
+        )
 
         # Build mis-specified analyst graph by removing a key edge and adding a spurious edge
         analyst_graph = true_graph
         missing_u, missing_v = scenario["missing"]["edge"]
         spurious_u, spurious_v = scenario["spurious"]["edge"]
-        analyst_graph = create_mis_specified_graph(analyst_graph, "missing", missing_u, missing_v)
-        analyst_graph = create_mis_specified_graph(analyst_graph, "spurious", spurious_u, spurious_v)
+        analyst_graph = create_mis_specified_graph(
+            analyst_graph, "missing", missing_u, missing_v
+        )
+        analyst_graph = create_mis_specified_graph(
+            analyst_graph, "spurious", spurious_u, spurious_v
+        )
 
-        algo_results: dict[str, list[dict]] = {}
-        algorithms = {"pc": pc.run, "ges": ges.run, "notears": notears.run, "cosmo": cosmo.run}
+        # Baseline: analyst vs truth
+        metrics, extra, missing, reversed_edges = compare_graphs(
+            analyst_graph, true_graph
+        )
+        rows.append(
+            {
+                "dataset": dataset,
+                "method": "analyst",
+                "reference": "truth",
+                **metrics,
+                "extra": sorted(list(extra)),
+                "missing": sorted(list(missing)),
+                "reversed": sorted(list(reversed_edges)),
+            }
+        )
+
+        algorithms = {
+            "pc": pc.run,
+            "ges": ges.run,
+            "notears": notears.run,
+            "cosmo": cosmo.run,
+        }
         for name, func in algorithms.items():
-            runs: list[dict] = []
             n_runs = bootstrap if bootstrap > 0 else 1
             for b in range(n_runs):
-                d_run = data.sample(len(data), replace=True, random_state=b) if bootstrap > 0 else data
+                d_run = (
+                    data.sample(len(data), replace=True, random_state=b)
+                    if bootstrap > 0
+                    else data
+                )
                 try:
                     graph, info = func(d_run.copy())
-                    edges = list(graph.edges())
                     runtime = info.get("runtime_s", float("nan"))
                 except Exception as e:  # pragma: no cover - safeguard against optional deps
-                    G = nx.DiGraph()
-                    G.add_nodes_from(data.columns)
-                    edges = list(G.edges())
+                    graph = nx.DiGraph()
+                    graph.add_nodes_from(data.columns)
                     runtime = float("nan")
-                    info = {"error": str(e)}
 
-                def _sanitize(val):
-                    if isinstance(val, (str, int, float, bool)) or val is None:
-                        return val
-                    if isinstance(val, (list, tuple)):
-                        return [_sanitize(v) for v in val]
-                    if hasattr(val, "tolist"):
-                        try:
-                            return val.tolist()
-                        except Exception:
-                            pass
-                    return str(val)
+                # Algorithm vs truth
+                metrics_t, extra_t, missing_t, reversed_t = compare_graphs(
+                    graph, true_graph
+                )
+                rows.append(
+                    {
+                        "dataset": dataset,
+                        "method": name,
+                        "reference": "truth",
+                        "bootstrap": b,
+                        "runtime_s": runtime,
+                        **metrics_t,
+                        "extra": sorted(list(extra_t)),
+                        "missing": sorted(list(missing_t)),
+                        "reversed": sorted(list(reversed_t)),
+                    }
+                )
 
-                info_clean = {k: _sanitize(v) for k, v in info.items()}
-                runs.append({"edges": edges, "runtime_s": runtime, "info": info_clean})
-            algo_results[name] = runs
-        results[dataset] = {
-            "true_graph": list(true_graph.edges()),
-            "analyst_graph": list(analyst_graph.edges()),
-            "algorithms": algo_results,
-        }
-    return results
+                # Algorithm vs analyst
+                metrics_a, extra_a, missing_a, reversed_a = compare_graphs(
+                    graph, analyst_graph
+                )
+                rows.append(
+                    {
+                        "dataset": dataset,
+                        "method": name,
+                        "reference": "analyst",
+                        "bootstrap": b,
+                        "runtime_s": runtime,
+                        **metrics_a,
+                        "extra": sorted(list(extra_a)),
+                        "missing": sorted(list(missing_a)),
+                        "reversed": sorted(list(reversed_a)),
+                    }
+                )
+
+    return rows
 
 
 def main():
