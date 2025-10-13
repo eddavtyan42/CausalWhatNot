@@ -26,6 +26,23 @@ def test_bootstrap_edge_stability():
     assert freqs.get(("B", "C")) == 1.0
 
 
+def test_bootstrap_edge_stability_parallel_diversity():
+    df = pd.DataFrame({"A": range(5)})
+
+    def sample_signature_algo(sample_df: pd.DataFrame):
+        order = tuple(sample_df.index.tolist())
+        g = nx.DiGraph()
+        g.add_nodes_from(["source", "sink"])
+        signature_node = f"sample_{order}"
+        g.add_node(signature_node)
+        g.add_edge("source", signature_node)
+        return g, {}
+
+    freqs = bootstrap_edge_stability(sample_signature_algo, df, b=8, seed=123, n_jobs=2)
+    sample_edges = [edge for edge in freqs if edge[0] == "source"]
+    assert len(sample_edges) > 1
+
+
 @pytest.mark.timeout(30)
 def test_record_edge_stability_benchmark(tmp_path):
     cfg = {
