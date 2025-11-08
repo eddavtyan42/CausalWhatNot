@@ -7,14 +7,20 @@ from joblib import Parallel, delayed
 
 def bootstrap_edge_stability(learn_fn, data_df: pd.DataFrame, b: int = 100, seed: int = 0, n_jobs: int = -1) -> Dict[Tuple[str,str], float]:
     rng = np.random.default_rng(seed)
+    max_seed = np.iinfo(np.int32).max
+    if b > max_seed:
+        raise ValueError(f"Number of bootstrap samples {b} exceeds available unique seeds")
+    seeds = rng.choice(max_seed, size=b, replace=False)
 
-    def single_run(idx):
-        sample = data_df.sample(frac=1.0, replace=True, random_state=rng.integers(1e9))
+    def single_run(idx, seed_value):
+        sample = data_df.sample(frac=1.0, replace=True, random_state=int(seed_value))
         g, _ = learn_fn(sample)
         edges = set(g.edges())
         return edges
 
-    results = Parallel(n_jobs=n_jobs)(delayed(single_run)(i) for i in range(b))
+    results = Parallel(n_jobs=n_jobs)(
+        delayed(single_run)(idx, rs) for idx, rs in enumerate(seeds)
+    )
     counts = {}
     for edges in results:
         for e in edges:
