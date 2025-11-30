@@ -16,12 +16,14 @@ algorithms:
     per_dataset:
       sachs: { score_func: bdeu }
   notears:
-    # slightly higher threshold to reduce over-selection
-    threshold: 0.2
+    # threshold is auto-selected: 0.1 for continuous, 0.25 for discrete
+    # standardize data for better stability (default: true)
     torch_seed: 0
   cosmo:
-    timeout_s: 60
-    n_restarts: 1
+    timeout_s: 120
+    n_restarts: 25
+    # auto_lambda: true is default - automatically selects lambda1 based on BIC
+    # edge_threshold: 0.05 filters weak spurious edges
 bootstrap_runs: 0
 record_edge_stability: true
 orientation_metrics: true

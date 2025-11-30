@@ -22,8 +22,9 @@ def shd(
     pred_undirected: Set[Tuple[str, str]] | None = None,
 ) -> int:
     nodes = list(true_graph.nodes())
-    adj_pred = nx.to_numpy_array(pred_graph, nodelist=nodes)
-    adj_true = nx.to_numpy_array(true_graph, nodelist=nodes)
+    # Use weight=None to get binary adjacency (handles weighted graphs like NOTEARS)
+    adj_pred = nx.to_numpy_array(pred_graph, nodelist=nodes, weight=None)
+    adj_true = nx.to_numpy_array(true_graph, nodelist=nodes, weight=None)
     if cpdag_mode:
         pred_ug = ((adj_pred + adj_pred.T) > 0).astype(int)
         true_ug = ((adj_true + adj_true.T) > 0).astype(int)
@@ -45,8 +46,9 @@ def shd(
 
 def precision_recall_f1(pred_graph: nx.DiGraph, true_graph: nx.DiGraph, undirected_ok: bool = True) -> Dict[str, float]:
     nodes = list(true_graph.nodes())
-    adj_pred = nx.to_numpy_array(pred_graph, nodelist=nodes)
-    adj_true = nx.to_numpy_array(true_graph, nodelist=nodes)
+    # Use weight=None to get binary adjacency (handles weighted graphs like NOTEARS)
+    adj_pred = nx.to_numpy_array(pred_graph, nodelist=nodes, weight=None)
+    adj_true = nx.to_numpy_array(true_graph, nodelist=nodes, weight=None)
     if undirected_ok:
         pred_edges = ((adj_pred + adj_pred.T) > 0).astype(int)
         true_edges = ((adj_true + adj_true.T) > 0).astype(int)

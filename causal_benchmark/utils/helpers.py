@@ -26,6 +26,11 @@ def causallearn_to_dag(amat: np.ndarray, nodes: Iterable) -> Tuple[nx.DiGraph, D
             elif amat[i, j] == -1 and amat[j, i] == 1:
                 dag.add_edge(j, i)
             elif amat[i, j] == 1 and amat[j, i] == 1 and i < j:
+                # Undirected edge encoded as (1, 1)
+                dag.add_edge(i, j)
+                undirected_edges.add((i, j))
+            elif amat[i, j] == -1 and amat[j, i] == -1 and i < j:
+                # Undirected edge encoded as (-1, -1) - alternate causal-learn format
                 dag.add_edge(i, j)
                 undirected_edges.add((i, j))
     name_map = {i: n for i, n in enumerate(nodes)}

@@ -191,6 +191,11 @@ def run(
 
         ok_metrics = [m for m, e in zip(run_metrics, errors) if not e]
         ok_times = [t for t, e in zip(run_times, errors) if not e]
+        # Initialize orientation metric arrays to avoid UnboundLocalError when orient_metrics is False
+        d_prec = np.array([], dtype=float)
+        d_rec = np.array([], dtype=float)
+        d_f1 = np.array([], dtype=float)
+        shd_dir_vals = np.array([], dtype=float)
         if len(ok_metrics) == 0:
             # If every run failed, fall back to the metrics computed for the
             # empty graphs recorded above.  This provides defined precision,
