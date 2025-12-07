@@ -115,15 +115,17 @@ def run(
     max_iter: int = 1000,
     seed: int = 0,
     n_restarts: int = 25,
-    edge_threshold: float = 0.05,
+    edge_threshold: float = 0.08,
+    stability_threshold: float = 0.25,
     auto_lambda: bool = True,
+    use_stability: bool = True,
     **_,
 ) -> Tuple[nx.DiGraph, Dict[str, object]]:
     """Simple COSMO-style learner using priority-based linear regression.
 
     This implementation searches over random variable orderings and uses
-    Lasso regression to identify parent sets. The best ordering by BIC
-    is returned.
+    Lasso regression to identify parent sets. When use_stability=True,
+    edges are aggregated across all orderings using stability selection.
 
     Parameters
     ----------
@@ -132,7 +134,7 @@ def run(
     lambda1 : float, optional
         L1 regularisation strength. When >0, Lasso regression is used.
         If None and auto_lambda=True, lambda is selected automatically.
-        Default for discrete data: 0.3, for continuous: 0.1.
+        Default for discrete data: 0.5, for continuous: 0.3.
     lambda2 : float, optional
         L2 regularisation strength for ridge regression (used when lambda1=0).
     max_iter : int, optional
@@ -140,36 +142,51 @@ def run(
     seed : int, optional
         RNG seed controlling the random priority ordering.
     n_restarts : int, optional
-        Number of random orderings to try (default 25); the best by BIC is returned.
-        More restarts improve quality but increase runtime.
+        Number of random orderings to try (default 25).
     edge_threshold : float, optional
-        Minimum absolute weight to include an edge (default 0.05).
-        Helps filter spurious weak edges.
+        Minimum absolute weight to include an edge (default 0.1).
+    stability_threshold : float, optional
+        Fraction of orderings in which an edge must appear to be included
+        in the final graph (default 0.5). Only used when use_stability=True.
     auto_lambda : bool, optional
         If True and lambda1 is None, automatically select lambda1 using BIC.
+    use_stability : bool, optional
+        If True, use stability selection across orderings (default True).
+        If False, use only the best ordering by BIC.
     """
     logger = logging.getLogger("benchmark")
     rng = np.random.default_rng(seed)
     start = time.perf_counter()
 
-    X = data.values
+    X = data.values.astype(float)
     n, d = X.shape
+    
+    # Handle edge cases
+    if n == 0:
+        raise ValueError("COSMO cannot run on empty data")
+    if d == 0:
+        raise ValueError("COSMO requires at least one variable")
+    
     discrete = _is_discrete(data)
 
-    # Determine lambda1
+    # Standardize data for more stable coefficient estimation
+    X_mean = X.mean(axis=0)
+    X_std = X.std(axis=0)
+    X_std[X_std < 1e-10] = 1
+    X = (X - X_mean) / X_std
+
+    # Determine lambda1 - balance sparsity vs edge detection
     if lambda1 is None:
         if auto_lambda:
-            # Auto-select lambda using modified BIC with sparsity penalty
             if discrete:
                 # Discrete data needs stronger regularization
-                candidates = [0.2, 0.25, 0.3, 0.35, 0.4]
+                candidates = [0.3, 0.4, 0.5, 0.6, 0.7]
             else:
-                candidates = [0.1, 0.15, 0.2, 0.25, 0.3]
+                candidates = [0.15, 0.2, 0.25, 0.3, 0.4]
             lambda1 = _select_lambda(X, rng, candidates, lambda2, max_iter, edge_threshold)
             logger.info("COSMO auto-selected lambda1=%.3f (discrete=%s)", lambda1, discrete)
         else:
-            # Use sensible defaults based on data type
-            lambda1 = 0.3 if discrete else 0.15
+            lambda1 = 0.4 if discrete else 0.25
 
     logger.info(
         "COSMO start: n=%d d=%d lambda1=%.3f lambda2=%.3f max_iter=%d seed=%d restarts=%d discrete=%s",
@@ -179,10 +196,17 @@ def run(
     best_bic = np.inf
     best_W: np.ndarray | None = None
     best_order: np.ndarray | None = None
+    
+    # For stability selection: count how often each edge appears
+    edge_counts = np.zeros((d, d))
+    total_runs = max(n_restarts, 1)
 
-    for _ in range(max(n_restarts, 1)):
+    for _ in range(total_runs):
         order = rng.permutation(d)
         W, bic = _fit_ordering(X, order, lambda1, lambda2, max_iter)
+        
+        # Count edges for stability selection
+        edge_counts += (np.abs(W) > edge_threshold).astype(float)
 
         if bic < best_bic:
             best_bic = bic
@@ -196,13 +220,39 @@ def run(
     G = nx.DiGraph()
     cols = list(data.columns)
     G.add_nodes_from(cols)
-    for i in range(d):
-        for j in range(d):
-            if abs(best_W[i, j]) > edge_threshold:
-                G.add_edge(cols[i], cols[j], weight=best_W[i, j])
+    
+    if use_stability:
+        # Stability selection: include edges that appear in >stability_threshold of orderings
+        edge_freq = edge_counts / total_runs
+        for i in range(d):
+            for j in range(d):
+                if edge_freq[i, j] >= stability_threshold:
+                    # Use the coefficient from the best ordering
+                    G.add_edge(cols[i], cols[j], weight=best_W[i, j])
+    else:
+        # Traditional: use only the best ordering
+        for i in range(d):
+            for j in range(d):
+                if abs(best_W[i, j]) > edge_threshold:
+                    G.add_edge(cols[i], cols[j], weight=best_W[i, j])
 
+    # Ensure DAG property by removing cycles if any
     if not nx.is_directed_acyclic_graph(G):
-        raise RuntimeError("COSMO produced a cyclic graph")
+        # Remove edges that create cycles (keep highest stability ones)
+        while not nx.is_directed_acyclic_graph(G):
+            try:
+                cycle = list(nx.find_cycle(G))
+                # Find edge with lowest stability in the cycle
+                min_freq = float('inf')
+                min_edge = cycle[0]
+                for u, v in cycle:
+                    i, j = cols.index(u), cols.index(v)
+                    if edge_freq[i, j] < min_freq:
+                        min_freq = edge_freq[i, j]
+                        min_edge = (u, v)
+                G.remove_edge(*min_edge)
+            except nx.NetworkXNoCycle:
+                break
 
     logger.info(
         "COSMO end: edges=%d runtime_s=%.3f bic=%.3f lambda1=%.3f",
@@ -215,5 +265,6 @@ def run(
         "bic": float(best_bic),
         "lambda1": lambda1,
         "discrete": discrete,
+        "stability_used": use_stability,
     }
 

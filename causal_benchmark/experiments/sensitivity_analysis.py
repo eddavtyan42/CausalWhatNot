@@ -17,7 +17,7 @@ from utils.loaders import load_dataset, is_discrete
 from utils.helpers import edge_differences
 from metrics.metrics import precision_recall_f1, shd
 from metrics.bootstrap import bootstrap_edge_stability
-from experiments.phase3_scenarios import SCENARIOS
+from experiments.perturbation_scenarios import SCENARIOS
 from causallearn.utils.cit import FisherZ, Chisq_or_Gsq
 
 
