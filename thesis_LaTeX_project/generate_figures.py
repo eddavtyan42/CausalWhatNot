@@ -420,6 +420,91 @@ def fig9_sensitivity_algorithm_comparison(sensitivity_df):
     print("Created: sensitivity_algorithm_comparison.pdf")
 
 
+def fig10_critical_difference_diagram(df):
+    """
+    Figure 10: Critical Difference Diagram for algorithm rankings.
+    Shows average ranks with critical difference bars from Nemenyi test.
+    """
+    # Calculate average ranks per algorithm across datasets
+    datasets = df['dataset'].unique()
+    ranks_data = []
+    
+    for dataset in datasets:
+        ds_df = df[df['dataset'] == dataset].copy()
+        # Rank algorithms by F1 (higher is better, so rank descending)
+        ds_df = ds_df.sort_values('f1', ascending=False)
+        ds_df['rank'] = range(1, len(ds_df) + 1)
+        for _, row in ds_df.iterrows():
+            ranks_data.append({
+                'dataset': dataset,
+                'algorithm': row['algorithm'],
+                'f1': row['f1'],
+                'rank': row['rank']
+            })
+    
+    ranks_df = pd.DataFrame(ranks_data)
+    
+    # Calculate average rank per algorithm
+    avg_ranks = ranks_df.groupby('algorithm')['rank'].mean().sort_values()
+    
+    # Critical difference for Nemenyi test (k=4 algorithms, n=5 datasets, alpha=0.05)
+    # CD = q_alpha * sqrt(k*(k+1)/(6*n))
+    # q_alpha for k=4 at alpha=0.05 is approximately 2.569
+    q_alpha = 2.569
+    k = len(ALGORITHMS)
+    n = len(datasets)
+    CD = q_alpha * np.sqrt(k * (k + 1) / (6 * n))
+    
+    fig, ax = plt.subplots(figsize=(8, 4))
+    
+    # Draw axis
+    ax.set_xlim(0.5, k + 0.5)
+    ax.set_ylim(-0.5, 1.5)
+    ax.axhline(y=0.5, color='black', linewidth=1)
+    
+    # Draw tick marks and labels
+    for i in range(1, k + 1):
+        ax.plot([i, i], [0.4, 0.6], 'k-', linewidth=1)
+        ax.text(i, 0.2, str(i), ha='center', fontsize=11)
+    
+    ax.text((1 + k) / 2, 0.0, 'Average Rank', ha='center', fontsize=12)
+    
+    # Position algorithms
+    y_positions = {'top': 1.2, 'bottom': -0.2}
+    algo_positions = {}
+    
+    for i, (algo, rank) in enumerate(avg_ranks.items()):
+        side = 'top' if i % 2 == 0 else 'bottom'
+        y = y_positions[side]
+        algo_positions[algo] = (rank, y)
+        
+        # Draw line to axis
+        ax.plot([rank, rank], [0.5, y - 0.1 if side == 'top' else y + 0.1], 
+                'k-', linewidth=1)
+        
+        # Draw algorithm name
+        label = ALGO_LABELS.get(algo, algo)
+        ax.text(rank, y, f'{label}\n({rank:.2f})', ha='center', va='center',
+                fontsize=10, fontweight='bold',
+                bbox=dict(boxstyle='round,pad=0.3', facecolor=COLORS.get(algo, 'white'),
+                         edgecolor='black', alpha=0.8))
+    
+    # Draw critical difference bar
+    ax.annotate('', xy=(1, 1.5), xytext=(1 + CD, 1.5),
+                arrowprops=dict(arrowstyle='<->', color='red', lw=2))
+    ax.text(1 + CD/2, 1.6, f'CD = {CD:.2f}', ha='center', fontsize=10, color='red')
+    
+    # Title
+    ax.set_title('Critical Difference Diagram (Skeleton F1)', fontsize=13, fontweight='bold')
+    ax.axis('off')
+    
+    plt.tight_layout()
+    plt.savefig(FIG_DIR / 'critical_difference.pdf', bbox_inches='tight')
+    plt.savefig(FIG_DIR / 'critical_difference.png', bbox_inches='tight', dpi=300)
+    plt.close()
+    print("Created: critical_difference.pdf")
+
+
 def load_sensitivity_results():
     """Load sensitivity analysis results if available."""
     sensitivity_dir = BENCHMARK_DIR / "results" / "sensitivity"
@@ -455,6 +540,7 @@ def main():
     fig5_precision_recall_tradeoff(df)
     fig6_performance_by_datatype(df)
     fig7_algorithm_radar(df)
+    fig10_critical_difference_diagram(df)
     print()
     
     # Load and generate sensitivity analysis figures
