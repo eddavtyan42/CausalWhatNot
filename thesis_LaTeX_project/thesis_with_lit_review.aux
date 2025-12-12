@@ -6,99 +6,130 @@
 \@writefile{toc}{\contentsline {section}{\numberline {2}Background}{2}{section.2}\protected@file@percent }
 \newlabel{sec:background}{{2}{2}{Background}{section.2}{}}
 \@writefile{toc}{\contentsline {subsection}{\numberline {2.1}Causal DAGs and Conditional Independence}{2}{subsection.2.1}\protected@file@percent }
+\@writefile{toc}{\contentsline {paragraph}{d-Separation.}{2}{section*.1}\protected@file@percent }
+\@writefile{toc}{\contentsline {paragraph}{Markov Equivalence.}{2}{section*.2}\protected@file@percent }
 \@writefile{toc}{\contentsline {subsection}{\numberline {2.2}Structure--Learning Algorithms}{2}{subsection.2.2}\protected@file@percent }
-\@writefile{toc}{\contentsline {subsection}{\numberline {2.3}Evaluation Metrics}{2}{subsection.2.3}\protected@file@percent }
-\@writefile{toc}{\contentsline {section}{\numberline {3}Related Work}{2}{section.3}\protected@file@percent }
-\newlabel{sec:related}{{3}{2}{Related Work}{section.3}{}}
-\@writefile{toc}{\contentsline {subsection}{\numberline {3.1}Foundational Theories of Causal Discovery}{2}{subsection.3.1}\protected@file@percent }
+\citation{Pearl1995}
+\citation{Spirtes2000}
+\citation{Chickering2002}
+\citation{Glymour2019}
+\citation{Scutari2019}
+\citation{Reisach2021}
+\citation{Textor2016}
+\citation{Ankan2021}
+\citation{Friedman1999}
+\citation{Scutari2013}
+\@writefile{toc}{\contentsline {subsection}{\numberline {2.3}Evaluation Metrics}{3}{subsection.2.3}\protected@file@percent }
+\@writefile{toc}{\contentsline {section}{\numberline {3}Related Work}{3}{section.3}\protected@file@percent }
+\newlabel{sec:related}{{3}{3}{Related Work}{section.3}{}}
+\@writefile{toc}{\contentsline {subsection}{\numberline {3.1}Foundational Theories of Causal Discovery}{3}{subsection.3.1}\protected@file@percent }
 \@writefile{toc}{\contentsline {subsection}{\numberline {3.2}Benchmarking Causal Discovery Algorithms}{3}{subsection.3.2}\protected@file@percent }
-\@writefile{toc}{\contentsline {subsection}{\numberline {3.3}Mis--specification Detection and Model Validation}{3}{subsection.3.3}\protected@file@percent }
-\@writefile{toc}{\contentsline {subsection}{\numberline {3.4}Software Tools for Causal DAG Analysis}{3}{subsection.3.4}\protected@file@percent }
-\@writefile{toc}{\contentsline {subsection}{\numberline {3.5}Recent Advances in Structure Learning Algorithms}{3}{subsection.3.5}\protected@file@percent }
+\citation{Scutari2010}
+\citation{Kalisch2012}
+\citation{Kalainathan2020}
+\citation{Ramsey2018}
+\citation{Zheng2024}
+\citation{Colombo2014}
+\citation{Tsamardinos2006}
+\citation{Shimizu2006}
+\citation{Zheng2018}
+\citation{Ng2020}
+\citation{Lachapelle2020}
+\citation{Zhu2020}
+\citation{Massidda2023}
+\@writefile{toc}{\contentsline {subsection}{\numberline {3.3}Mis--specification Detection and Model Validation}{4}{subsection.3.3}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsection}{\numberline {3.4}Software Tools for Causal DAG Analysis}{4}{subsection.3.4}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsection}{\numberline {3.5}Recent Advances in Structure Learning Algorithms}{4}{subsection.3.5}\protected@file@percent }
 \@writefile{toc}{\contentsline {section}{\numberline {4}Methods}{4}{section.4}\protected@file@percent }
 \newlabel{sec:methods}{{4}{4}{Methods}{section.4}{}}
 \@writefile{toc}{\contentsline {subsection}{\numberline {4.1}Datasets and Data Generation}{4}{subsection.4.1}\protected@file@percent }
-\@writefile{lot}{\contentsline {table}{\numberline {1}{\ignorespaces Summary of benchmark networks. The domains and number of variables are taken from the \emph  {CausalWhatNot} documentation.}}{4}{table.1}\protected@file@percent }
-\newlabel{tab:datasets}{{1}{4}{Summary of benchmark networks. The domains and number of variables are taken from the \emph {CausalWhatNot} documentation}{table.1}{}}
-\@writefile{toc}{\contentsline {subsection}{\numberline {4.2}Algorithms and Settings}{4}{subsection.4.2}\protected@file@percent }
-\@writefile{toc}{\contentsline {subsection}{\numberline {4.3}Mis--specification Protocols}{4}{subsection.4.3}\protected@file@percent }
-\@writefile{toc}{\contentsline {subsection}{\numberline {4.4}Visualisations}{5}{subsection.4.4}\protected@file@percent }
-\@writefile{lof}{\contentsline {figure}{\numberline {1}{\ignorespaces Structure of the Asia network. Nodes represent variables and arrows denote direct causal effects. This network is a standard benchmark for evaluating causal discovery algorithms.}}{5}{figure.1}\protected@file@percent }
-\newlabel{fig:asia}{{1}{5}{Structure of the Asia network. Nodes represent variables and arrows denote direct causal effects. This network is a standard benchmark for evaluating causal discovery algorithms}{figure.1}{}}
-\@writefile{toc}{\contentsline {section}{\numberline {5}Results}{5}{section.5}\protected@file@percent }
-\newlabel{sec:results}{{5}{5}{Results}{section.5}{}}
-\@writefile{lof}{\contentsline {figure}{\numberline {2}{\ignorespaces Benchmarking pipeline. Data are generated from benchmark networks, algorithms are run to learn the structure, metrics are computed, mis--specification analyses are performed, and bootstrap edge stability is recorded.}}{6}{figure.2}\protected@file@percent }
-\newlabel{fig:pipeline}{{2}{6}{Benchmarking pipeline. Data are generated from benchmark networks, algorithms are run to learn the structure, metrics are computed, mis--specification analyses are performed, and bootstrap edge stability is recorded}{figure.2}{}}
+\@writefile{lot}{\contentsline {table}{\numberline {1}{\ignorespaces Summary of benchmark networks. Edges refers to the number of directed edges in the ground--truth DAG. Density is $|E|/(|V|(|V|-1)/2)$, the fraction of possible edges present. Sample size $n$ indicates the number of observations generated for each experiment.}}{5}{table.1}\protected@file@percent }
+\newlabel{tab:datasets}{{1}{5}{Summary of benchmark networks. Edges refers to the number of directed edges in the ground--truth DAG. Density is $|E|/(|V|(|V|-1)/2)$, the fraction of possible edges present. Sample size $n$ indicates the number of observations generated for each experiment}{table.1}{}}
+\@writefile{toc}{\contentsline {subsection}{\numberline {4.2}Algorithms and Settings}{5}{subsection.4.2}\protected@file@percent }
+\@writefile{lot}{\contentsline {table}{\numberline {2}{\ignorespaces Algorithm implementations and hyperparameter settings. CI = conditional independence test. All algorithms were run with a timeout of 120 seconds per dataset.}}{5}{table.2}\protected@file@percent }
+\newlabel{tab:algorithms}{{2}{5}{Algorithm implementations and hyperparameter settings. CI = conditional independence test. All algorithms were run with a timeout of 120 seconds per dataset}{table.2}{}}
+\@writefile{toc}{\contentsline {subsection}{\numberline {4.3}Mis--specification Protocols}{6}{subsection.4.3}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsection}{\numberline {4.4}Visualisations}{6}{subsection.4.4}\protected@file@percent }
+\@writefile{toc}{\contentsline {section}{\numberline {5}Results}{6}{section.5}\protected@file@percent }
+\newlabel{sec:results}{{5}{6}{Results}{section.5}{}}
 \@writefile{toc}{\contentsline {subsection}{\numberline {5.1}Benchmark Performance Overview}{6}{subsection.5.1}\protected@file@percent }
-\@writefile{lot}{\contentsline {table}{\numberline {2}{\ignorespaces Skeleton recovery performance. Precision, recall and $F_1$ treat edges as undirected. Bold indicates the best $F_1$ score for each dataset.}}{7}{table.2}\protected@file@percent }
-\newlabel{tab:skeleton_results}{{2}{7}{Skeleton recovery performance. Precision, recall and $F_1$ treat edges as undirected. Bold indicates the best $F_1$ score for each dataset}{table.2}{}}
+\@writefile{lof}{\contentsline {figure}{\numberline {1}{\ignorespaces Structure of the Asia network. Nodes represent variables and arrows denote direct causal effects. This network is a standard benchmark for evaluating causal discovery algorithms.}}{7}{figure.1}\protected@file@percent }
+\newlabel{fig:asia}{{1}{7}{Structure of the Asia network. Nodes represent variables and arrows denote direct causal effects. This network is a standard benchmark for evaluating causal discovery algorithms}{figure.1}{}}
 \@writefile{toc}{\contentsline {subsection}{\numberline {5.2}The Orientation Problem}{7}{subsection.5.2}\protected@file@percent }
-\@writefile{lof}{\contentsline {figure}{\numberline {3}{\ignorespaces Skeleton $F_1$ scores by dataset and algorithm. The dashed horizontal line indicates $F_1 = 0.50$, representing performance no better than a naive baseline.}}{8}{figure.3}\protected@file@percent }
-\newlabel{fig:skeleton_f1}{{3}{8}{Skeleton $F_1$ scores by dataset and algorithm. The dashed horizontal line indicates $F_1 = 0.50$, representing performance no better than a naive baseline}{figure.3}{}}
+\@writefile{lof}{\contentsline {figure}{\numberline {2}{\ignorespaces Benchmarking pipeline. Data are generated from benchmark networks, algorithms are run to learn the structure, metrics are computed, mis--specification analyses are performed, and bootstrap edge stability is recorded.}}{8}{figure.2}\protected@file@percent }
+\newlabel{fig:pipeline}{{2}{8}{Benchmarking pipeline. Data are generated from benchmark networks, algorithms are run to learn the structure, metrics are computed, mis--specification analyses are performed, and bootstrap edge stability is recorded}{figure.2}{}}
 \@writefile{toc}{\contentsline {subsection}{\numberline {5.3}Algorithm--Data Interactions}{8}{subsection.5.3}\protected@file@percent }
-\@writefile{toc}{\contentsline {paragraph}{Data Type Effects.}{8}{section*.1}\protected@file@percent }
-\@writefile{toc}{\contentsline {paragraph}{Network Size Effects.}{8}{section*.2}\protected@file@percent }
-\@writefile{lof}{\contentsline {figure}{\numberline {4}{\ignorespaces Precision--recall scatter plot for skeleton recovery. Each point represents one algorithm--dataset combination. Dashed curves show iso--$F_1$ contours.}}{9}{figure.4}\protected@file@percent }
-\newlabel{fig:precision_recall}{{4}{9}{Precision--recall scatter plot for skeleton recovery. Each point represents one algorithm--dataset combination. Dashed curves show iso--$F_1$ contours}{figure.4}{}}
-\@writefile{toc}{\contentsline {paragraph}{Computational Cost.}{9}{section*.3}\protected@file@percent }
-\@writefile{toc}{\contentsline {paragraph}{Algorithm Summary.}{9}{section*.4}\protected@file@percent }
-\@writefile{toc}{\contentsline {subsection}{\numberline {5.4}Detecting Analyst Mis--specification}{9}{subsection.5.4}\protected@file@percent }
-\@writefile{lot}{\contentsline {table}{\numberline {3}{\ignorespaces Directed edge recovery performance. Reversed edges count as errors.}}{10}{table.3}\protected@file@percent }
-\newlabel{tab:directed_results}{{3}{10}{Directed edge recovery performance. Reversed edges count as errors}{table.3}{}}
-\@writefile{toc}{\contentsline {paragraph}{Conditional Independence Testing.}{10}{section*.5}\protected@file@percent }
-\@writefile{lof}{\contentsline {figure}{\numberline {5}{\ignorespaces Skeleton $F_1$ versus directed $F_1$. Points below the diagonal indicate orientation errors. Dataset abbreviations: ASI = Asia, SAC = Sachs, ALA = Alarm, CHI = Child, INS = Insurance.}}{11}{figure.5}\protected@file@percent }
-\newlabel{fig:skeleton_vs_directed}{{5}{11}{Skeleton $F_1$ versus directed $F_1$. Points below the diagonal indicate orientation errors. Dataset abbreviations: ASI = Asia, SAC = Sachs, ALA = Alarm, CHI = Child, INS = Insurance}{figure.5}{}}
-\@writefile{lot}{\contentsline {table}{\numberline {4}{\ignorespaces Runtime in seconds. Bold indicates the fastest algorithm for each dataset.}}{11}{table.4}\protected@file@percent }
-\newlabel{tab:runtime}{{4}{11}{Runtime in seconds. Bold indicates the fastest algorithm for each dataset}{table.4}{}}
-\@writefile{toc}{\contentsline {paragraph}{Algorithm Recovery of Omitted Edges.}{11}{section*.6}\protected@file@percent }
-\@writefile{lof}{\contentsline {figure}{\numberline {6}{\ignorespaces Algorithm performance by data characteristics. Left: continuous data (Sachs). Centre: small discrete network (Asia). Right: large discrete networks (average of Alarm, Child and Insurance).}}{12}{figure.6}\protected@file@percent }
-\newlabel{fig:datatype_performance}{{6}{12}{Algorithm performance by data characteristics. Left: continuous data (Sachs). Centre: small discrete network (Asia). Right: large discrete networks (average of Alarm, Child and Insurance)}{figure.6}{}}
-\@writefile{lot}{\contentsline {table}{\numberline {5}{\ignorespaces Mis--specification scenarios. Missing edges are true causal links removed from the analyst's DAG; spurious edges are false links added.}}{12}{table.5}\protected@file@percent }
-\newlabel{tab:misspec_scenarios}{{5}{12}{Mis--specification scenarios. Missing edges are true causal links removed from the analyst's DAG; spurious edges are false links added}{table.5}{}}
+\@writefile{toc}{\contentsline {paragraph}{Data Type Effects.}{8}{section*.3}\protected@file@percent }
+\@writefile{lot}{\contentsline {table}{\numberline {3}{\ignorespaces Skeleton recovery performance. Precision, recall and $F_1$ treat edges as undirected. Bold indicates the best $F_1$ score for each dataset.}}{9}{table.3}\protected@file@percent }
+\newlabel{tab:skeleton_results}{{3}{9}{Skeleton recovery performance. Precision, recall and $F_1$ treat edges as undirected. Bold indicates the best $F_1$ score for each dataset}{table.3}{}}
+\@writefile{toc}{\contentsline {paragraph}{Network Size Effects.}{9}{section*.4}\protected@file@percent }
+\@writefile{toc}{\contentsline {paragraph}{Computational Cost.}{9}{section*.5}\protected@file@percent }
+\@writefile{lof}{\contentsline {figure}{\numberline {3}{\ignorespaces Skeleton $F_1$ scores by dataset and algorithm. The dashed horizontal line indicates $F_1 = 0.50$, representing performance no better than a naive baseline.}}{10}{figure.3}\protected@file@percent }
+\newlabel{fig:skeleton_f1}{{3}{10}{Skeleton $F_1$ scores by dataset and algorithm. The dashed horizontal line indicates $F_1 = 0.50$, representing performance no better than a naive baseline}{figure.3}{}}
+\@writefile{toc}{\contentsline {paragraph}{Algorithm Summary.}{10}{section*.6}\protected@file@percent }
+\@writefile{toc}{\contentsline {paragraph}{Statistical Significance.}{10}{section*.7}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsection}{\numberline {5.4}Detecting Analyst Mis--specification}{10}{subsection.5.4}\protected@file@percent }
+\@writefile{lof}{\contentsline {figure}{\numberline {4}{\ignorespaces Precision--recall scatter plot for skeleton recovery. Each point represents one algorithm--dataset combination. Dashed curves show iso--$F_1$ contours.}}{11}{figure.4}\protected@file@percent }
+\newlabel{fig:precision_recall}{{4}{11}{Precision--recall scatter plot for skeleton recovery. Each point represents one algorithm--dataset combination. Dashed curves show iso--$F_1$ contours}{figure.4}{}}
+\@writefile{toc}{\contentsline {paragraph}{Conditional Independence Testing.}{11}{section*.8}\protected@file@percent }
+\@writefile{lot}{\contentsline {table}{\numberline {4}{\ignorespaces Directed edge recovery performance. Reversed edges count as errors.}}{12}{table.4}\protected@file@percent }
+\newlabel{tab:directed_results}{{4}{12}{Directed edge recovery performance. Reversed edges count as errors}{table.4}{}}
+\@writefile{toc}{\contentsline {paragraph}{Algorithm Recovery of Omitted Edges.}{12}{section*.9}\protected@file@percent }
 \@writefile{toc}{\contentsline {section}{\numberline {6}Discussion}{12}{section.6}\protected@file@percent }
 \newlabel{sec:discussion}{{6}{12}{Discussion}{section.6}{}}
-\@writefile{toc}{\contentsline {subsection}{\numberline {6.1}Guidance on Algorithm Selection}{12}{subsection.6.1}\protected@file@percent }
-\@writefile{lof}{\contentsline {figure}{\numberline {7}{\ignorespaces Structural Hamming distance (SHD) across datasets and algorithms. Lower values (lighter colours) indicate better performance.}}{13}{figure.7}\protected@file@percent }
-\newlabel{fig:shd_heatmap}{{7}{13}{Structural Hamming distance (SHD) across datasets and algorithms. Lower values (lighter colours) indicate better performance}{figure.7}{}}
-\@writefile{toc}{\contentsline {subsection}{\numberline {6.2}The Orientation Challenge}{13}{subsection.6.2}\protected@file@percent }
-\@writefile{lof}{\contentsline {figure}{\numberline {8}{\ignorespaces Runtime comparison across datasets (log scale). PC and COSMO are consistently faster than GES and NOTEARS.}}{14}{figure.8}\protected@file@percent }
-\newlabel{fig:runtime}{{8}{14}{Runtime comparison across datasets (log scale). PC and COSMO are consistently faster than GES and NOTEARS}{figure.8}{}}
-\@writefile{toc}{\contentsline {subsection}{\numberline {6.3}Detecting and Correcting Mis--specification}{14}{subsection.6.3}\protected@file@percent }
-\@writefile{toc}{\contentsline {subsection}{\numberline {6.4}Limitations and Future Work}{14}{subsection.6.4}\protected@file@percent }
+\@writefile{lof}{\contentsline {figure}{\numberline {5}{\ignorespaces Skeleton $F_1$ versus directed $F_1$. Points below the diagonal indicate orientation errors. Dataset abbreviations: ASI = Asia, SAC = Sachs, ALA = Alarm, CHI = Child, INS = Insurance.}}{13}{figure.5}\protected@file@percent }
+\newlabel{fig:skeleton_vs_directed}{{5}{13}{Skeleton $F_1$ versus directed $F_1$. Points below the diagonal indicate orientation errors. Dataset abbreviations: ASI = Asia, SAC = Sachs, ALA = Alarm, CHI = Child, INS = Insurance}{figure.5}{}}
+\@writefile{lot}{\contentsline {table}{\numberline {5}{\ignorespaces Runtime in seconds. Bold indicates the fastest algorithm for each dataset.}}{13}{table.5}\protected@file@percent }
+\newlabel{tab:runtime}{{5}{13}{Runtime in seconds. Bold indicates the fastest algorithm for each dataset}{table.5}{}}
+\@writefile{toc}{\contentsline {subsection}{\numberline {6.1}Guidance on Algorithm Selection}{13}{subsection.6.1}\protected@file@percent }
+\@writefile{lof}{\contentsline {figure}{\numberline {6}{\ignorespaces Algorithm performance by data characteristics. Left: continuous data (Sachs). Centre: small discrete network (Asia). Right: large discrete networks (average of Alarm, Child and Insurance).}}{14}{figure.6}\protected@file@percent }
+\newlabel{fig:datatype_performance}{{6}{14}{Algorithm performance by data characteristics. Left: continuous data (Sachs). Centre: small discrete network (Asia). Right: large discrete networks (average of Alarm, Child and Insurance)}{figure.6}{}}
+\@writefile{lot}{\contentsline {table}{\numberline {6}{\ignorespaces Mis--specification scenarios. Missing edges are true causal links removed from the analyst's DAG; spurious edges are false links added.}}{14}{table.6}\protected@file@percent }
+\newlabel{tab:misspec_scenarios}{{6}{14}{Mis--specification scenarios. Missing edges are true causal links removed from the analyst's DAG; spurious edges are false links added}{table.6}{}}
+\@writefile{toc}{\contentsline {subsection}{\numberline {6.2}The Orientation Challenge}{14}{subsection.6.2}\protected@file@percent }
+\@writefile{lof}{\contentsline {figure}{\numberline {7}{\ignorespaces Structural Hamming distance (SHD) across datasets and algorithms. Lower values (lighter colours) indicate better performance.}}{15}{figure.7}\protected@file@percent }
+\newlabel{fig:shd_heatmap}{{7}{15}{Structural Hamming distance (SHD) across datasets and algorithms. Lower values (lighter colours) indicate better performance}{figure.7}{}}
+\@writefile{toc}{\contentsline {subsection}{\numberline {6.3}Detecting and Correcting Mis--specification}{15}{subsection.6.3}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsection}{\numberline {6.4}Limitations and Future Work}{15}{subsection.6.4}\protected@file@percent }
 \bibstyle{plain}
 \bibcite{Pearl1995}{1}
-\@writefile{lof}{\contentsline {figure}{\numberline {9}{\ignorespaces Algorithm performance profiles averaged across datasets. Axes represent skeleton $F_1$, directed $F_1$, precision, recall and speed.}}{15}{figure.9}\protected@file@percent }
-\newlabel{fig:radar}{{9}{15}{Algorithm performance profiles averaged across datasets. Axes represent skeleton $F_1$, directed $F_1$, precision, recall and speed}{figure.9}{}}
-\@writefile{toc}{\contentsline {section}{\numberline {7}Conclusion}{15}{section.7}\protected@file@percent }
-\newlabel{sec:conclusion}{{7}{15}{Conclusion}{section.7}{}}
+\@writefile{lof}{\contentsline {figure}{\numberline {8}{\ignorespaces Runtime comparison across datasets (log scale). PC and COSMO are consistently faster than GES and NOTEARS.}}{16}{figure.8}\protected@file@percent }
+\newlabel{fig:runtime}{{8}{16}{Runtime comparison across datasets (log scale). PC and COSMO are consistently faster than GES and NOTEARS}{figure.8}{}}
+\@writefile{toc}{\contentsline {section}{\numberline {7}Conclusion}{16}{section.7}\protected@file@percent }
+\newlabel{sec:conclusion}{{7}{16}{Conclusion}{section.7}{}}
+\@writefile{toc}{\contentsline {paragraph}{Reproducibility.}{16}{section*.10}\protected@file@percent }
 \bibcite{Spirtes2000}{2}
 \bibcite{Chickering2002}{3}
 \bibcite{Glymour2019}{4}
 \bibcite{Scutari2019}{5}
-\@writefile{lot}{\contentsline {table}{\numberline {6}{\ignorespaces Conditional independence test results for mis--specification detection. Missing edges should show significant dependence (reject $H_0$); spurious edges should show non--significant results (fail to reject).}}{16}{table.6}\protected@file@percent }
-\newlabel{tab:ci_results}{{6}{16}{Conditional independence test results for mis--specification detection. Missing edges should show significant dependence (reject $H_0$); spurious edges should show non--significant results (fail to reject)}{table.6}{}}
-\@writefile{lof}{\contentsline {figure}{\numberline {10}{\ignorespaces Conditional independence test statistics for mis--specification detection. Left panel: missing edges (all significant, as expected). Right panel: spurious edges (mostly non--significant, correctly identifying them as false).}}{16}{figure.10}\protected@file@percent }
-\newlabel{fig:ci_tests}{{10}{16}{Conditional independence test statistics for mis--specification detection. Left panel: missing edges (all significant, as expected). Right panel: spurious edges (mostly non--significant, correctly identifying them as false)}{figure.10}{}}
 \bibcite{Reisach2021}{6}
 \bibcite{Ankan2021}{7}
 \bibcite{Textor2016}{8}
+\@writefile{lof}{\contentsline {figure}{\numberline {9}{\ignorespaces Algorithm performance profiles averaged across datasets. Axes represent skeleton $F_1$, directed $F_1$, precision, recall and speed.}}{17}{figure.9}\protected@file@percent }
+\newlabel{fig:radar}{{9}{17}{Algorithm performance profiles averaged across datasets. Axes represent skeleton $F_1$, directed $F_1$, precision, recall and speed}{figure.9}{}}
 \bibcite{Scutari2013}{9}
 \bibcite{Friedman1999}{10}
 \bibcite{Kalisch2012}{11}
 \bibcite{Scutari2010}{12}
 \bibcite{Kalainathan2020}{13}
-\@writefile{lot}{\contentsline {table}{\numberline {7}{\ignorespaces Algorithm performance in sensitivity analysis (vs.\ true graph).}}{17}{table.7}\protected@file@percent }
-\newlabel{tab:sensitivity_algos}{{7}{17}{Algorithm performance in sensitivity analysis (vs.\ true graph)}{table.7}{}}
 \bibcite{Zheng2024}{14}
 \bibcite{Ramsey2018}{15}
 \bibcite{Colombo2014}{16}
 \bibcite{Tsamardinos2006}{17}
+\@writefile{lof}{\contentsline {figure}{\numberline {10}{\ignorespaces Critical difference diagram for skeleton $F_1$. Algorithms are ranked by average performance across datasets, with rank~1 being best. The horizontal bar indicates the Nemenyi critical difference (CD) at $\alpha = 0.05$; algorithms connected by a bar less than CD apart do not differ significantly.}}{18}{figure.10}\protected@file@percent }
+\newlabel{fig:cd_diagram}{{10}{18}{Critical difference diagram for skeleton $F_1$. Algorithms are ranked by average performance across datasets, with rank~1 being best. The horizontal bar indicates the Nemenyi critical difference (CD) at $\alpha = 0.05$; algorithms connected by a bar less than CD apart do not differ significantly}{figure.10}{}}
 \bibcite{Shimizu2006}{18}
 \bibcite{Zheng2018}{19}
 \bibcite{Ng2020}{20}
+\@writefile{lot}{\contentsline {table}{\numberline {7}{\ignorespaces Conditional independence test results for mis--specification detection. Missing edges should show significant dependence (reject $H_0$); spurious edges should show non--significant results (fail to reject).}}{19}{table.7}\protected@file@percent }
+\newlabel{tab:ci_results}{{7}{19}{Conditional independence test results for mis--specification detection. Missing edges should show significant dependence (reject $H_0$); spurious edges should show non--significant results (fail to reject)}{table.7}{}}
+\@writefile{lof}{\contentsline {figure}{\numberline {11}{\ignorespaces Conditional independence test statistics for mis--specification detection. Left panel: missing edges (all significant, as expected). Right panel: spurious edges (mostly non--significant, correctly identifying them as false).}}{19}{figure.11}\protected@file@percent }
+\newlabel{fig:ci_tests}{{11}{19}{Conditional independence test statistics for mis--specification detection. Left panel: missing edges (all significant, as expected). Right panel: spurious edges (mostly non--significant, correctly identifying them as false)}{figure.11}{}}
 \bibcite{Lachapelle2020}{21}
-\@writefile{lof}{\contentsline {figure}{\numberline {11}{\ignorespaces Algorithm $F_1$ scores in sensitivity analysis. Performance varies by dataset complexity, with simpler networks (Asia, Sachs) permitting higher accuracy.}}{18}{figure.11}\protected@file@percent }
-\newlabel{fig:sensitivity_algos}{{11}{18}{Algorithm $F_1$ scores in sensitivity analysis. Performance varies by dataset complexity, with simpler networks (Asia, Sachs) permitting higher accuracy}{figure.11}{}}
 \bibcite{Zhu2020}{22}
 \bibcite{Massidda2023}{23}
-\gdef \@abspage@last{19}
+\@writefile{lot}{\contentsline {table}{\numberline {8}{\ignorespaces Algorithm performance in sensitivity analysis (vs.\ true graph).}}{20}{table.8}\protected@file@percent }
+\newlabel{tab:sensitivity_algos}{{8}{20}{Algorithm performance in sensitivity analysis (vs.\ true graph)}{table.8}{}}
+\@writefile{lof}{\contentsline {figure}{\numberline {12}{\ignorespaces Algorithm $F_1$ scores in sensitivity analysis. Performance varies by dataset complexity, with simpler networks (Asia, Sachs) permitting higher accuracy.}}{21}{figure.12}\protected@file@percent }
+\newlabel{fig:sensitivity_algos}{{12}{21}{Algorithm $F_1$ scores in sensitivity analysis. Performance varies by dataset complexity, with simpler networks (Asia, Sachs) permitting higher accuracy}{figure.12}{}}
+\gdef \@abspage@last{21}
