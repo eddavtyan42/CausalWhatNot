@@ -1,0 +1,15 @@
+run0:
+extra Akt->P38
+extra Erk->P38
+missing PKA->Mek
+missing PKC->PKA
+missing PKA->Erk
+missing PKA->Raf
+missing PKC->P38
+missing PKC->Raf
+reversed Akt->Erk
+reversed PIP3->Plcg
+reversed Akt->PKA
+reversed Mek->Raf
+reversed P38->PKA
+reversed Mek->PKC

@@ -1,0 +1,11 @@
+run0:
+extra Dyspnea->LungCancer
+extra Xray->Tuberculosis
+extra Smoking->Dyspnea
+extra Dyspnea->Xray
+extra VisitAsia->Dyspnea
+extra Bronchitis->Tuberculosis
+reversed Xray->Either
+reversed Dyspnea->Either
+reversed Either->Tuberculosis
+reversed Either->LungCancer

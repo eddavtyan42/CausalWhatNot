@@ -20,7 +20,6 @@ algorithms:
     # standardize data for better stability (default: true)
     torch_seed: 0
   cosmo:
-    timeout_s: 120
     n_restarts: 25
     # auto_lambda: true is default - automatically selects lambda1 based on BIC
     # edge_threshold: 0.05 filters weak spurious edges

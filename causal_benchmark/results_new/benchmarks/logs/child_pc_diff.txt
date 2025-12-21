@@ -1,0 +1,23 @@
+run0:
+extra CardiacMixing->Age
+extra DuctFlow->LowerBodyO2
+extra CardiacMixing->RUQO2
+extra ChestXray->Disease
+extra LungFlow->XrayReport
+extra CardiacMixing->LowerBodyO2
+extra Sick->GruntingReport
+missing Sick->Grunting
+missing LungParench->Grunting
+missing Disease->LungFlow
+missing Disease->Sick
+missing LungParench->ChestXray
+missing CardiacMixing->HypDistrib
+missing LungParench->HypoxiaInO2
+reversed CO2Report->CO2
+reversed LVH->Disease
+reversed CO2->LungParench
+reversed HypDistrib->DuctFlow
+reversed LungParench->Disease
+reversed DuctFlow->Disease
+reversed LVHreport->LVH
+reversed XrayReport->ChestXray
