@@ -1,5 +1,7 @@
 import argparse
 import json
+import time
+import yaml
 from pathlib import Path
 import sys
 
@@ -55,10 +57,32 @@ def run(
     n_jobs:
         Parallel jobs for bootstrap resampling. ``-1`` uses all cores.
     """
+    # Load config
+    config_path = Path(__file__).resolve().parents[0] / "config.yaml"
+    with open(config_path) as f:
+        cfg = yaml.safe_load(f)
+    
+    # Parse dataset configs
+    ds_configs = {}
+    for ds_cfg in cfg.get("datasets", []):
+        if isinstance(ds_cfg, dict):
+            ds_configs[ds_cfg.get("name")] = ds_cfg
+        elif isinstance(ds_cfg, str):
+            ds_configs[ds_cfg] = {"name": ds_cfg}
+
+    # Parse algo configs
+    algo_configs = cfg.get("algorithms", {})
+
     rows: list[dict] = []
     for dataset, scenario in SCENARIOS.items():
+        # Determine n_samples from config if not provided via CLI
+        n_samples = sample_size
+        if n_samples is None:
+            ds_cfg = ds_configs.get(dataset, {})
+            n_samples = ds_cfg.get("n_samples")
+
         data, true_graph = load_dataset(
-            dataset, n_samples=sample_size, force=sample_size is not None
+            dataset, n_samples=n_samples, force=True
         )
 
         # Build mis-specified analyst graph by removing a key edge and adding a spurious edge
@@ -151,8 +175,15 @@ def run(
         }
         key_edge = tuple(scenario["missing"]["edge"])
         for name, func in algorithms.items():
+            # Get params from config
+            params = algo_configs.get(name, {}).copy()
+            # Handle per-dataset overrides
+            per_dataset = params.pop("per_dataset", {})
+            if dataset in per_dataset:
+                params.update(per_dataset[dataset])
+
             try:
-                graph, info = func(data.copy())
+                graph, info = func(data.copy(), **params)
                 runtime = info.get("runtime_s", float("nan"))
             except Exception:  # pragma: no cover - safeguard against optional deps
                 graph = nx.DiGraph()
@@ -161,7 +192,7 @@ def run(
                 info = {}
 
             freqs = bootstrap_edge_stability(
-                lambda d: func(d.copy()),
+                lambda d: func(d.copy(), **params),
                 data,
                 b=bootstrap_runs,
                 seed=0,
@@ -248,6 +279,8 @@ def main():
     )
     args = parser.parse_args()
 
+    start_time = time.time()
+
     diff_dir = None
     if args.diff_logs and args.out_dir is not None:
         diff_dir = Path(args.out_dir) / "diff_logs"
@@ -267,6 +300,9 @@ def main():
         out_path.parent.mkdir(parents=True, exist_ok=True)
         with open(out_path, "w") as f:
             json.dump(results.to_dict(orient="records"), f, indent=2)
+
+    elapsed = time.time() - start_time
+    print(f"Total execution time: {elapsed:.2f} seconds")
 
 
 if __name__ == "__main__":

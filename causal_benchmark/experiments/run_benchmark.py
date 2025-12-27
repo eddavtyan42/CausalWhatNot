@@ -1,6 +1,7 @@
 import argparse
 import importlib
 import yaml
+import time
 from pathlib import Path
 import pandas as pd
 import warnings
@@ -51,6 +52,7 @@ def run(
     output_dir: str | Path | None = None,
     parallel_jobs: int | None = None,
 ):
+    start_time = time.time()
     with open(config_path) as f:
         cfg = yaml.safe_load(f)
 
@@ -348,6 +350,10 @@ def run(
     summary_csv = base_dir / "summary_metrics.csv"
     df.to_csv(summary_csv, index=False)
     logger.info("Benchmark completed: summary=%s rows=%d", str(summary_csv), len(df))
+
+    elapsed = time.time() - start_time
+    logger.info(f"Total execution time: {elapsed:.2f} seconds")
+    print(f"Total execution time: {elapsed:.2f} seconds")
 
 
 def main():
