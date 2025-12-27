@@ -21,6 +21,7 @@ from metrics.metrics import precision_recall_f1, shd
 from metrics.bootstrap import bootstrap_edge_stability
 from experiments.perturbation_scenarios import SCENARIOS
 from causallearn.utils.cit import FisherZ, Chisq_or_Gsq
+from utils.provenance import save_run_metadata, save_graph_artifacts
 
 
 def compare_graphs(pred: nx.DiGraph, ref: nx.DiGraph):
@@ -45,6 +46,7 @@ def run(
     bootstrap_runs: int = 0,
     n_jobs: int = -1,
     diff_dir: Path | None = None,
+    output_dir: Path | None = None,
 ):
     """Run sensitivity analysis across predefined scenarios.
 
@@ -56,6 +58,10 @@ def run(
         Number of bootstrap resamples per algorithm for edge stability.
     n_jobs:
         Parallel jobs for bootstrap resampling. ``-1`` uses all cores.
+    diff_dir:
+        Directory to write diff logs.
+    output_dir:
+        Base directory for outputs (artifacts will be in output_dir/outputs).
     """
     # Load config
     config_path = Path(__file__).resolve().parents[0] / "config.yaml"
@@ -72,6 +78,12 @@ def run(
 
     # Parse algo configs
     algo_configs = cfg.get("algorithms", {})
+
+    # Setup artifacts directory
+    if output_dir is None:
+        output_dir = Path(__file__).resolve().parents[1] / "results_new" / "sensitivity"
+    artifacts_dir = output_dir / "outputs"
+    artifacts_dir.mkdir(parents=True, exist_ok=True)
 
     rows: list[dict] = []
     for dataset, scenario in SCENARIOS.items():
@@ -191,6 +203,29 @@ def run(
                 runtime = float("nan")
                 info = {}
 
+            # Save provenance
+            base_filename = f"{dataset}_{name}"
+            dataset_path = Path(__file__).resolve().parents[1] / "data" / dataset / f"{dataset}_data.csv"
+            
+            save_run_metadata(
+                output_path=artifacts_dir / f"{base_filename}_meta.json",
+                dataset_name=dataset,
+                dataset_path=dataset_path,
+                n_samples=len(data),
+                algorithm_name=name,
+                algorithm_params=params,
+                random_seed=0, 
+                preprocessing_info={"scenario": scenario}
+            )
+            
+            save_graph_artifacts(
+                output_dir=artifacts_dir,
+                base_filename=base_filename,
+                graph=graph,
+                nodes=list(data.columns),
+                raw_adjacency=None
+            )
+
             freqs = bootstrap_edge_stability(
                 lambda d: func(d.copy(), **params),
                 data,
@@ -290,6 +325,7 @@ def main():
         bootstrap_runs=args.bootstrap_runs,
         n_jobs=args.n_jobs,
         diff_dir=diff_dir,
+        output_dir=Path(args.out_dir) if args.out_dir else None,
     )
     if args.out_dir is not None:
         out_dir = Path(args.out_dir)
