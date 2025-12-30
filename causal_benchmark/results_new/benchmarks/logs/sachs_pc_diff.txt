@@ -1,7 +1,0 @@
-run0:
-missing PKC->Raf
-missing PKC->P38
-missing PKA->Erk
-reversed Jnk->PKC
-reversed PKA->PKC
-reversed Jnk->PKA

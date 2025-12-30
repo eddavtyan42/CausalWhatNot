@@ -1,9 +1,0 @@
-run0:
-extra Dyspnea->Xray
-extra Xray->Tuberculosis
-extra Smoking->Dyspnea
-reversed Dyspnea->Bronchitis
-reversed Dyspnea->Either
-reversed Tuberculosis->VisitAsia
-reversed LungCancer->Smoking
-reversed Xray->Either

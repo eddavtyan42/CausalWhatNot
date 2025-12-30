@@ -292,20 +292,20 @@ def run(
 
 
 def main():
-    parser = argparse.ArgumentParser(description="Phase 3 sensitivity analysis")
+    parser = argparse.ArgumentParser(description="Sensitivity Analysis")
     parser.add_argument("--n-samples", type=int, default=None, help="Sample size for each dataset")
     parser.add_argument(
         "--bootstrap-runs", type=int, default=0, help="Number of bootstrap runs"
     )
     parser.add_argument(
-        "--n-jobs", type=int, default=-1, help="Parallel jobs for bootstrap runs"
+        "--n-jobs", type=int, default=4, help="Parallel jobs for bootstrap runs (default: 4, use -1 for all cores)"
     )
     parser.add_argument("--out", type=str, default=None, help="Output path for JSON results")
     parser.add_argument(
         "--out-dir",
         type=str,
         default=None,
-        help="Directory to write phase3_results.csv",
+        help="Directory to write sensitivity_analysis_results.csv",
     )
     parser.add_argument(
         "--diff-logs",
@@ -320,22 +320,33 @@ def main():
     if args.diff_logs and args.out_dir is not None:
         diff_dir = Path(args.out_dir) / "diff_logs"
 
+    # Determine output directory (use provided or default)
+    if args.out_dir is not None:
+        results_dir = Path(args.out_dir)
+    else:
+        results_dir = Path(__file__).resolve().parents[1] / "results_new" / "sensitivity"
+    
     results = run(
         sample_size=args.n_samples,
         bootstrap_runs=args.bootstrap_runs,
         n_jobs=args.n_jobs,
         diff_dir=diff_dir,
-        output_dir=Path(args.out_dir) if args.out_dir else None,
+        output_dir=results_dir,
     )
-    if args.out_dir is not None:
-        out_dir = Path(args.out_dir)
-        out_dir.mkdir(parents=True, exist_ok=True)
-        results.to_csv(out_dir / "phase3_results.csv", index=False)
+    
+    # Always save results to CSV
+    results_dir.mkdir(parents=True, exist_ok=True)
+    csv_path = results_dir / "sensitivity_analysis_results.csv"
+    results.to_csv(csv_path, index=False)
+    print(f"Saved results to {csv_path}")
+    
+    # Also save as JSON if requested
     if args.out is not None:
         out_path = Path(args.out)
         out_path.parent.mkdir(parents=True, exist_ok=True)
         with open(out_path, "w") as f:
             json.dump(results.to_dict(orient="records"), f, indent=2)
+        print(f"Saved JSON results to {out_path}")
 
     elapsed = time.time() - start_time
     print(f"Total execution time: {elapsed:.2f} seconds")
