@@ -1,5 +1,7 @@
 import argparse
 import json
+import time
+import yaml
 from pathlib import Path
 import sys
 
@@ -17,8 +19,9 @@ from utils.loaders import load_dataset, is_discrete
 from utils.helpers import edge_differences
 from metrics.metrics import precision_recall_f1, shd
 from metrics.bootstrap import bootstrap_edge_stability
-from experiments.phase3_scenarios import SCENARIOS
+from experiments.perturbation_scenarios import SCENARIOS
 from causallearn.utils.cit import FisherZ, Chisq_or_Gsq
+from utils.provenance import save_run_metadata, save_graph_artifacts
 
 
 def compare_graphs(pred: nx.DiGraph, ref: nx.DiGraph):
@@ -43,6 +46,7 @@ def run(
     bootstrap_runs: int = 0,
     n_jobs: int = -1,
     diff_dir: Path | None = None,
+    output_dir: Path | None = None,
 ):
     """Run sensitivity analysis across predefined scenarios.
 
@@ -54,11 +58,43 @@ def run(
         Number of bootstrap resamples per algorithm for edge stability.
     n_jobs:
         Parallel jobs for bootstrap resampling. ``-1`` uses all cores.
+    diff_dir:
+        Directory to write diff logs.
+    output_dir:
+        Base directory for outputs (artifacts will be in output_dir/outputs).
     """
+    # Load config
+    config_path = Path(__file__).resolve().parents[0] / "config.yaml"
+    with open(config_path) as f:
+        cfg = yaml.safe_load(f)
+    
+    # Parse dataset configs
+    ds_configs = {}
+    for ds_cfg in cfg.get("datasets", []):
+        if isinstance(ds_cfg, dict):
+            ds_configs[ds_cfg.get("name")] = ds_cfg
+        elif isinstance(ds_cfg, str):
+            ds_configs[ds_cfg] = {"name": ds_cfg}
+
+    # Parse algo configs
+    algo_configs = cfg.get("algorithms", {})
+
+    # Setup artifacts directory
+    if output_dir is None:
+        output_dir = Path(__file__).resolve().parents[1] / "results_new" / "sensitivity"
+    artifacts_dir = output_dir / "outputs"
+    artifacts_dir.mkdir(parents=True, exist_ok=True)
+
     rows: list[dict] = []
     for dataset, scenario in SCENARIOS.items():
+        # Determine n_samples from config if not provided via CLI
+        n_samples = sample_size
+        if n_samples is None:
+            ds_cfg = ds_configs.get(dataset, {})
+            n_samples = ds_cfg.get("n_samples")
+
         data, true_graph = load_dataset(
-            dataset, n_samples=sample_size, force=sample_size is not None
+            dataset, n_samples=n_samples, force=True
         )
 
         # Build mis-specified analyst graph by removing a key edge and adding a spurious edge
@@ -151,8 +187,15 @@ def run(
         }
         key_edge = tuple(scenario["missing"]["edge"])
         for name, func in algorithms.items():
+            # Get params from config
+            params = algo_configs.get(name, {}).copy()
+            # Handle per-dataset overrides
+            per_dataset = params.pop("per_dataset", {})
+            if dataset in per_dataset:
+                params.update(per_dataset[dataset])
+
             try:
-                graph, info = func(data.copy())
+                graph, info = func(data.copy(), **params)
                 runtime = info.get("runtime_s", float("nan"))
             except Exception:  # pragma: no cover - safeguard against optional deps
                 graph = nx.DiGraph()
@@ -160,8 +203,31 @@ def run(
                 runtime = float("nan")
                 info = {}
 
+            # Save provenance
+            base_filename = f"{dataset}_{name}"
+            dataset_path = Path(__file__).resolve().parents[1] / "data" / dataset / f"{dataset}_data.csv"
+            
+            save_run_metadata(
+                output_path=artifacts_dir / f"{base_filename}_meta.json",
+                dataset_name=dataset,
+                dataset_path=dataset_path,
+                n_samples=len(data),
+                algorithm_name=name,
+                algorithm_params=params,
+                random_seed=0, 
+                preprocessing_info={"scenario": scenario}
+            )
+            
+            save_graph_artifacts(
+                output_dir=artifacts_dir,
+                base_filename=base_filename,
+                graph=graph,
+                nodes=list(data.columns),
+                raw_adjacency=None
+            )
+
             freqs = bootstrap_edge_stability(
-                lambda d: func(d.copy()),
+                lambda d: func(d.copy(), **params),
                 data,
                 b=bootstrap_runs,
                 seed=0,
@@ -226,20 +292,20 @@ def run(
 
 
 def main():
-    parser = argparse.ArgumentParser(description="Phase 3 sensitivity analysis")
+    parser = argparse.ArgumentParser(description="Sensitivity Analysis")
     parser.add_argument("--n-samples", type=int, default=None, help="Sample size for each dataset")
     parser.add_argument(
         "--bootstrap-runs", type=int, default=0, help="Number of bootstrap runs"
     )
     parser.add_argument(
-        "--n-jobs", type=int, default=-1, help="Parallel jobs for bootstrap runs"
+        "--n-jobs", type=int, default=4, help="Parallel jobs for bootstrap runs (default: 4, use -1 for all cores)"
     )
     parser.add_argument("--out", type=str, default=None, help="Output path for JSON results")
     parser.add_argument(
         "--out-dir",
         type=str,
         default=None,
-        help="Directory to write phase3_results.csv",
+        help="Directory to write sensitivity_analysis_results.csv",
     )
     parser.add_argument(
         "--diff-logs",
@@ -248,25 +314,42 @@ def main():
     )
     args = parser.parse_args()
 
+    start_time = time.time()
+
     diff_dir = None
     if args.diff_logs and args.out_dir is not None:
         diff_dir = Path(args.out_dir) / "diff_logs"
 
+    # Determine output directory (use provided or default)
+    if args.out_dir is not None:
+        results_dir = Path(args.out_dir)
+    else:
+        results_dir = Path(__file__).resolve().parents[1] / "results_new" / "sensitivity"
+    
     results = run(
         sample_size=args.n_samples,
         bootstrap_runs=args.bootstrap_runs,
         n_jobs=args.n_jobs,
         diff_dir=diff_dir,
+        output_dir=results_dir,
     )
-    if args.out_dir is not None:
-        out_dir = Path(args.out_dir)
-        out_dir.mkdir(parents=True, exist_ok=True)
-        results.to_csv(out_dir / "phase3_results.csv", index=False)
+    
+    # Always save results to CSV
+    results_dir.mkdir(parents=True, exist_ok=True)
+    csv_path = results_dir / "sensitivity_analysis_results.csv"
+    results.to_csv(csv_path, index=False)
+    print(f"Saved results to {csv_path}")
+    
+    # Also save as JSON if requested
     if args.out is not None:
         out_path = Path(args.out)
         out_path.parent.mkdir(parents=True, exist_ok=True)
         with open(out_path, "w") as f:
             json.dump(results.to_dict(orient="records"), f, indent=2)
+        print(f"Saved JSON results to {out_path}")
+
+    elapsed = time.time() - start_time
+    print(f"Total execution time: {elapsed:.2f} seconds")
 
 
 if __name__ == "__main__":

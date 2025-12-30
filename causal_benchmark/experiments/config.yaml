@@ -2,26 +2,30 @@ datasets:
   # Each entry may be just the dataset name or a mapping with additional
   # options. "n_samples" controls how many observations are generated.
   - name: asia
+    n_samples: 1000
   - name: sachs
-    n_samples: 5000
+    n_samples: 1000
   - name: alarm
+    n_samples: 1000
   - name: child
+    n_samples: 1000
   - name: insurance
+    n_samples: 1000
 algorithms:
   pc: {}
   ges:
     # default score for non-discrete datasets
     score_func: bic
     # prefer BDeu on 'sachs' to avoid empty graphs under BIC
-    per_dataset:
-      sachs: { score_func: bdeu }
+    per_dataset: {}
   notears:
-    # slightly higher threshold to reduce over-selection
-    threshold: 0.2
+    # threshold is auto-selected: 0.1 for continuous, 0.25 for discrete
+    # standardize data for better stability (default: true)
     torch_seed: 0
   cosmo:
-    timeout_s: 60
-    n_restarts: 1
+    n_restarts: 25
+    # auto_lambda: true is default - automatically selects lambda1 based on BIC
+    # edge_threshold: 0.05 filters weak spurious edges
 bootstrap_runs: 0
 record_edge_stability: true
 orientation_metrics: true

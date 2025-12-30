@@ -1,0 +1,50 @@
+#############################
+# Sensitivity Analysis
+# Required: none
+# Key outputs:
+#   sensitivity_results.csv (in --out-dir)
+#   sensitivity_results.json (if --out specified)
+#   diff_logs/ (if --diff-logs and --out-dir)
+# Adjust --n-samples / --bootstrap-runs as needed. Set --bootstrap-runs 0 to skip stability frequencies.
+#############################
+python -m causal_benchmark.experiments.sensitivity_analysis \
+  --n-samples 500 \
+  --bootstrap-runs 10 \
+  --n-jobs -1 \
+  --out-dir "/Users/edavtyan/Documents/Personal Projects/CausalWhatNot/causal_benchmark/results/sensitivity" \
+  --out "/Users/edavtyan/Documents/Personal Projects/CausalWhatNot/causal_benchmark/results/sensitivity/sensitivity_results.json" \
+  --diff-logs
+
+# Minimal (full data, no bootstrap, just CSV):
+python -m causal_benchmark.experiments.sensitivity_analysis \
+  --out-dir "/Users/edavtyan/Documents/Personal Projects/CausalWhatNot/causal_benchmark/results/sensitivity"
+
+
+#############################
+# Benchmark Runner
+# Uses config YAML to define datasets/algorithms.
+# Outputs inside --out-dir:
+#   summary_metrics.csv
+#   outputs/  (adjacency CSVs when bootstrap_runs==0)
+#   logs/     (per algo logs, *_diff.txt, *_diff_runX.json, benchmark_session.log)
+# Optional config keys: bootstrap_runs, record_edge_stability, orientation_metrics,
+#                       parallel_jobs, datasets (with alias/n_samples), algorithms params with timeout_s.
+#############################
+python -m causal_benchmark.experiments.run_benchmark \
+  --config causal_benchmark/experiments/config.yaml \
+  --out-dir causal_benchmark/results/benchmark \
+  --parallel-jobs -1
+
+# Run with custom output dir (absolute path example):
+python -m causal_benchmark.experiments.run_benchmark \
+  --config "/Users/edavtyan/Documents/Personal Projects/CausalWhatNot/causal_benchmark/experiments/config.yaml" \
+  --out-dir "/Users/edavtyan/Documents/Personal Projects/CausalWhatNot/causal_benchmark/results/benchmarks" \
+  --parallel-jobs 8
+
+# Debug single-thread (forces sequential execution) and default config path:
+python -m causal_benchmark.experiments.run_benchmark
+
+# If you need to override just parallel jobs (use config default paths):
+python -m causal_benchmark.experiments.run_benchmark --parallel-jobs 2
+
+

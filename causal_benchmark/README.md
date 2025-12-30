@@ -12,7 +12,7 @@ python experiments/run_benchmark.py --config experiments/config.yaml
 To run the phase 3 sensitivity analysis and write a summary CSV:
 
 ```bash
-python experiments/phase3_sensitivity_analysis.py \
+python experiments/sensitivity_analysis.py \
     --n-samples 100 \
     --bootstrap-runs 10 \
     --out-dir results \

@@ -63,8 +63,34 @@ def run(
         raise AttributeError("Unknown graph representation returned by PC")
 
     dag, meta = causallearn_to_dag(amat, data.columns)
+    
+    # Handle cycles if they exist (rare but possible with PC on finite data)
     if not nx.is_directed_acyclic_graph(dag):
-        raise RuntimeError("PC produced a cyclic graph")
+        logger.warning("PC produced a cyclic graph; attempting to repair by removing edges.")
+        
+        cycles_removed = 0
+        max_removals = dag.number_of_edges()  # Safety bound
+        
+        while cycles_removed < max_removals:
+            try:
+                cycle = nx.find_cycle(dag)
+                u, v = cycle[-1]
+                dag.remove_edge(u, v)
+                cycles_removed += 1
+                # Log periodically to avoid flooding logs and I/O contention in parallel runs
+                if cycles_removed % 50 == 0:
+                    logger.warning("Cycle repair in progress: removed %d edges so far...", cycles_removed)
+            except nx.NetworkXNoCycle:
+                break
+        
+        if cycles_removed > 0:
+            logger.warning("Cycle repair complete: removed %d edges total", cycles_removed)
+            meta["cycle_repaired"] = True
+            meta["edges_removed_for_acyclicity"] = cycles_removed
+
+    if not nx.is_directed_acyclic_graph(dag):
+        raise RuntimeError("PC produced a cyclic graph and repair failed")
+        
     meta.update({
         "runtime_s": runtime,
         "raw_obj": cg,

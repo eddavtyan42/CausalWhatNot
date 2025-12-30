@@ -1,6 +1,7 @@
 import argparse
 import importlib
 import yaml
+import time
 from pathlib import Path
 import pandas as pd
 import warnings
@@ -16,6 +17,7 @@ sys.path.append(str(Path(__file__).resolve().parents[1]))
 from utils.loaders import load_dataset
 from utils.helpers import edge_differences, dump_edge_differences_json
 from utils.logging_utils import setup_logging
+from utils.provenance import save_run_metadata, save_graph_artifacts
 from metrics.metrics import (
     shd,
     precision_recall_f1,
@@ -51,6 +53,7 @@ def run(
     output_dir: str | Path | None = None,
     parallel_jobs: int | None = None,
 ):
+    start_time = time.time()
     with open(config_path) as f:
         cfg = yaml.safe_load(f)
 
@@ -167,7 +170,42 @@ def run(
                 diff_json_path = logs_dir / f"{alias}_{algo_name}_diff_run{b}.json"
                 dump_edge_differences_json(extra, missing, rev, diff_json_path)
                 logger.info("Edge diffs written: dataset=%s algo=%s bootstrap=%d file=%s", alias, algo_name, b, str(diff_json_path))
+                
+                # Save provenance metadata and artifacts
+                base_filename = f"{alias}_{algo_name}_run{b}" if bootstrap > 0 else f"{alias}_{algo_name}"
+                
+                # Save metadata
+                meta_path = outputs_dir / f"{base_filename}_meta.json"
+                # We need to reconstruct the dataset path. load_dataset uses BASE_DIR internally.
+                # Assuming standard location for now or we could expose it from load_dataset.
+                # For now, we'll use a placeholder or try to infer.
+                # Actually, load_dataset returns data, true_graph. It doesn't return the path.
+                # We can construct the expected path.
+                dataset_path = Path(__file__).resolve().parents[1] / "data" / dataset / f"{dataset}_data.csv"
+                
+                save_run_metadata(
+                    output_path=meta_path,
+                    dataset_name=alias,
+                    dataset_path=dataset_path,
+                    n_samples=len(d_run),
+                    algorithm_name=algo_name,
+                    algorithm_params=params,
+                    random_seed=b, # Using bootstrap index as seed proxy
+                    preprocessing_info={"bootstrap_iteration": b} if bootstrap > 0 else {}
+                )
+                
+                # Save graph artifacts
+                save_graph_artifacts(
+                    output_dir=outputs_dir,
+                    base_filename=base_filename,
+                    graph=graph,
+                    nodes=list(data.columns),
+                    raw_adjacency=None # We don't have raw weighted adj easily available here without modifying algos
+                )
+                logger.info("Artifacts saved: dataset=%s algo=%s base=%s", alias, algo_name, base_filename)
+
                 if bootstrap == 0:
+                    # Legacy CSV save (kept for compatibility, though artifacts cover it)
                     adj_path = outputs_dir / f"{alias}_{algo_name}.csv"
                     mat = nx.to_numpy_array(graph, nodelist=data.columns)
                     pd.DataFrame(mat, index=data.columns, columns=data.columns).to_csv(adj_path)
@@ -191,6 +229,11 @@ def run(
 
         ok_metrics = [m for m, e in zip(run_metrics, errors) if not e]
         ok_times = [t for t, e in zip(run_times, errors) if not e]
+        # Initialize orientation metric arrays to avoid UnboundLocalError when orient_metrics is False
+        d_prec = np.array([], dtype=float)
+        d_rec = np.array([], dtype=float)
+        d_f1 = np.array([], dtype=float)
+        shd_dir_vals = np.array([], dtype=float)
         if len(ok_metrics) == 0:
             # If every run failed, fall back to the metrics computed for the
             # empty graphs recorded above.  This provides defined precision,
@@ -343,6 +386,10 @@ def run(
     summary_csv = base_dir / "summary_metrics.csv"
     df.to_csv(summary_csv, index=False)
     logger.info("Benchmark completed: summary=%s rows=%d", str(summary_csv), len(df))
+
+    elapsed = time.time() - start_time
+    logger.info(f"Total execution time: {elapsed:.2f} seconds")
+    print(f"Total execution time: {elapsed:.2f} seconds")
 
 
 def main():
