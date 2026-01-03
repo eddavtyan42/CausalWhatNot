@@ -8,7 +8,7 @@ import sys
 import networkx as nx
 import numpy as np
 import pandas as pd
-from scipy.stats import chi2_contingency
+from scipy.stats import chi2_contingency, norm
 
 # Allow running as a script
 sys.path.append(str(Path(__file__).resolve().parents[1]))
@@ -47,6 +47,7 @@ def run(
     n_jobs: int = -1,
     diff_dir: Path | None = None,
     output_dir: Path | None = None,
+    benchmark_dir: Path | None = None,
 ):
     """Run sensitivity analysis across predefined scenarios.
 
@@ -62,6 +63,8 @@ def run(
         Directory to write diff logs.
     output_dir:
         Base directory for outputs (artifacts will be in output_dir/outputs).
+    benchmark_dir:
+        Optional directory containing existing benchmark results to reuse.
     """
     # Load config
     config_path = Path(__file__).resolve().parents[0] / "config.yaml"
@@ -166,6 +169,11 @@ def run(
                 Z = 0.5 * np.log((1 + r) / (1 - r))
                 stat = np.sqrt(len(data) - len(cond_idx) - 3) * abs(Z)
                 test_name = "fisher_z"
+                # Compute log p-value for extreme tails (two-sided test)
+                # p = 2 * (1 - CDF(|Z|)) = 2 * SF(|Z|)
+                # log(p) = log(2) + log(SF(|Z|))
+                log_p_val = np.log(2) + norm.logsf(stat)
+
             rows.append(
                 {
                     "dataset": dataset,
@@ -175,6 +183,7 @@ def run(
                     "ci_test": test_name,
                     "statistic": float(stat),
                     "p_value": float(p_val),
+                    "log_p_value": float(log_p_val) if test_name == "fisher_z" else np.nan,
                     "reject": bool(p_val < alpha),
                 }
             )
@@ -194,14 +203,48 @@ def run(
             if dataset in per_dataset:
                 params.update(per_dataset[dataset])
 
-            try:
-                graph, info = func(data.copy(), **params)
-                runtime = info.get("runtime_s", float("nan"))
-            except Exception:  # pragma: no cover - safeguard against optional deps
-                graph = nx.DiGraph()
-                graph.add_nodes_from(data.columns)
-                runtime = float("nan")
-                info = {}
+            graph = None
+            info = {}
+            runtime = float("nan")
+            
+            # Try to load from benchmark artifacts if available
+            if benchmark_dir is not None:
+                # Look for {dataset}_{name}_run0_edges.json or similar
+                # We prefer loading the graph directly.
+                # The benchmark saves: outputs/{dataset}_{name}_run0_edges.json
+                # Or outputs/{dataset}_{name}_edges.json (if bootstrap=0)
+                # But benchmark usually runs with bootstrap > 0, so run0 is standard.
+                
+                # Try run0 first (standard for bootstrap runs)
+                artifact_path = benchmark_dir / "outputs" / f"{dataset}_{name}_run0_edges.json"
+                if not artifact_path.exists():
+                     # Try non-bootstrap name
+                     artifact_path = benchmark_dir / "outputs" / f"{dataset}_{name}_edges.json"
+                
+                if artifact_path.exists():
+                    try:
+                        with open(artifact_path, "r") as f:
+                            edge_list = json.load(f)
+                        graph = nx.DiGraph()
+                        graph.add_nodes_from(data.columns)
+                        for e in edge_list:
+                            graph.add_edge(e["source"], e["target"])
+                        # We don't have runtime or info easily available without parsing meta, 
+                        # but we don't strictly need them for sensitivity analysis metrics.
+                        print(f"Loaded cached graph for {dataset} {name} from {artifact_path}")
+                    except Exception as e:
+                        print(f"Failed to load cached graph {artifact_path}: {e}")
+                        graph = None
+
+            if graph is None:
+                try:
+                    graph, info = func(data.copy(), **params)
+                    runtime = info.get("runtime_s", float("nan"))
+                except Exception:  # pragma: no cover - safeguard against optional deps
+                    graph = nx.DiGraph()
+                    graph.add_nodes_from(data.columns)
+                    runtime = float("nan")
+                    info = {}
 
             # Save provenance
             base_filename = f"{dataset}_{name}"
@@ -226,13 +269,31 @@ def run(
                 raw_adjacency=None
             )
 
-            freqs = bootstrap_edge_stability(
-                lambda d: func(d.copy(), **params),
-                data,
-                b=bootstrap_runs,
-                seed=0,
-                n_jobs=n_jobs,
-            )
+            # Stability: Try to load from benchmark logs if available
+            freqs = {}
+            loaded_stability = False
+            if benchmark_dir is not None:
+                stab_path = benchmark_dir / "logs" / f"{dataset}_{name}_stability.csv"
+                if stab_path.exists():
+                    try:
+                        stab_df = pd.read_csv(stab_path)
+                        # Convert to dict: (source, target) -> frequency
+                        for _, row in stab_df.iterrows():
+                            freqs[(row["source"], row["target"])] = row["frequency"]
+                        loaded_stability = True
+                        print(f"Loaded stability metrics for {dataset} {name} from {stab_path}")
+                    except Exception as e:
+                        print(f"Failed to load stability {stab_path}: {e}")
+
+            if not loaded_stability:
+                freqs = bootstrap_edge_stability(
+                    lambda d: func(d.copy(), **params),
+                    data,
+                    b=bootstrap_runs,
+                    seed=0,
+                    n_jobs=n_jobs,
+                )
+            
             key_freq = freqs.get(key_edge, 0.0)
 
             bic = info.get("bic", float("nan"))
@@ -312,6 +373,12 @@ def main():
         action="store_true",
         help="Write per-algorithm diff logs to the output directory",
     )
+    parser.add_argument(
+        "--benchmark-dir",
+        type=str,
+        default=None,
+        help="Directory containing benchmark results (outputs/ and logs/) to reuse instead of re-running algorithms.",
+    )
     args = parser.parse_args()
 
     start_time = time.time()
@@ -332,6 +399,7 @@ def main():
         n_jobs=args.n_jobs,
         diff_dir=diff_dir,
         output_dir=results_dir,
+        benchmark_dir=Path(args.benchmark_dir) if args.benchmark_dir else None,
     )
     
     # Always save results to CSV
