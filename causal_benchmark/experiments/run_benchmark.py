@@ -96,7 +96,7 @@ def run(
             data, true_graph = load_dataset(dataset)
         logger.info("Loaded dataset: alias=%s shape=%s nodes=%d edges=%d", alias, str(data.shape), true_graph.number_of_nodes(), true_graph.number_of_edges())
 
-        dataset_infos.append((alias, data, true_graph))
+        dataset_infos.append((dataset, alias, data, true_graph))
 
     # Algorithms configuration can include optional per-dataset overrides, e.g.:
     # algorithms:
@@ -106,7 +106,17 @@ def run(
     #     score_func: bic  # default
     cfg_algorithms = cfg.get("algorithms", {})
 
-    def process_pair(alias: str, data: pd.DataFrame, true_graph: nx.DiGraph, algo_name: str, params: dict):
+    def process_pair(dataset_name: str, alias: str, data: pd.DataFrame, true_graph: nx.DiGraph, algo_name: str, params: dict):
+        # Skip if not in our target list for this partial run
+        # This is a hack to filter the cross-product of datasets x algorithms
+        target_pairs = {
+            ("alarm", "ges"),
+            ("insurance", "ges"),
+            ("child", "pc")
+        }
+        if (alias, algo_name) not in target_pairs:
+            return None
+
         logger.info("Starting algorithm: dataset=%s algo=%s params=%s", alias, algo_name, params)
         mod = importlib.import_module(f"algorithms.{algo_name}")
         params = dict(params)
@@ -181,8 +191,11 @@ def run(
                 # For now, we'll use a placeholder or try to infer.
                 # Actually, load_dataset returns data, true_graph. It doesn't return the path.
                 # We can construct the expected path.
-                dataset_path = Path(__file__).resolve().parents[1] / "data" / dataset / f"{dataset}_data.csv"
+                dataset_path = Path(__file__).resolve().parents[1] / "data" / dataset_name / f"{dataset_name}_data.csv"
                 
+                if not dataset_path.exists():
+                    logger.error(f"Computed dataset path {dataset_path} does not exist! Provenance metadata will be incorrect.")
+
                 save_run_metadata(
                     output_path=meta_path,
                     dataset_name=alias,
@@ -191,7 +204,8 @@ def run(
                     algorithm_name=algo_name,
                     algorithm_params=params,
                     random_seed=b, # Using bootstrap index as seed proxy
-                    preprocessing_info={"bootstrap_iteration": b} if bootstrap > 0 else {}
+                    preprocessing_info={"bootstrap_iteration": b} if bootstrap > 0 else {},
+                    include_environment_snapshot=True
                 )
                 
                 # Save graph artifacts
@@ -374,10 +388,10 @@ def run(
         return base
 
     tasks = []
-    for alias, data, true_graph in dataset_infos:
+    for dataset, alias, data, true_graph in dataset_infos:
         for algo_name, algo_params in cfg_algorithms.items():
             params = _merge_algo_params(algo_params if isinstance(algo_params, dict) else {}, alias)
-            tasks.append(joblib.delayed(process_pair)(alias, data, true_graph, algo_name, params))
+            tasks.append(joblib.delayed(process_pair)(dataset, alias, data, true_graph, algo_name, params))
     logger.info("Launching parallel runs: tasks=%d parallel_jobs=%d", len(tasks), parallel_jobs)
     summary_rows.extend(joblib.Parallel(n_jobs=parallel_jobs, prefer="threads")(tasks))
     logger.info("Parallel runs finished: gathered_rows=%d", len(summary_rows))
