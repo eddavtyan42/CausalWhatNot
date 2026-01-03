@@ -1,10 +1,13 @@
 import json
 import hashlib
+import importlib
+import subprocess
 import platform
 import sys
 import pandas as pd
 import numpy as np
 import networkx as nx
+from importlib import metadata
 from pathlib import Path
 from typing import Dict, Any, List, Tuple
 
@@ -25,22 +28,48 @@ def get_library_versions() -> Dict[str, str]:
         "numpy": np.__version__,
         "networkx": nx.__version__,
     }
-    try:
-        import sklearn
-        libs["scikit-learn"] = sklearn.__version__
-    except ImportError:
-        pass
-    try:
-        import causallearn
-        # causallearn might not expose __version__ directly
-        try:
-            from importlib.metadata import version
-            libs["causal-learn"] = version("causal-learn")
-        except Exception:
-            libs["causal-learn"] = getattr(causallearn, "__version__", "unknown")
-    except ImportError:
-        pass
+    optional_packages = {
+        "scikit-learn": ("sklearn", "scikit-learn"),
+        "causal-learn": ("causallearn", "causal-learn"),
+        "causalnex": ("causalnex", "causalnex"),
+        "torch": ("torch", "torch"),
+        "statsmodels": ("statsmodels", "statsmodels"),
+        "scipy": ("scipy", "scipy"),
+        "joblib": ("joblib", "joblib"),
+    }
+    for display_name, (module_name, package_name) in optional_packages.items():
+        version_value = _get_optional_version(module_name, package_name)
+        if version_value is not None:
+            libs[display_name] = version_value
     return libs
+
+def _get_optional_version(module_name: str, package_name: str) -> str | None:
+    """Return module version if available, otherwise fallback to package metadata."""
+    try:
+        module = importlib.import_module(module_name)
+    except ModuleNotFoundError:
+        return None
+    module_version = getattr(module, "__version__", None)
+    if module_version:
+        return module_version
+    try:
+        return metadata.version(package_name)
+    except metadata.PackageNotFoundError:
+        return "unknown"
+
+def capture_environment_snapshot() -> str | None:
+    """Capture a pip freeze snapshot for provenance."""
+    try:
+        result = subprocess.run(
+            [sys.executable, "-m", "pip", "freeze"],
+            check=True,
+            stdout=subprocess.PIPE,
+            stderr=subprocess.PIPE,
+            text=True,
+        )
+    except (subprocess.CalledProcessError, FileNotFoundError):
+        return None
+    return result.stdout.strip()
 
 def save_run_metadata(
     output_path: Path,
@@ -51,8 +80,12 @@ def save_run_metadata(
     algorithm_params: Dict[str, Any],
     random_seed: int | None = None,
     preprocessing_info: Dict[str, Any] | None = None,
+    include_environment_snapshot: bool = False,
 ):
     """Save metadata for a single experiment run."""
+    environment_snapshot = None
+    if include_environment_snapshot:
+        environment_snapshot = capture_environment_snapshot()
     metadata = {
         "dataset": {
             "name": dataset_name,
@@ -67,6 +100,7 @@ def save_run_metadata(
         "environment": {
             "random_seed": random_seed,
             "libraries": get_library_versions(),
+            "environment_snapshot": environment_snapshot,
         },
         "preprocessing": preprocessing_info or {},
     }
