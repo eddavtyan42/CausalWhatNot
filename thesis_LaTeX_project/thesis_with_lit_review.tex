@@ -1030,6 +1030,27 @@ complexity in its dependencies.
 
 \subsection{Cross-Dataset Patterns}\label{sec:results_cross_dataset}
 
+\subsubsection{Data Type Effects on Algorithm Performance}
+Before examining specific cross-dataset patterns, we first examine how data type
+influences algorithm performance. Figure~\ref{fig:performance_datatype} aggregates
+results by data type, revealing stark differences in algorithm behavior between
+continuous and discrete domains. NOTEARS achieves perfect performance on the continuous
+Sachs dataset ($F_1 = 1.00$, SHD = 0) but averages only $F_1 = 0.68$ on discrete
+networks---a 32-percentage-point drop. In contrast, PC maintains consistent performance:
+$F_1 = 0.87$ on Sachs versus an average of $F_1 = 0.76$ on discrete datasets, demonstrating
+greater robustness across data types. This pattern confirms that NOTEARS' linear-Gaussian
+assumptions align well with continuous data but become severely misspecified when applied
+to discretised observations. GES shows moderate data-type sensitivity, with $F_1 = 0.77$
+on Sachs but averaging $F_1 = 0.71$ on discrete networks, while COSMO exhibits the least
+variation ($F_1 = 0.72$ continuous, $F_1 = 0.69$ discrete average).
+
+\begin{figure}[ht]
+  \centering
+  \includegraphics[width=0.85\textwidth]{figures/performance_by_datatype.png}
+  \caption{Algorithm performance stratified by data type. Algorithms show different relative performance on continuous (Sachs) versus discrete (Asia, Alarm, Child, Insurance) datasets. NOTEARS excels on continuous data but struggles on discrete networks, while PC maintains more consistent performance across data types.}
+  \label{fig:performance_datatype}
+\end{figure}
+
 \subsubsection{The Skeleton vs Directed Gap}
 Recovering the skeleton represents only half the challenge. Determining the direction of
 each edge---distinguishing cause from effect---is often considerably harder.
@@ -1111,6 +1132,31 @@ the Structural Hamming Distance (SHD) into false positives (extra edges), false 
   \label{fig:shd_breakdown}
 \end{figure}
 
+Figure~\ref{fig:shd_heatmap} presents a comprehensive view of structural errors
+across all algorithm-dataset combinations, quantifying the difficulty landscape.
+Alarm and Insurance emerge as universally challenging: even the best-performing
+algorithms commit 37 and 73 errors respectively on these networks. In contrast,
+the smaller networks (Asia with 8 edges, Sachs with 17) permit SHD values below 10
+for top performers. The heatmap also reveals algorithm-specific vulnerabilities:
+NOTEARS exhibits a 40-fold SHD range (0 on Sachs to 120 on Insurance), the highest
+variance among all methods. PC demonstrates the most stable performance profile,
+with SHD values clustering between 8 and 50 across all datasets. GES shows bimodal
+behaviour---excellent on small discrete networks (SHD = 4 on Asia) but degrading
+sharply on larger ones (SHD = 73 on Insurance). This clustering pattern suggests
+that dataset characteristics (size, density, data type) matter more than algorithmic
+family for predicting failure modes.
+
+\begin{figure}[ht]
+  \centering
+  \includegraphics[width=0.85\textwidth]{figures/shd_heatmap.png}
+  \caption{Heatmap of Structural Hamming Distance across algorithms and datasets.
+   Darker colors indicate higher SHD (more errors). The matrix reveals that Alarm
+   and Insurance are universally challenging (darker columns), while algorithm
+   performance varies considerably by dataset. NOTEARS shows the highest variance,
+   with near-zero SHD on Sachs but high SHD on Insurance.}
+  \label{fig:shd_heatmap}
+\end{figure}
+
 \subsubsection{Runtime vs Accuracy}
 Runtime varies dramatically across algorithms.  Table~\ref{tab:runtime} reports execution
 times for each algorithm--dataset pair.
@@ -1151,6 +1197,27 @@ accuracy differences.
    consistently faster than GES and NOTEARS. Note the logarithmic y-axis; GES is
    orders of magnitude slower on larger networks.}
   \label{fig:runtime}
+\end{figure}
+
+Figure~\ref{fig:runtime_comparison} provides an alternative view, directly comparing
+execution times across algorithms for each dataset. The visualization reveals three
+distinct speed tiers. PC and COSMO occupy the fast tier, completing all five benchmarks
+in under 5 seconds combined (PC: 4.9s total, COSMO: 2.1s total). NOTEARS forms a middle
+tier at 107.8s total. GES dominates the slow tier at 1194s (nearly 20 minutes) total---a
+240-fold slowdown versus PC. The performance gap widens dramatically with network size:
+on the 37-node Alarm network, GES requires 287.6s versus PC's 1.5s, a 192$\times$ difference.
+Most strikingly, on Sachs, GES takes 776.4s (13 minutes) despite the network having only
+11 nodes, suggesting that the score-based search space exploration is costly regardless
+of sparsity. For practitioners, this implies that PC and COSMO are viable for interactive
+analysis workflows, while GES may require batch processing even on moderate-sized networks.
+
+\begin{figure}[ht]
+  \centering
+  \includegraphics[width=0.9\textwidth]{figures/runtime_comparison.png}
+  \caption{Direct runtime comparison across algorithms and datasets. Bar heights
+   represent execution time in seconds. GES consistently requires the most time,
+   while PC and COSMO are fastest across all networks.}
+  \label{fig:runtime_comparison}
 \end{figure}
 
 \subsubsection{Algorithm Summary}
@@ -1333,6 +1400,30 @@ A significant result means "these variables are associated given the conditionin
 It does not prove a direct causal link exists; it only proves that the current graph
 structure fails to explain the observed association.
 
+
+Figure~\ref{fig:sensitivity_ci} provides an alternative visualization of these
+CI test results, directly comparing test statistics across missing and spurious
+edge scenarios. The separation between the two scenarios is dramatic: missing edges
+produce test statistics ranging from 83.2 (Asia) to 461.0 (Alarm), yielding $p$-values
+below $10^{-15}$ in all cases. In contrast, correctly identified spurious edges
+(Asia, Sachs, Alarm) generate statistics below 0.5 with $p > 0.8$, providing clear
+evidence against the hypothesised link. The problematic cases (Child with statistic = 55.8,
+Insurance with 173.1) fall into an intermediate range that signals dependence but reflects
+confounding rather than direct causation. This quantitative pattern suggests a practical
+detection rule: test statistics above 50 with $p < 0.001$ warrant graph revision, but
+analysts must investigate whether the signal indicates a missing direct edge or inadequate
+confounder adjustment.
+
+\begin{figure}[ht]
+  \centering
+  \includegraphics[width=0.85\textwidth]{figures/sensitivity_ci_tests.png}
+  \caption{Conditional independence test results for sensitivity analysis.
+   Compares test statistics for missing edge detection (where high values indicate
+   correct detection) versus spurious edge detection (where low values indicate
+   correct identification of unnecessary edges). Error bars represent confidence
+   intervals where applicable.}
+  \label{fig:sensitivity_ci}
+\end{figure}
 Figure~\ref{fig:ci_tests} visualises these results using the negative log p-value, which
 serves as a proxy for signal strength.
 
@@ -1383,6 +1474,30 @@ true graph and the analyst's mis--specified graph.
     \bottomrule
   \end{tabular}
 \end{table}
+
+To contextualize these specific edge recovery results, Figure~\ref{fig:sensitivity_comparison}
+compares overall algorithm performance across all sensitivity analysis scenarios. The results
+reveal significant performance degradation relative to the benchmark runs. On Asia, GES
+achieves $F_1 = 1.00$ in sensitivity analysis versus $F_1 = 0.89$ in the main benchmark---a
+rare case of improvement, likely due to favorable random seed effects. However, most
+algorithms show stability: PC maintains $F_1 = 0.84$ on Asia sensitivity versus $F_1 = 0.84$
+in benchmark, confirming consistent behavior. On the larger networks, performance gaps emerge:
+NOTEARS drops from $F_1 = 0.77$ (benchmark) to $F_1 = 0.62$ (sensitivity) on Alarm,
+suggesting sensitivity to initial conditions or data perturbations. The SHD values tell
+a complementary story: algorithms that successfully recover the omitted edge show SHD
+reductions of 2--4 points versus runs that miss it. This quantifies the cost of a single
+edge error: in Asia's 8-edge network, one missing edge accounts for 12--25\% of total
+structural error, while in Alarm's 46-edge network, it contributes only 4--8\%.
+
+\begin{figure}[ht]
+  \centering
+  \includegraphics[width=0.85\textwidth]{figures/sensitivity_algorithm_comparison.png}
+  \caption{Algorithm performance comparison across sensitivity analysis scenarios.
+   Shows how well each algorithm performs when data is generated from the true graph
+   but evaluated against different misspecification types (missing edges vs spurious edges).
+   Performance metrics indicate algorithms' robustness to analyst errors.}
+  \label{fig:sensitivity_comparison}
+\end{figure}
 
 Interestingly, the algorithms' ability to recover the specific omitted edge varied.
 GES successfully recovered the Smoking $\to$ LungCancer edge on Asia, achieving
