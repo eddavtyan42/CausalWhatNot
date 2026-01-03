@@ -28,7 +28,7 @@ FIG_DIR = SCRIPT_DIR / "figures"
 FIG_DIR.mkdir(exist_ok=True)
 
 BENCHMARK_DIR = SCRIPT_DIR.parent / "causal_benchmark"
-RESULTS_DIR = BENCHMARK_DIR / "results" / "benchmark"
+RESULTS_DIR = BENCHMARK_DIR / "results_new" / "benchmark"
 
 # Set style for academic publication
 plt.style.use('seaborn-v0_8-whitegrid')
@@ -507,7 +507,7 @@ def fig10_critical_difference_diagram(df):
 
 def load_sensitivity_results():
     """Load sensitivity analysis results if available."""
-    sensitivity_dir = BENCHMARK_DIR / "results" / "sensitivity"
+    sensitivity_dir = BENCHMARK_DIR / "results_new" / "sensitivity_analysis"
     
     # Try multiple possible filenames
     for fname in ["phase3_results.csv", "sensitivity_analysis_results.csv", "sensitivity_results.csv", "sensitivity.csv"]:
