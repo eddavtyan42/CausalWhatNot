@@ -26,6 +26,6 @@ algorithms:
     n_restarts: 25
     # auto_lambda: true is default - automatically selects lambda1 based on BIC
     # edge_threshold: 0.05 filters weak spurious edges
-bootstrap_runs: 0
+bootstrap_runs: 100
 record_edge_stability: true
 orientation_metrics: true

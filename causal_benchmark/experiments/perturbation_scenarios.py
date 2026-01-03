@@ -30,4 +30,10 @@ SCENARIOS = {
         # Age alone should not produce grunting, so this edge is spurious.
         "spurious": {"edge": ("Age", "Grunting")},
     },
+    "insurance": {
+        # Age is a primary determinant of driving skill (experience/reflexes).
+        "missing": {"edge": ("Age", "DrivingSkill")},
+        # The value of the car does not directly influence the driver's skill level; this is likely confounded by SocioEcon.
+        "spurious": {"edge": ("CarValue", "DrivingSkill")},
+    },
 }
