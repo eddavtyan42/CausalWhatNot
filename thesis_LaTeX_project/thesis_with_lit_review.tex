@@ -58,7 +58,7 @@ validating causal graphs.  We develop a reproducible benchmarking framework that
 GES, NOTEARS and COSMO on five benchmark networks (Asia, Sachs, ALARM, Child, and Insurance), computing
 precision, recall, $F_1$ and structural Hamming distance (SHD).  We then design controlled
 scenarios where a human analyst omits a true causal link or adds a spurious edge and show
-how conditional independence tests and bootstrap stability metrics can notify the analyst of
+how conditional independence tests and bootstrap stability metrics can help notify the analyst of
 such errors.  Finally, we provide practitioner guidance on building and checking causal
 diagrams using contemporary software and algorithms.
 \end{abstract}
@@ -112,10 +112,10 @@ causes of included variables) and \emph{faithfulness} (conditional independences
 correspond to graph separations)—that are convenient but rarely guaranteed in practice
 \cite{Pearl1995,Spirtes2000}. When practitioners draw such diagrams incorrectly, downstream
 causal inference and decision-making can be compromised, motivating systematic ways to
-benchmark discovery methods and to diagnose analyst misspecification.
+benchmark discovery methods and to diagnose analyst misspecification. We operationalize analyst misspecification as an analyst-proposed DAG that omits a true causal link or includes a non-existent link.
 
 This thesis pursues three goals.  First, we benchmark multiple structure--learning
-methods—PC, GES, NOTEARS and COSMO—on established toy networks to evaluate how
+methods—PC, GES, NOTEARS and COSMO—on established benchmark networks to evaluate how
 well they recover known causal structures.  The standardized framework ensures that
 comparisons are meaningful by using shared metrics and reproducible implementations.
 Second, we study how analyst mis--specification propagates: if a practitioner erroneously
@@ -212,7 +212,7 @@ absence) from observed conditional independencies.
 
 \subsubsection{Markov Equivalence Classes}\label{sec:markov_equivalence}
 Two DAGs are Markov equivalent if they encode the same set of conditional independence
-relations. Verma and Pearl proved that two DAGs are Markov equivalent if and only if
+relations. Verma and Pearl \cite{Verma1990} proved that two DAGs are Markov equivalent if and only if
 they have the same skeleton (underlying undirected graph) and the same set of v-structures
 (unshielded colliders $X \to Z \leftarrow Y$).
 A Markov Equivalence Class (MEC) can be represented by a Completed Partially Directed
@@ -471,7 +471,8 @@ level (predicting interventions).
 While Pearl focused on the semantics of graphs, Spirtes, Glymour, and Scheines~\cite{Spirtes2000}
 developed practical algorithms for discovering them. Their PC algorithm showed that under
 assumptions of \emph{Causal Markovness} and \emph{Faithfulness}, it is possible to recover
-the causal structure (up to a Markov equivalence class) from observational data efficiently.
+the causal structure (up to a Markov equivalence class) from observational data efficiently
+(in the limit of infinite data and assuming valid independence tests).
 This work challenged the prevailing dogma that "correlation does not imply causation,"
 demonstrating that while correlation alone is insufficient, \emph{patterns} of conditional
 independence across many variables can indeed identify causal directionality (e.g., via
@@ -565,12 +566,14 @@ are rarely run in isolation; they are used to assist human experts.
 
 \section{Methods}\label{sec:methods}
 
+This chapter details the experimental design, including the benchmark datasets, the specific algorithm implementations, the evaluation metrics, and the protocols for simulating and detecting analyst misspecification.
+
 \subsection{Datasets and Data Generation}\label{sec:methods_datasets}
 Our experiments use five canonical Bayesian network benchmarks summarised in
 Table~\ref{tab:datasets}.  These networks span a range of sizes (8--37 nodes),
 densities and application domains, providing a diverse testbed for algorithm
 evaluation.  Following the \emph{CausalWhatNot} framework, each dataset is generated
-\emph{semi-synthetically} from the known ground--truth graph structure to ensure full
+\emph{semi-synthetically} (using real-world network structures but simulating fresh data from them) from the known ground--truth graph structure to ensure full
 reproducibility. Concretely, we simulate observational samples from a linear--Gaussian
 structural equation model (SEM) in topological order, drawing random edge weights
 and independent Gaussian noise terms for each variable. For benchmarks treated as
@@ -601,12 +604,12 @@ In all experiments we use $n=1000$ observations per dataset and fix the random s
   \end{tabular}
 \end{table}
 
-The networks were chosen to cover diverse structural properties.  Asia is a small,
+The networks were chosen to cover diverse structural properties.  Asia \cite{Lauritzen1988} is a small,
 dense network commonly used as a ``sanity check'' for causal discovery algorithms.
 The Sachs benchmark encodes a protein signalling system and is widely used in causal
 discovery evaluations; although it is historically associated with interventional
 studies, in this thesis we treat it as an observational benchmark and generate
-synthetic continuous samples from its graph structure.  ALARM is a large, sparse
+synthetic continuous samples from its graph structure.  ALARM \cite{Beinlich1989} is a large, sparse
 network originally developed for medical monitoring systems and is often considered
 challenging due to its size.  Child and Insurance provide intermediate complexity
 with moderate node counts and edge densities.
@@ -805,13 +808,13 @@ We compute metrics using the \texttt{metrics.py} module.
 \begin{itemize}
     \item \textbf{Skeleton Metrics:} We convert both the true DAG and learned DAG to
     undirected graphs and compute Precision, Recall, and $F_1$.
-    \item \textbf{Directed Metrics:} We compare the edge sets directly. An edge
+    \item \textbf{Directed Metrics:} We compare the edge sets directly. For directed metrics, undirected edges in the CPDAG are oriented arbitrarily (acyclically); thus, directed errors may reflect theoretical unidentifiability. An edge
     $X \to Y$ in the learned graph counts as a true positive only if $X \to Y$ exists
     in the true graph. $Y \to X$ is a false positive (and a false negative for the
     true edge).
     \item \textbf{SHD:} We compute the Structural Hamming Distance using \texttt{networkx}.
     It counts the minimum number of insertions, deletions, or flips to transform the
-    learned graph into the truth.
+    learned graph into the truth. (Note: a reversed edge is counted as two errors in SHD—one missing, one extra—unless otherwise specified).
 \end{itemize}
 
 \subsection{Mis--specification Protocols}\label{sec:methods_misspec_protocols}
@@ -833,7 +836,7 @@ For both scenarios we vary the sample size to examine how detection depends on d
  volume.  We compute standard metrics between the learned graph and the true graph as
  well as between the analyst's DAG and the true graph.  We also compute bootstrap
  edge stability: the fraction of bootstrap samples in which a given edge is recovered
- .  Low stability may indicate spurious edges.
+ .  Low stability may indicate spurious edges. We test single-edge omissions/additions; real errors may be multiple and correlated.
 
 \subsection{Visualisations}\label{sec:methods_visuals}
 Figure~\ref{fig:asia} visualises the Asia network used in our experiments.
@@ -862,7 +865,7 @@ Figure~\ref{fig:asia} visualises the Asia network used in our experiments.
 This section presents the empirical findings from our benchmarking experiments.  We first
 examine the overall performance of the four algorithms across the five benchmark networks,
 then analyse the challenges of edge orientation, explore algorithm--data interactions, and
-finally report results from our mis--specification detection experiments.
+finally report results from our mis--specification detection experiments. We now examine each network to illustrate specific challenges and algorithm behaviors that aggregate metrics might obscure.
 
 \subsection{Benchmark Performance Overview}
 
@@ -909,7 +912,7 @@ skeleton before attempting to orient edges.
   \end{tabular}
 \end{table}
 
-Several patterns emerge from these results.  First, no single algorithm dominates across
+Several patterns emerge from these results.  First, in our experiments, no single algorithm dominates across
 all datasets.  NOTEARS achieves perfect recovery on Sachs ($F_1 = 1.00$), the only
 continuous dataset, but performs inconsistently on the larger discrete networks.  PC
 tends to be the most consistent performer, achieving the highest or near--highest $F_1$ on
@@ -1180,7 +1183,7 @@ times for each algorithm--dataset pair.
 
 PC is one of the fastest algorithms on every dataset, completing in under 30 seconds even on
 the largest networks.  GES is generally the slowest, often by an order of magnitude or
-more; on Alarm, it requires nearly five minutes.  NOTEARS occupies an intermediate
+more; on ALARM, it requires nearly five minutes (see Table~\ref{tab:runtime}, where GES took ~13 mins on Sachs).  NOTEARS occupies an intermediate
 position, with runtimes ranging from under a second to under a minute depending on network
 size.  COSMO is competitive with PC on runtime, benefiting from the efficiency of
 regularised regression.
@@ -1368,7 +1371,7 @@ Table~\ref{tab:ci_results} reports the test statistics and $p$--values.
 \end{table}
 
 The results confirm that conditional independence tests effectively detect missing edges.
-In all five datasets, the test statistic for the omitted edge is large and highly
+For the strong causal links chosen in our scenarios, the omitted edge produced a large and highly
 significant ($p < 0.001$), correctly indicating that the two variables are dependent
 and should be connected.  An analyst who omitted such an edge would receive a clear
 signal to reconsider their DAG.
@@ -1393,6 +1396,7 @@ However, the Child and Insurance datasets present instructive exceptions.
     or \texttt{SocioEcon}). Adding a direct edge $X \to Y$ in the analyst's DAG implies
     testing $X \perp Y \mid \text{Parents}(Y)$. If the analyst's parent set is insufficient
     to block confounding, the test will reject independence, falsely "confirming" the edge.
+    The test rejected independence because the conditioning set was insufficient to block all confounding paths in the true graph.
 \end{itemize}
 
 This highlights a critical limitation: \textbf{CI tests check for dependence, not causation.}
@@ -1578,7 +1582,7 @@ We synthesise our findings into three recommendations:
     be verified by domain knowledge, especially for edges not part of v-structures.
     \item \textbf{Iterative Validation:} Do not treat the output of an algorithm as final.
     Use CI tests to check for missing edges, but be skeptical of "significant" edges that
-    lack a mechanism. Use bootstrap stability to filter out fragile edges.
+    lack a mechanism. Use bootstrap stability to filter out fragile edges. Practitioners should leverage validation tools (e.g., DAGitty, CausalNex) to test implied independencies.
 \end{enumerate}
 
 \subsection{The Analyst-in-the-Loop Paradigm}\label{sec:analyst_loop}
@@ -1658,7 +1662,7 @@ Beyond validity threats, the study has specific scope limitations.
     active field (e.g., using neural networks or kernels) that we did not explore.
     \item \textbf{Single-Edge Misspecification:} Our sensitivity analysis perturbed only
     one edge at a time. Real analyst errors are likely multiple and correlated. Detecting
-    complex structural mismatches remains an open challenge.
+    complex structural mismatches remains an open challenge. Additionally, we relied on a limited number of runs (single seed) and relatively small network sizes (max 37 nodes).
 \end{itemize}
 
 \subsection{Ethical and Responsible Use}\label{sec:ethics}
@@ -1696,14 +1700,14 @@ be detected.  Five benchmark networks (Asia, Sachs, ALARM, Child, and Insurance)
 for comparing PC, GES, NOTEARS and COSMO.  Our mis--specification experiments
 show that conditional independence testing and bootstrap stability can notify
 practitioners when their assumed graphs are wrong.  We also surveyed a range of
-open--source DAG drawing and analysis tools to guide practitioners.
+open--source DAG drawing and analysis tools to guide practitioners. In summary, while algorithms provide a strong baseline, analysts must combine them with diagnostic tests to detect misspecifications, which are reliably flagged for missing edges but harder to isolate for spurious ones.
 
 \subsection{Future Work}\label{sec:future_work}
 This thesis opens several avenues for future research.
 
 \subsubsection{Latent Confounding}
 The most pressing extension is to relax the causal sufficiency assumption. Future benchmarks
-should include algorithms like FCI and RFCI that learn Partial Ancestral Graphs (PAGs),
+should include algorithms like FCI and RFCI \cite{Spirtes2000, Colombo2012} that learn Partial Ancestral Graphs (PAGs),
 which can represent latent confounders. Evaluating how well these methods distinguish
 direct causation from confounding in finite samples is critical for real-world adoption.
 
@@ -1827,6 +1831,30 @@ Milton Friedman. ``The use of ranks to avoid the assumption of normality implici
 
 \bibitem{Nemenyi1963}
 Peter B. Nemenyi. \emph{Distribution-free multiple comparisons}. Ph.D. thesis, Princeton University, 1963.
+
+\bibitem{Verma1990}
+Thomas Verma and Judea Pearl.
+``Equivalence and synthesis of causal models.''
+In \emph{Proceedings of the Sixth Annual Conference on Uncertainty in Artificial Intelligence (UAI~1990)},
+pages 255--270, 1990.
+
+\bibitem{Lauritzen1988}
+Steffen~L. Lauritzen and David~J. Spiegelhalter.
+``Local computations with probabilities on graphical structures and their application to expert systems.''
+\emph{Journal of the Royal Statistical Society: Series~B (Methodological)},
+50(2):157--194, 1988.
+
+\bibitem{Beinlich1989}
+Ingo~A. Beinlich, Henri~J. Suermondt, R.~Martin Chavez, and Gregory~F. Cooper.
+``The ALARM monitoring system: A case study with two probabilistic inference techniques for belief networks.''
+In \emph{Proceedings of the Second European Conference on Artificial Intelligence in Medicine (AIME~1989)},
+pages 247--256, 1989.
+
+\bibitem{Colombo2012}
+Diego Colombo, Marloes~H. Maathuis, Markus Kalisch, and Thomas~S. Richardson.
+``Learning high-dimensional directed acyclic graphs with latent and selection variables.''
+\emph{The Annals of Statistics},
+40(1):294--321, 2012.
 
 \end{thebibliography}
 
