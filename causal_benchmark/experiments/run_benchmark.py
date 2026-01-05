@@ -107,16 +107,6 @@ def run(
     cfg_algorithms = cfg.get("algorithms", {})
 
     def process_pair(dataset_name: str, alias: str, data: pd.DataFrame, true_graph: nx.DiGraph, algo_name: str, params: dict):
-        # Skip if not in our target list for this partial run
-        # This is a hack to filter the cross-product of datasets x algorithms
-        target_pairs = {
-            ("alarm", "ges"),
-            ("insurance", "ges"),
-            ("child", "pc")
-        }
-        if (alias, algo_name) not in target_pairs:
-            return None
-
         logger.info("Starting algorithm: dataset=%s algo=%s params=%s", alias, algo_name, params)
         mod = importlib.import_module(f"algorithms.{algo_name}")
         params = dict(params)

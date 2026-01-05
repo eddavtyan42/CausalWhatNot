@@ -136,7 +136,7 @@ def run(
             scenario["spurious"]["edge"],
         ):
             u, v = edge
-            parents_v = set(true_graph.predecessors(v)) - {u}
+            parents_v = set(analyst_graph.predecessors(v)) - {u}
             cond_idx = [column_index[p] for p in parents_v]
             u_idx = column_index[u]
             v_idx = column_index[v]
