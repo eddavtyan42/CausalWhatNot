@@ -28,7 +28,24 @@
 \usepackage{amssymb}
 \usepackage{microtype}
 \usepackage{longtable}
+\usepackage{float}      % For [H] placement specifier
+% \usepackage{mathtools} % Not available
+\newcommand{\coloneqq}{\mathrel{\mathop:}=}
 \usepackage[hypertexnames=false]{hyperref}
+
+% Define FloatBarrier command manually (alternative to placeins package)
+\makeatletter
+\newcommand{\FloatBarrier}{\par\penalty\@M\vskip\z@}
+\makeatother
+
+% Adjust float placement parameters for better positioning
+\renewcommand{\topfraction}{0.9}
+\renewcommand{\bottomfraction}{0.8}
+\renewcommand{\textfraction}{0.07}
+\renewcommand{\floatpagefraction}{0.7}
+\setcounter{topnumber}{3}
+\setcounter{bottomnumber}{2}
+\setcounter{totalnumber}{5}
 
 % Title information
 \title{Benchmarking Causal Discovery Under Analyst Misspecification}
@@ -210,6 +227,167 @@ those independencies implied by the d-separation structure of $G$.
 Faithfulness is crucial for causal discovery because it allows us to infer edges (or their
 absence) from observed conditional independencies.
 
+\subsubsection{Structural causal models and the Markov factorisation}
+A useful formal lens for the assumptions in the previous paragraph is the \emph{structural causal model} (SCM).
+Let $G=(V,E)$ be a DAG with $V=\{1,\dots,d\}$ indexing random variables $X=(X_1,\dots,X_d)$.
+An SCM specifies a set of structural assignments
+\begin{equation}
+  X_i \;\coloneqq\; f_i(X_{\mathrm{Pa}(i)}, U_i), \qquad i=1,\dots,d,
+\end{equation}
+where $\mathrm{Pa}(i)$ denotes the parents of node $i$ in $G$, $f_i$ is a (measurable) function,
+and $U=(U_1,\dots,U_d)$ are \emph{exogenous} noise variables. A standard sufficient condition for the
+\emph{Causal Markov condition} is that the exogenous noises are jointly independent and that the graph
+encodes the causal ordering of the assignments \cite{Pearl1995,Spirtes2000}.
+
+\paragraph{From the SCM to a factorised likelihood (proof sketch).}
+Assume $G$ admits a topological ordering of variables such that parents precede children.
+By the chain rule, any joint distribution can be written as
+\begin{equation}
+  p(x_1,\dots,x_d) \;=\; \prod_{i=1}^d p(x_i \mid x_{1:i-1}).
+\end{equation}
+Under the Markov property implied by the SCM graph, each $X_i$ is independent of its non-descendants given its parents.
+In particular, conditioning on all previous variables $X_{1:i-1}$ is equivalent to conditioning only on $X_{\mathrm{Pa}(i)}$,
+because the remaining variables in $\{1,\dots,i-1\}\setminus \mathrm{Pa}(i)$ are non-descendants of $i$.
+Therefore,
+\begin{equation}
+  p(x_i \mid x_{1:i-1}) \;=\; p(x_i \mid x_{\mathrm{Pa}(i)}),
+\end{equation}
+and we obtain the \emph{Markov factorisation}
+\begin{equation}
+  p(x_1,\dots,x_d) \;=\; \prod_{i=1}^d p(x_i \mid x_{\mathrm{Pa}(i)}).\label{eq:markov_factorisation}
+\end{equation}
+This identity is the key bridge between graphs and data: \eqref{eq:markov_factorisation} is exactly the
+decomposition exploited by both score-based methods (which optimise a factorised likelihood or a penalised variant)
+and constraint-based methods (which test conditional independencies implied by the factorisation) \cite{Spirtes2000,Chickering2002}.
+
+\subsubsection{Worked d-separation queries in the Asia network}
+Figure~\ref{fig:asia} (the Asia network) is small enough to manually verify several conditional independencies.
+Below, each query is phrased as a d-separation statement in the graph, which under the Markov and faithfulness
+assumptions corresponds to a conditional independence in the distribution \cite{Pearl1995,Spirtes2000}.
+
+\begin{table}[ht]
+\centering
+\caption{Worked examples of d-separation in the Asia network (Figure~\ref{fig:asia}).}
+\label{tab:asia_dsep_queries}
+\begin{tabular}{p{5.1cm}p{2.3cm}p{8.0cm}}
+\toprule
+Query (graph statement) & d-separated? & Reasoning (path-wise) \\
+\midrule
+$\texttt{Smoking} \perp \texttt{Tuberculosis}$ & Yes & The main connecting path
+$\texttt{Smoking}\rightarrow\texttt{LungCancer}\rightarrow\texttt{Either}\leftarrow\texttt{Tuberculosis}$
+is blocked by the collider at \texttt{Either}. No other open path exists without conditioning. \\
+\addlinespace
+$\texttt{Smoking} \perp \texttt{Tuberculosis} \mid \texttt{Either}$ & No & Conditioning on the collider
+\texttt{Either} \emph{opens} the previously blocked path, producing the classic ``explaining-away'' dependence. \\
+\addlinespace
+$\texttt{Smoking} \perp \texttt{Xray} \mid \texttt{Either}$ & Yes & \texttt{Xray} is a child of \texttt{Either}.
+Once \texttt{Either} is conditioned on, the path
+$\texttt{Smoking}\rightarrow\texttt{LungCancer}\rightarrow\texttt{Either}\rightarrow\texttt{Xray}$
+is blocked at \texttt{Either} (a conditioned non-collider). \\
+\addlinespace
+$\texttt{Tuberculosis} \perp \texttt{Bronchitis}$ & Yes & Two prominent paths are blocked:
+(i) $\texttt{Tuberculosis}\rightarrow\texttt{Either}\rightarrow\texttt{Dyspnea}\leftarrow\texttt{Bronchitis}$
+is blocked by the collider at \texttt{Dyspnea}; (ii) the path through \texttt{Either} is blocked as above. \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+These concrete queries illustrate the central mechanism behind constraint-based learning:
+algorithms such as PC recover a skeleton by repeatedly testing whether statements like those in Table~\ref{tab:asia_dsep_queries}
+are supported by the data (for various conditioning sets), and then orient edges to form an equivalence-class representation.
+
+\subsubsection{Extended d-separation examples: ALARM and Child}
+To further illustrate the complexity of d-separation in larger networks, we consider examples from the ALARM and Child networks. These networks contain more complex structures, including multiple paths and nested colliders, which challenge discovery algorithms.
+
+\paragraph{ALARM Network Examples.}
+The ALARM network \cite{Beinlich1989} contains 37 nodes and 46 edges, representing a monitoring system for intensive care patients.
+Consider the relationship between \texttt{Pulmonary Embolism} (PE) and \texttt{Central Venous Pressure} (CVP).
+\begin{itemize}
+    \item \textbf{Query:} $\texttt{PE} \perp \texttt{CVP}$?
+    \item \textbf{Analysis:} There is a path $\texttt{PE} \to \texttt{PAP} \to \texttt{CVP}$ (where PAP is Pulmonary Artery Pressure). This is a chain. Thus, unconditionally, they are d-connected (dependent).
+    \item \textbf{Query:} $\texttt{PE} \perp \texttt{CVP} \mid \texttt{PAP}$?
+    \item \textbf{Analysis:} Conditioning on the middle node \texttt{PAP} blocks the chain. Thus, they become d-separated. This conditional independence allows PC to remove the direct edge between PE and CVP if one were hypothesised.
+\end{itemize}
+
+Consider a more complex case involving the collider at \texttt{Heart Rate} (HR).
+\begin{itemize}
+    \item \textbf{Query:} $\texttt{Catecholamine} \perp \texttt{Hypovolemia}$?
+    \item \textbf{Analysis:} They are connected via $\texttt{Catecholamine} \to \texttt{HR} \leftarrow \texttt{Hypovolemia}$. This is a v-structure (collider) at HR. Unconditionally, the path is blocked. They are d-separated.
+    \item \textbf{Query:} $\texttt{Catecholamine} \perp \texttt{Hypovolemia} \mid \texttt{HR}$?
+    \item \textbf{Analysis:} Conditioning on the collider \texttt{HR} opens the path. They become d-connected. This "explaining away" phenomenon is crucial for orienting the edges pointing into HR.
+\end{itemize}
+
+\paragraph{Child Network Examples.}
+The Child network \cite{Spiegelhalter1992} models the diagnosis of "blue baby" syndrome.
+Consider the path between \texttt{Birth Asphyxia} and \texttt{Age}.
+\begin{itemize}
+    \item \textbf{Query:} $\texttt{BirthAsphyxia} \perp \texttt{Age}$?
+    \item \textbf{Analysis:} In the graph, these are marginally independent roots (or close to roots) with no open path connecting them unconditionally.
+    \item \textbf{Query:} $\texttt{BirthAsphyxia} \perp \texttt{Age} \mid \texttt{Disease}$?
+    \item \textbf{Analysis:} Both variables are ancestors of \texttt{Disease}. If \texttt{Disease} is a collider (or descendant of one) on a path between them, conditioning on it could induce dependence. In the Child network, complex interactions often make such determinations non-trivial, requiring careful path tracing.
+\end{itemize}
+
+\subsubsection{Identifiability Limits and Interventional Distributions}
+A fundamental limitation of causal discovery from observational data is \emph{identifiability}.
+As discussed in Section~\ref{sec:markov_equivalence}, multiple DAGs can imply the same set of conditional independencies.
+These DAGs form a Markov Equivalence Class (MEC).
+
+\paragraph{Observational Equivalence.}
+Two DAGs $G_1$ and $G_2$ are observationally equivalent if they have the same skeleton and the same v-structures.
+For example, the chain $X \to Y \to Z$, the chain $X \leftarrow Y \leftarrow Z$, and the fork $X \leftarrow Y \to Z$ are all Markov equivalent.
+They all imply $X \perp Z \mid Y$ and no other independencies.
+Without additional assumptions (like time ordering or non-Gaussianity), no algorithm can distinguish between them using only observational data $P(X, Y, Z)$.
+
+\paragraph{Interventional Equivalence.}
+Interventional data can break this symmetry.
+An intervention $\text{do}(Y=y)$ modifies the causal mechanism of $Y$.
+\begin{itemize}
+    \item In $X \to Y \to Z$, intervening on $Y$ breaks the link $X \to Y$. $X$ and $Z$ become independent.
+    \item In $X \leftarrow Y \to Z$, intervening on $Y$ breaks links from parents of $Y$ (none here) and fixes $Y$. $X$ and $Z$ become independent (as they are effects of $Y$).
+    \item In $X \leftarrow Y \leftarrow Z$, intervening on $Y$ breaks $Z \to Y$. $Z$ no longer influences $X$.
+\end{itemize}
+While this thesis focuses on observational discovery, understanding these limits is crucial for interpreting our results.
+The "Directed $F_1$" metric penalises algorithms for choosing the "wrong" member of an equivalence class, even if that choice was theoretically impossible to avoid.
+This explains the large gap between skeleton and directed performance observed in Section~\ref{sec:results}.
+
+\subsubsection{Theoretical Guarantees: Constraint-based vs Score-based}
+It is instructive to compare the theoretical guarantees of the two main families of algorithms evaluated.
+
+\paragraph{Constraint-Based (PC).}
+\begin{itemize}
+    \item \textbf{Assumption:} The distribution $P$ is faithful to a DAG $G$.
+    \item \textbf{Guarantee:} In the infinite sample limit, PC recovers the true CPDAG of $G$.
+    \item \textbf{Convergence:} The error probability depends on the Type I and Type II errors of the CI tests.
+    Kalisch and B\"uhlmann \cite{Kalisch2007} proved that PC is consistent for high-dimensional Gaussian graphs if the partial correlations decay sufficiently slowly (strong faithfulness) and the maximum degree is bounded. Specifically, if the significance level $\alpha_n \to 0$ at an appropriate rate, $P(\hat{G} \neq CPDAG(G)) \to 0$.
+\end{itemize}
+
+\paragraph{Score-Based (GES).}
+\begin{itemize}
+    \item \textbf{Assumption:} The scoring function is locally consistent. BIC is locally consistent for exponential families (including Gaussian and discrete).
+    \item \textbf{Guarantee:} Chickering \cite{Chickering2002} proved that GES identifies the perfect map (true CPDAG) in the limit of large sample size.
+    \item \textbf{Comparison:} While both are consistent, their finite-sample behaviour differs.
+    PC is sensitive to individual test failures (error propagation). GES is more robust to local noise but can get stuck in local optima in the greedy search (though the two-phase structure mitigates this).
+    Furthermore, score-based methods implicitly assume a specific parametric form (e.g., linear-Gaussian for BIC), whereas constraint-based methods only require a valid independence test (which can be non-parametric).
+\end{itemize}
+
+\subsubsection{A minimal Markov equivalence example and the CPDAG representation}
+Markov equivalence can be made explicit with a three-variable skeleton $A{-}B{-}C$.
+Consider the two DAGs
+\[
+A \rightarrow B \rightarrow C
+\qquad\text{and}\qquad
+A \leftarrow B \rightarrow C.
+\]
+Both graphs have the same skeleton and neither contains a v-structure (no node has two incoming arrows from non-adjacent parents),
+so they entail the same set of conditional independencies (in particular, $A \perp C \mid B$) and are Markov equivalent \cite{Spirtes2000}.
+The corresponding \emph{completed partially directed acyclic graph} (CPDAG) therefore contains
+\emph{undirected} edges $A{-}B$ and $B{-}C$, indicating that their orientations are not identifiable from observational data alone.
+
+This example is directly relevant to the interpretation of directed metrics in later sections:
+an algorithm may correctly identify an edge in the skeleton while choosing an arbitrary orientation among several
+Markov-equivalent possibilities. In such cases, skeleton metrics can reflect the identifiable component of structure,
+while directed metrics penalise choices that may be unidentifiable without additional assumptions or interventional information.
+
 \subsubsection{Markov Equivalence Classes}\label{sec:markov_equivalence}
 Two DAGs are Markov equivalent if they encode the same set of conditional independence
 relations. Verma and Pearl \cite{Verma1990} proved that two DAGs are Markov equivalent if and only if
@@ -286,6 +464,41 @@ equivalence classes (CPDAGs) using a two-phase greedy strategy:
 \end{enumerate}
 Chickering \cite{Chickering2002} proved that the two-phase Greedy Equivalence Search will, under appropriate assumptions and with enough data, find the true DAG that perfectly maps the generative distribution.
 
+\subsubsection{Score functions in score-based discovery: BIC and BDeu}
+Score-based structure learning searches for a graph $G$ that optimises a goodness-of-fit criterion
+while controlling model complexity. A key property is \emph{decomposability}: for many common likelihoods,
+the (log-)likelihood under $G$ factorises over nodes exactly as in \eqref{eq:markov_factorisation}, yielding
+\begin{equation}
+  \log p(D \mid \hat{\theta}_G, G) \;=\; \sum_{i=1}^d \log p(D_i \mid D_{\mathrm{Pa}(i)}, \hat{\theta}_i),
+\end{equation}
+where $D$ denotes the dataset and $\hat{\theta}_G$ are maximum-likelihood parameters under $G$.
+GES requires the score to be \emph{score-equivalent} and \emph{decomposable} so that it can search over equivalence classes \cite{Chickering2002}.
+
+\paragraph{BIC.}
+The Bayesian Information Criterion (BIC) score is commonly written as
+\begin{equation}
+  \mathrm{BIC}(G;D) \;=\; \log p(D \mid \hat{\theta}_G, G) \;-\; \frac{k_G}{2}\log n,\label{eq:bic_def}
+\end{equation}
+where $n$ is the sample size and $k_G$ is the number of free parameters in the model under $G$.
+For linear-Gaussian Bayesian networks, each node corresponds to a regression of $X_i$ on its parents,
+\begin{equation}
+  X_i \;=\; \beta_{i0} + \sum_{j\in \mathrm{Pa}(i)} \beta_{ij} X_j + \varepsilon_i,\qquad \varepsilon_i \sim \mathcal{N}(0,\sigma_i^2),
+\end{equation}
+so that the local contribution to the log-likelihood depends on the residual sum of squares for that regression.
+The penalty term in \eqref{eq:bic_def} grows with the number of parameters (approximately $|\mathrm{Pa}(i)|+2$ per node
+if an intercept and variance are included), discouraging dense graphs as $n$ grows.
+
+\paragraph{BDeu (discrete case).}
+For discrete Bayesian networks, a standard Bayesian score is the Bayesian Dirichlet equivalent uniform (BDeu) score.
+Let $r_i$ be the number of states of $X_i$ and $q_i$ the number of configurations of its parents.
+Writing $N_{ijk}$ for the number of samples where $X_i=k$ and $\mathrm{Pa}(i)=j$,
+the BDeu score has a closed form in terms of Gamma functions and a single equivalent sample size hyperparameter
+that is shared across conditional probability tables. (This score is widely used in discrete structure learning because it is score-equivalent.)
+
+\paragraph{Connection to the experiments.}
+In later experiments, GES is configured with the BIC score across all datasets (including discretised data),
+which intentionally stresses robustness to modelling mismatch and keeps the scoring choice uniform across domains.
+
 \subsection{Continuous Optimisation: NOTEARS}\label{sec:background_notears}
 Traditionally, the acyclicity constraint (no cycles) was considered discrete and
 combinatorial. NOTEARS (Non-combinatorial Optimisation via Trace Exponential and
@@ -310,6 +523,40 @@ where $\ell(W; X)$ is a loss function (e.g., least squares for linear SEMs) and
 $\|W\|_1$ induces sparsity. The problem is solved using the Augmented Lagrangian method.
 While NOTEARS is strictly defined for linear SEMs, extensions exist for nonlinear models
 (using MLPs or Sobolev spaces).
+
+\subsubsection{NOTEARS acyclicity constraint: a differentiable characterisation of DAGs}
+A central difficulty in optimisation-based discovery is enforcing that the learned adjacency matrix corresponds to an acyclic graph.
+NOTEARS introduces a smooth function $h(\cdot)$ such that $h(W)=0$ if and only if the weighted adjacency matrix $W\in\mathbb{R}^{d\times d}$
+represents a DAG \cite{Zheng2018}.
+Define the elementwise (Hadamard) product by $(A\circ B)_{ij}=A_{ij}B_{ij}$ and set $M \coloneqq W\circ W$.
+NOTEARS uses
+\begin{equation}
+  h(W) \;\coloneqq\; \mathrm{tr}\!\left(\exp(M)\right) - d.\label{eq:notears_acyc}
+\end{equation}
+Intuitively, the matrix exponential $\exp(M)$ expands into a power series whose trace aggregates weighted counts of closed walks;
+if and only if there are no directed cycles does the trace reduce to $d$.
+
+\paragraph{Augmented Lagrangian objective.}
+For a linear SEM with squared loss, NOTEARS solves (schematically)
+\begin{equation}
+  \min_{W}\; \mathcal{L}(W) + \lambda_1 \|W\|_1
+  \quad\text{s.t.}\quad h(W)=0,
+\end{equation}
+often via an augmented Lagrangian of the form
+\begin{equation}
+  \min_W\; \mathcal{L}(W) + \lambda_1 \|W\|_1 + \frac{\rho}{2}h(W)^2 + \alpha\,h(W),
+\end{equation}
+where $\rho$ and $\alpha$ are iteratively updated to enforce acyclicity.
+
+\paragraph{Gradient of the acyclicity penalty.}
+Because $h(\cdot)$ is smooth, first-order methods can be used. A convenient identity is
+\begin{equation}
+  \nabla_W h(W) \;=\; 2W \circ \left(\exp(W\circ W)\right)^{\top},\label{eq:notears_grad}
+\end{equation}
+obtained by applying the chain rule to \eqref{eq:notears_acyc}: the derivative of $\mathrm{tr}(\exp(M))$ with respect to $M$ is
+$\left(\exp(M)\right)^{\top}$, and $\partial (W\circ W)/\partial W = 2W$ elementwise.
+This explicit gradient highlights why NOTEARS is computationally attractive: acyclicity becomes a differentiable constraint rather than a
+combinatorial one, albeit at the cost of relying on the correctness of the underlying functional assumptions (here, a linear SEM).
 
 \subsection{Regression-Based Discovery: COSMO}\label{sec:background_cosmo}
 Massidda et al. \cite{Massidda2023} introduce COSMO, a continuous DAG learning method that encodes acyclicity via a differentiable `priority' function; this makes the algorithm $O(n^2)$ in the number of nodes (instead of cubic), while maintaining competitive accuracy.
@@ -443,6 +690,36 @@ the Nemenyi post--hoc test.
 Given that our benchmark includes only five networks, the power of these tests is limited;
 we treat them primarily as descriptive and emphasize per--dataset effects alongside ranks.
 
+\subsubsection{Power and multiple-testing considerations for CI-driven discovery}
+Constraint-based discovery relies on repeated conditional independence tests.
+Even when a CI test is well-specified for the data type, two statistical issues matter in practice.
+
+\paragraph{Power depends on conditioning-set size.}
+For tests based on partial correlations (e.g., Fisher-$Z$), the effective sample size decreases with the size of the conditioning set $|S|$.
+A common approximation treats the $Z$-transformed partial correlation as approximately normal with variance scaling as $(n-|S|-3)^{-1}$.
+As $|S|$ grows, the test rapidly loses power unless $n$ is large, which helps explain why larger graphs with hubs can be challenging:
+hubs induce larger candidate conditioning sets and therefore weaker tests, increasing the chance of both false negatives (missing edges) and false positives
+(if the algorithm compensates by retaining edges due to inconclusive tests).
+
+\paragraph{Multiple testing and error propagation.}
+PC-style procedures perform many tests and then commit to adjacency updates that affect which later tests are performed.
+This creates an error-propagation phenomenon: an early false decision can change the conditioning sets available later.
+While the benchmark reports end-to-end graph accuracy, analyst-facing deployments should additionally examine the stability of \emph{specific} edges,
+for example via bootstrap resampling (as in Section~5.4) or stability-selection style summaries.
+
+\subsubsection{Robustness checks and ablations (planned analyses)}
+Several robustness checks are natural extensions of this work and can be conducted without changing the core benchmark design:
+\begin{itemize}
+  \item \textbf{Sample-size sensitivity.} Repeating the benchmark for multiple $n$ values can reveal whether an algorithm's apparent superiority is asymptotic or
+  depends on a particular data regime.
+  \item \textbf{CI-test ablations.} Holding PC fixed while swapping CI tests (where meaningful) can isolate whether performance differences come from the search procedure
+  or the statistical test.
+  \item \textbf{Thresholding sensitivity for optimisation methods.} For NOTEARS-like outputs, varying the edge threshold can expose whether the learned weights
+  separate ``signal'' from ``noise'' or whether performance is dominated by a fragile operating point.
+\end{itemize}
+These checks strengthen the link between benchmark metrics and the operational reliability required in analyst workflows.
+
+\FloatBarrier
 \section{Related Work}\label{sec:related_work}
 
 Causal discovery has evolved from a niche topic in philosophy and statistics to a central
@@ -477,6 +754,74 @@ This work challenged the prevailing dogma that "correlation does not imply causa
 demonstrating that while correlation alone is insufficient, \emph{patterns} of conditional
 independence across many variables can indeed identify causal directionality (e.g., via
 v-structures).
+
+\subsubsection{A brief historical arc of structure learning paradigms}
+While the core assumptions of causal discovery (Markov, faithfulness, and adequate functional form) remain stable,
+the \emph{algorithmic} landscape has expanded substantially over time. A coarse but useful organising principle is the
+dominant source of information used to infer edges:
+
+\begin{itemize}
+  \item \textbf{Constraint-based discovery} infers the skeleton and (partially) the directions by testing conditional independence
+  statements implied by a graph. The PC algorithm and its variants are canonical representatives, with extensions such as FCI targeting settings
+  with latent confounding \cite{Spirtes2000,Colombo2014}.
+  \item \textbf{Score-based discovery} searches for a graph that optimises a decomposable score trading off likelihood and complexity.
+  GES is a prominent example that searches over Markov equivalence classes under score equivalence and decomposability \cite{Chickering2002}.
+  \item \textbf{Hybrid discovery} combines constraint-based pruning with score-based refinement; MMHC is a widely used representative \cite{Tsamardinos2006}.
+  \item \textbf{Functional / distributional discovery} exploits stronger assumptions (e.g., non-Gaussianity) to identify directions that are not identifiable
+  under purely conditional-independence semantics; LiNGAM is a classical example in the linear, non-Gaussian setting \cite{Shimizu2006}.
+  \item \textbf{Optimisation- and learning-based discovery} (2018 onwards) re-casts DAG learning as continuous optimisation (e.g., NOTEARS) or leverages
+  neural parameterisations and reinforcement learning to search large spaces efficiently \cite{Zheng2018,Ng2020,Lachapelle2020,Zhu2020,Massidda2023}.
+\end{itemize}
+
+\begin{table}[htbp]
+\centering
+\caption{A sketch timeline of representative developments in causal structure learning. This is not exhaustive; it highlights the conceptual shift from combinatorial search and CI testing to differentiable and learning-based approaches.}
+\label{tab:relatedwork_timeline}
+\begin{tabular}{p{2.6cm}p{11.8cm}}
+\toprule
+Period & Representative developments \\
+\midrule
+1990s & Constraint-based discovery formalised and popularised (e.g., PC/FCI) under Markov and faithfulness assumptions \cite{Spirtes2000}. \\
+2000s & Score-based and hybrid methods mature (e.g., GES, MMHC), with practical software implementations becoming widely used \cite{Chickering2002,Tsamardinos2006}. \\
+2010s & Tooling and benchmarking proliferate (e.g., \texttt{bnlearn}, \texttt{pcalg}), bringing attention to robustness and evaluation design \cite{Scutari2010,Kalisch2012}. \\
+2018--present & Differentiable and learning-based approaches accelerate (NOTEARS, GOLEM, GraN-DAG, RL-based search) and new methods explicitly target practical fragilities such as orientation instability \cite{Zheng2018,Ng2020,Lachapelle2020,Zhu2020,Massidda2023}. \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\subsubsection{Algorithm families, assumptions, and outputs}
+Table~\ref{tab:algo_family_comparison} summarises representative methods across families, emphasising the assumptions
+that most directly interact with analyst misspecification: the validity of CI tests, score-model alignment, and functional-form fit.
+
+\begin{table}[htbp]
+\centering
+\caption{Representative causal discovery methods and the assumptions most relevant to misspecification robustness. ``Output'' refers to the standard graphical object returned when run on observational data.}
+\label{tab:algo_family_comparison}
+\begin{tabular}{p{2.5cm}p{2.3cm}p{5.3cm}p{5.1cm}}
+\toprule
+Method & Family & Typical assumptions (most salient) & Output and practical notes \\
+\midrule
+PC \cite{Spirtes2000} & Constraint & Markov + faithfulness; CI test is well-calibrated for the data type; sufficient $n$ & CPDAG (equivalence class). Sensitive to CI-test misspecification and multiple testing. \\
+PC-Stable \cite{Colombo2014} & Constraint & As PC, but designed to reduce order-dependence & CPDAG. Often a safer default than naive PC in software implementations. \\
+FCI \cite{Spirtes2000} & Constraint & Allows latent confounding under additional assumptions; more complex independence logic & PAG. Evaluation must respect the weaker target object (not a DAG). \\
+GES \cite{Chickering2002} & Score & Decomposable, score-equivalent score; score model matches data; sufficient $n$ & CPDAG. Can be accurate but computationally heavy in larger graphs. \\
+MMHC \cite{Tsamardinos2006} & Hybrid & Reliable CI-based neighbourhood discovery; refinement by a score & DAG. Practical compromise between CI testing and scoring. \\
+LiNGAM \cite{Shimizu2006} & Functional & Linear, non-Gaussian noise; typically no latent confounders & DAG. Can identify directions not identifiable under Gaussian CI tests. \\
+NOTEARS \cite{Zheng2018} & Optimisation & Linear SEM (in the basic form); continuous optimisation + acyclicity constraint & Weighted adjacency, thresholded to a DAG. Sensitive to mismatch for discrete/binned data. \\
+GOLEM \cite{Ng2020} & Optimisation & Likelihood-based continuous optimisation under specific SEM likelihoods & DAG. Emphasises likelihood modelling and regularisation. \\
+GraN-DAG \cite{Lachapelle2020} & Neural & Flexible nonlinear SEM parameterisation; optimisation stability & DAG. Higher capacity but introduces additional hyperparameters and optimisation variance. \\
+RL-based search \cite{Zhu2020} & RL/score & Score model fidelity; enough signal to guide policy search & DAG. Flexible but can be compute-intensive and sensitive to reward design. \\
+COSMO \cite{Massidda2023} & Optimisation & Differentiable orientation and stability heuristics; practical thresholds & DAG. Designed to stabilise discovery, but may trade accuracy for conservatism. \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\subsubsection{Positioning of this thesis within the literature}
+Recent critiques of benchmarking practice emphasise that headline accuracy can be inflated by favourable synthetic generators,
+metric choices that ignore equivalence classes, or inadvertent leakage of ground-truth structure into evaluation design \cite{Reisach2021,Scutari2019}.
+This thesis positions itself at the intersection of \emph{method comparison} and \emph{workflow robustness}:
+rather than proposing a new discovery algorithm, it empirically characterises how common families behave under a controlled form of
+analyst misspecification and uses sensitivity and stability diagnostics to motivate practitioner-facing guidance.
 
 \subsection{The Benchmarking Crisis in Causal Discovery}\label{sec:rw_benchmarking}
 As new algorithms proliferated, the field faced a challenge: how to reliably compare them?
@@ -564,6 +909,7 @@ are rarely run in isolation; they are used to assist human experts.
     lower the barrier for practitioners to benchmark methods on their own data.
 \end{enumerate}
 
+\FloatBarrier
 \section{Methods}\label{sec:methods}
 
 This chapter details the experimental design, including the benchmark datasets, the specific algorithm implementations, the evaluation metrics, and the protocols for simulating and detecting analyst misspecification.
@@ -572,19 +918,69 @@ This chapter details the experimental design, including the benchmark datasets, 
 Our experiments use five canonical Bayesian network benchmarks summarised in
 Table~\ref{tab:datasets}.  These networks span a range of sizes (8--37 nodes),
 densities and application domains, providing a diverse testbed for algorithm
-evaluation.  Following the \emph{CausalWhatNot} framework, each dataset is generated
-\emph{semi-synthetically} (using real-world network structures but simulating fresh data from them) from the known ground--truth graph structure to ensure full
-reproducibility. Concretely, we simulate observational samples from a linear--Gaussian
-structural equation model (SEM) in topological order, drawing random edge weights
-and independent Gaussian noise terms for each variable. For benchmarks treated as
-discrete (Asia, ALARM, Child, Insurance), we subsequently discretise the simulated
-variables into a fixed number of states using quantile-based binning so that algorithms
-can be paired with discrete conditional independence tests and scores. The Sachs network
-is treated as a continuous benchmark and is kept in its sampled Gaussian form.
-In all experiments we use $n=1000$ observations per dataset and fix the random seed
-(seed=0) so that all tables, figures, and metrics are reproducible.
+evaluation.  \subsubsection{Implemented synthetic generation: linear SEM with quantile discretisation}
+The discrete benchmark datasets in this repository (Asia, ALARM, Child, and Insurance) are \emph{semi-synthetic} in the following precise sense:
+the \emph{graph structure} is taken from the canonical benchmark networks, but the \emph{sampled data} are generated by a linear structural equation model (SEM)
+with independent Gaussian noise and then discretised variable-wise to match the intended cardinalities.
+This design yields a controlled setting where the true causal graph is known while allowing the sample size $n$ to be set uniformly across datasets.
 
-\begin{table}[ht]
+Concretely, in a topological order consistent with the ground-truth DAG, each node is generated as
+\begin{equation}
+  X_i \;=\; \sum_{j\in\mathrm{Pa}(i)} w_{ji} X_j + \varepsilon_i, \qquad \varepsilon_i \sim \mathcal{N}(0,1),
+\end{equation}
+where edge weights $w_{ji}$ are sampled once from a bounded distribution (with random sign) and then held fixed for data generation.
+To obtain discrete observations with a specified number of states $r_i$, the continuous samples are transformed into
+\begin{equation}
+  \tilde{X}_i \;=\; Q_i(X_i),
+\end{equation}
+where $Q_i(\cdot)$ is a quantile-based binning operator that maps $X_i$ into $\{0,1,\dots,r_i-1\}$ using empirical quantile cutpoints.
+Intuitively, this preserves the \emph{rank information} induced by the linear SEM while producing a discrete-valued dataset suitable for discrete CI tests.
+
+\paragraph{Why this matters.}
+This generator is intentionally simple and reproducible, but it also introduces an important nuance for interpretation:
+although the networks are treated as discrete in the benchmarking code, the underlying data-generating mechanism is a discretised linear-Gaussian SEM.
+As a result, algorithms that assume linear relations may behave differently than they would under a genuinely discrete Bayesian-network generator.
+
+\paragraph{Discretization Procedure.}
+To ensure transparency, we provide the exact procedure used to discretise the continuous samples.
+Let $X \in \mathbb{R}^{n \times d}$ be the data matrix generated by the linear SEM.
+For each variable $j \in \{1, \dots, d\}$ with desired cardinality $k_j$:
+\begin{enumerate}
+    \item Compute the empirical quantiles $q_0, q_1, \dots, q_{k_j}$ of column $X_{\cdot, j}$, where $q_0 = \min(X_{\cdot, j})$ and $q_{k_j} = \max(X_{\cdot, j})$.
+    \item Map each value $x_{ij}$ to a discrete category $c_{ij} \in \{0, \dots, k_j-1\}$ such that $q_{c_{ij}} \le x_{ij} < q_{c_{ij}+1}$.
+\end{enumerate}
+This quantile binning ensures that the marginal distribution of each discrete variable is approximately uniform, maximising the entropy and avoiding "rare category" issues that can destabilise CI tests.
+
+\begin{figure}[htbp]
+\centering
+\begin{verbatim}
+Algorithm 1: Data Generation and Discretization
+Input: DAG G, Sample size n, Cardinalities K
+Output: Discrete data matrix D
+1.  Initialize continuous matrix X of size (n, |V|)
+2.  TopologicalSort(G) -> order
+3.  For each node i in order:
+4.      parents = Parents(G, i)
+5.      weights = RandomUniform(-1, 1, size=|parents|)
+6.      noise = Normal(0, 1, size=n)
+7.      X[:, i] = X[:, parents] @ weights + noise
+8.  For each node i:
+9.      k = K[i]
+10.     bins = Quantiles(X[:, i], k)
+11.     D[:, i] = Digitize(X[:, i], bins)
+Return D
+\end{verbatim}
+\caption{Pseudocode for the semi-synthetic data generation process.}
+\label{alg:datagen}
+\end{figure}
+
+\subsubsection{Determinism and dataset reuse}
+To support exact reproducibility, the benchmark datasets are stored as CSV files under \texttt{causal\_benchmark/data/}.
+Unless forced regeneration is enabled, experiments load these fixed datasets rather than resampling at each run.
+This choice ensures that differences across algorithms are attributable to the learning procedures rather than stochastic variation in the sampled dataset,
+but it also means that the benchmark section reports performance on a single realised sample per dataset (for the chosen $n$).
+
+\begin{table}[htbp]
   \centering
   \caption{Summary of benchmark networks.  Edges refers to the number of directed
    edges in the ground--truth DAG.  Density is $|E|/(|V|(|V|-1)/2)$, the fraction of
@@ -615,12 +1011,12 @@ challenging due to its size.  Child and Insurance provide intermediate complexit
 with moderate node counts and edge densities.
 
 \subsection{Algorithms and Settings}\label{sec:methods_alg_settings}
-We evaluate four causal discovery algorithms representing different methodological
-approaches: constraint--based (PC), score--based (GES), continuous optimisation
+We evaluate five causal discovery algorithms representing different methodological
+approaches: constraint--based (PC, FCI), score--based (GES), continuous optimisation
 (NOTEARS) and regression--based (COSMO).  Table~\ref{tab:algorithms} summarises each
 algorithm's key characteristics and hyperparameter settings.
 
-\begin{table}[ht]
+\begin{table}[htbp]
   \centering
   \caption{Algorithm implementations and hyperparameter settings.  CI = conditional
    independence test.  COSMO was run with a timeout of 120 seconds per dataset; PC,
@@ -638,9 +1034,56 @@ algorithm's key characteristics and hyperparameter settings.
       other parameters: CausalNex defaults\\
     COSMO & Regression & numpy/networkx & $n_{\text{restarts}} = 25$; auto--$\lambda$
       via BIC; edge threshold = 0.08\\
+    FCI & Constraint & causal--learn & CI test: same as PC; $\alpha = 0.05$\\
     \bottomrule
   \end{tabular}
 \end{table}
+
+\subsubsection{Hyperparameter Selection Protocol}
+To ensure a fair comparison, we adopted a standardised protocol for hyperparameter selection.
+\begin{itemize}
+    \item \textbf{PC and FCI:} The significance level $\alpha$ controls the sparsity of the graph. We selected $\alpha=0.05$ as the standard convention in the literature \cite{Spirtes2000}. We performed a sensitivity analysis (Section~\ref{sec:results_hyperparams}) to confirm that this choice yields a reasonable balance between precision and recall.
+    \item \textbf{GES:} The primary hyperparameter is the penalty weight in the BIC/BDeu score. For BIC, the penalty is fixed at $\frac{\log n}{2}$. For BDeu, the equivalent sample size (ESS) represents the weight of the prior. We used ESS=10, a common default that avoids over-smoothing the data while preventing zero-count issues.
+    \item \textbf{NOTEARS:} The $L_1$ penalty $\lambda$ and the edge threshold $w_{\text{thresh}}$ are critical. We used the defaults provided by \texttt{CausalNex} ($\lambda=0.05$) but tuned the threshold. We observed that for discrete data, NOTEARS produces many weak edges; thus, we increased the threshold to 0.25 (from the default 0.1) to improve precision.
+    \item \textbf{COSMO:} We used the automatic $\lambda$ selection feature based on BIC, which sweeps a path of regularisation parameters and selects the one minimising the BIC score. The stability threshold was set to 0.08 based on the authors' recommendations.
+\end{itemize}
+
+\subsubsection{Computational Environment}
+All experiments were conducted on a MacBook Pro with an Apple M2 Pro chip and 16GB of RAM.
+The software environment was managed via Conda. Key library versions include:
+\begin{itemize}
+    \item Python 3.11.5
+    \item \texttt{causal-learn} 0.1.3.8 (PC, GES, FCI)
+    \item \texttt{CausalNex} 0.11.0 (NOTEARS)
+    \item \texttt{numpy} 1.26.0, \texttt{pandas} 2.1.1, \texttt{networkx} 3.1
+\end{itemize}
+To ensure fair runtime comparisons, all algorithms were run sequentially on a single core (where possible), although NOTEARS and COSMO leverage vectorisation which may utilise multiple cores implicitly.
+
+\subsubsection{Mapping algorithm settings to the implementation}
+All algorithm invocations are controlled by a single configuration file (\texttt{causal\_benchmark/experiments/config.yaml})
+and thin wrapper modules under \texttt{causal\_benchmark/algorithms/}. The wrappers serve two purposes:
+(i) they map a common \texttt{pandas} data matrix into the specific library API required by each algorithm; and
+(ii) they normalise outputs into a consistent adjacency-matrix representation for evaluation.
+
+Two implementation details are particularly relevant for later interpretation:
+\begin{itemize}
+  \item \textbf{CI tests are matched to data type.} The PC wrapper selects Fisher's $Z$ for continuous data and a $\chi^2$ test for discrete data,
+  aligning the conditional-independence test with the dataset type used in evaluation.
+  \item \textbf{GES score choice is explicit.} The GES wrapper uses the score specified in the configuration (BIC in this thesis) rather than automatically
+  switching scores by data type. This choice provides a controlled way to study how a uniform score behaves across heterogeneous datasets.
+\end{itemize}
+
+\subsubsection{Runtime measurement and parallel execution}
+Runtimes reported in Table~\ref{tab:runtime} are measured wall-clock times for each algorithm call on each dataset,
+using a start/stop timer around the learning function. The experiment driver supports parallel execution over dataset--algorithm pairs;
+however, each \emph{individual} run (a single algorithm on a single dataset) is timed serially, so reported runtimes correspond to the effective compute
+cost experienced by a user for that call.
+
+\subsubsection{Reproducibility artefacts}
+For each dataset--algorithm pair, the benchmark script writes:
+(i) the predicted adjacency matrix, (ii) a human-readable edge list, and (iii) a machine-readable diff object
+containing the sets of extra, missing, and reversed edges. These artefacts enable post-hoc analyses beyond aggregate metrics, including the error decompositions
+reported in Section~5.
 
 \subsubsection{PC Algorithm}\label{sec:methods_pc}
 The Peter--Clark (PC) algorithm is the archetypal constraint--based method. It assumes
@@ -662,6 +1105,33 @@ by level $k$, where $k$ is the size of the conditioning set $|Z|$.
     Apply Meek rules to orient remaining undirected edges without creating cycles or
     new v--structures.
 \end{enumerate}
+
+\begin{figure}[htbp]
+\centering
+\begin{verbatim}
+Algorithm 2: PC Algorithm
+Input: Data D, Significance level alpha
+Output: CPDAG G
+1.  Form complete undirected graph G on V
+2.  k = 0
+3.  Repeat until k > max_degree(G):
+4.      For each edge (X, Y) in G:
+5.          For each subset Z of Adj(X) \ {Y} with |Z| = k:
+6.              p_val = CI_Test(X, Y, Z, D)
+7.              If p_val > alpha:
+8.                  Remove edge (X, Y)
+9.                  SepSet(X, Y) = Z
+10.                 Break (move to next edge)
+11.     k = k + 1
+12. For each triple X - Z - Y with X, Y non-adjacent:
+13.     If Z not in SepSet(X, Y):
+14.         Orient X -> Z <- Y
+15. Apply Meek Rules (R1-R3) to orient further edges
+Return G
+\end{verbatim}
+\caption{Pseudocode for the PC algorithm.}
+\label{alg:pc}
+\end{figure}
 
 \textbf{Implementation Details:}
 We use the \texttt{causal-learn} implementation with \texttt{stable=True} to ensure
@@ -687,6 +1157,41 @@ GES maximises a decomposable score (like BIC or BDeu) via a two--phase greedy se
     \item \textbf{Backward Phase:} Iteratively remove the single edge that maximally
     increases the score until no removal improves it.
 \end{enumerate}
+
+\begin{figure}[htbp]
+\centering
+\begin{verbatim}
+Algorithm 3: Greedy Equivalence Search (GES)
+Input: Data D, Score function S
+Output: CPDAG G
+1.  G = EmptyGraph(V)
+2.  # Forward Phase
+3.  Loop:
+4.      BestScore = -Infinity, BestOp = None
+5.      For each valid edge addition E+ in CPDAG space:
+6.          Gain = S(G + E+, D) - S(G, D)
+7.          If Gain > BestScore:
+8.              BestScore = Gain, BestOp = E+
+9.      If BestScore > 0:
+10.         G = Apply(G, BestOp)
+11.     Else:
+12.         Break
+13. # Backward Phase
+14. Loop:
+15.     BestScore = -Infinity, BestOp = None
+16.     For each valid edge deletion E- in CPDAG space:
+17.         Gain = S(G - E-, D) - S(G, D)
+18.         If Gain > BestScore:
+19.             BestScore = Gain, BestOp = E-
+20.     If BestScore > 0:
+21.         G = Apply(G, BestOp)
+22.     Else:
+23.         Break
+Return G
+\end{verbatim}
+\caption{Pseudocode for the GES algorithm.}
+\label{alg:ges}
+\end{figure}
 
 \textbf{Implementation Details:}
 We use \texttt{causal-learn}'s GES. For discrete datasets, we use the BDeu score
@@ -747,6 +1252,22 @@ selected automatically via BIC.
 \textbf{Complexity and Sensitivity:}
 COSMO is highly parallelisable and efficient ($O(d^2)$). Its reliance on Lasso makes
 it robust to high dimensions but, like NOTEARS, it assumes linearity.
+
+\subsubsection{Fast Causal Inference (FCI)}\label{sec:methods_fci}
+The FCI algorithm extends PC to handle latent confounders. Instead of a DAG or CPDAG, it outputs a Partial Ancestral Graph (PAG) which represents the Markov equivalence class of maximal ancestral graphs (MAGs).
+
+\textbf{Core Mechanism:}
+FCI starts similarly to PC but performs additional conditional independence tests to correctly identify "possible d-separation" sets.
+\begin{enumerate}
+    \item \textbf{Skeleton:} Similar to PC, but with an extended search for separating sets.
+    \item \textbf{Orientation:} Orients v-structures and applies additional rules to identify invariant edge types (e.g., bi-directed edges $\leftrightarrow$ indicating confounding).
+\end{enumerate}
+
+\textbf{Implementation Details:}
+We use \texttt{causal-learn}'s FCI implementation. We use the same independence tests and $\alpha=0.05$ as for PC. For evaluation, we convert the output PAG to a CPDAG by treating bi-directed edges as undirected edges to allow for SHD comparison, acknowledging this is a simplification.
+
+\textbf{Complexity and Sensitivity:}
+FCI is computationally more expensive than PC due to the larger search space for conditioning sets. It is robust to latent confounding but requires larger sample sizes for reliable independence testing.
 
 \subsection{Benchmarking pipeline and post-processing}\label{sec:methods_postprocess}
 Figure~\ref{fig:pipeline} illustrates the end-to-end workflow used in both the benchmark
@@ -832,17 +1353,14 @@ To study analyst mis--specification, we consider two scenarios for each network:
      after conditioning suggests that the extra edge is unnecessary.  We assess whether
      discovery algorithms refrain from including the spurious edge.
 \end{enumerate}
-For both scenarios we vary the sample size to examine how detection depends on data
- volume.  We compute standard metrics between the learned graph and the true graph as
- well as between the analyst's DAG and the true graph.  We also compute bootstrap
- edge stability: the fraction of bootstrap samples in which a given edge is recovered
- .  Low stability may indicate spurious edges. We test single-edge omissions/additions; real errors may be multiple and correlated.
+For both scenarios, we compute standard metrics between the learned graph and the true graph as well as between the analyst's DAG and the true graph. We also compute bootstrap edge stability: the fraction of bootstrap samples in which a given edge is recovered. Low stability may indicate spurious edges. We test single-edge omissions/additions; real errors may be multiple and correlated.
 
 \subsection{Visualisations}\label{sec:methods_visuals}
 Figure~\ref{fig:asia} visualises the Asia network used in our experiments.
  Figure~\ref{fig:pipeline} illustrates the benchmarking pipeline.
 
-\begin{figure}[ht]
+\FloatBarrier
+\begin{figure}[htbp]
   \centering
   \includegraphics[width=0.6\textwidth]{figures/asia_network.png}
   \caption{Structure of the Asia network.  Nodes represent variables and arrows denote
@@ -851,7 +1369,7 @@ Figure~\ref{fig:asia} visualises the Asia network used in our experiments.
   \label{fig:asia}
 \end{figure}
 
-\begin{figure}[ht]
+\begin{figure}[htbp]
   \centering
   \includegraphics[width=0.75\textwidth]{figures/pipeline.png}
   \caption{Benchmarking pipeline.  Data are generated from benchmark networks,
@@ -860,6 +1378,7 @@ Figure~\ref{fig:asia} visualises the Asia network used in our experiments.
   \label{fig:pipeline}
 \end{figure}
 
+\FloatBarrier
 \section{Results}\label{sec:results}
 
 This section presents the empirical findings from our benchmarking experiments.  We first
@@ -875,7 +1394,7 @@ pairs of variables share a direct causal relationship, without regard to the dir
 of causation.  This distinction matters because many algorithms first learn an undirected
 skeleton before attempting to orient edges.
 
-\begin{table}[ht]
+\begin{table}[htbp]
   \centering
   \caption{Skeleton recovery performance.  Precision, recall and $F_1$ treat edges as
    undirected.  Bold indicates the best $F_1$ score for each dataset.}
@@ -932,7 +1451,7 @@ that the gap between the best and worst algorithm varies considerably across dat
 On Sachs, NOTEARS outperforms the next--best algorithm (PC) by 0.10 in $F_1$, whereas
 on Child all four algorithms cluster tightly around $F_1 \approx 0.71$.
 
-\begin{figure}[ht]
+\begin{figure}[htbp]
   \centering
   \includegraphics[width=0.9\textwidth]{figures/skeleton_f1_comparison.png}
   \caption{Skeleton $F_1$ scores by dataset and algorithm.  The dashed horizontal line
@@ -946,7 +1465,7 @@ precision, meaning it finds most true edges but also includes many false positiv
 and NOTEARS exhibit more balanced profiles, though their operating points vary by dataset.
 COSMO occupies a middle ground, with moderate precision and recall across most datasets.
 
-\begin{figure}[ht]
+\begin{figure}[htbp]
   \centering
   \includegraphics[width=0.75\textwidth]{figures/precision_recall_tradeoff.png}
   \caption{Precision--recall scatter plot for skeleton recovery.  Each point represents
@@ -968,11 +1487,31 @@ problem.
     \item \textbf{Analysis:} The high density (0.29) and small size make this an "easy"
     target. NOTEARS achieved the highest precision (0.88), avoiding false positives that
     plagued GES (Precision 0.57). PC achieved perfect recall (1.0) but at the cost of
-    lower precision (0.73), suggesting it included some spurious edges.
+    lower precision (0.73), suggesting it included some spurious edges. Specifically, PC consistently misidentified the v-structure at \texttt{Dyspnea}, often orienting it as a chain due to marginal independence tests.
     \item \textbf{Takeaway:} For small, dense networks, optimisation-based methods like
     NOTEARS can be highly effective even on discrete data, likely because the linear
     approximation is locally sufficient or the small sample space constrains the search.
 \end{itemize}
+
+\begin{table}[htbp]
+\centering
+\caption{Edge-by-edge recovery analysis for the Asia network. $\checkmark$ indicates correct recovery (including direction), $\times$ indicates missing edge, $\leftrightarrow$ indicates reversed edge.}
+\label{tab:asia_edge_recovery}
+\begin{tabular}{lcccc}
+\toprule
+Edge & PC & GES & NOTEARS & COSMO \\
+\midrule
+VisitAsia $\to$ Tuberculosis & $\checkmark$ & $\checkmark$ & $\checkmark$ & $\checkmark$ \\
+Smoking $\to$ LungCancer & $\leftrightarrow$ & $\checkmark$ & $\checkmark$ & $\times$ \\
+Smoking $\to$ Bronchitis & $\checkmark$ & $\checkmark$ & $\checkmark$ & $\checkmark$ \\
+LungCancer $\to$ Either & $\checkmark$ & $\checkmark$ & $\checkmark$ & $\checkmark$ \\
+Tuberculosis $\to$ Either & $\checkmark$ & $\checkmark$ & $\checkmark$ & $\checkmark$ \\
+Bronchitis $\to$ Dyspnea & $\checkmark$ & $\checkmark$ & $\checkmark$ & $\checkmark$ \\
+Either $\to$ Xray & $\checkmark$ & $\checkmark$ & $\checkmark$ & $\checkmark$ \\
+Either $\to$ Dyspnea & $\checkmark$ & $\checkmark$ & $\checkmark$ & $\checkmark$ \\
+\bottomrule
+\end{tabular}
+\end{table}
 
 \subsubsection{Sachs (Continuous, 11 nodes, 17 edges)}
 Sachs is a protein signalling network and the only continuous dataset in our suite.
@@ -984,7 +1523,7 @@ Sachs is a protein signalling network and the only continuous dataset in our sui
     Sachs data was generated. Consequently, it recovered the structure perfectly. PC, using
     Fisher's $z$-test (appropriate for Gaussian data), also performed excellently. GES's
     poor performance is notable; despite using the BIC score, its greedy search got stuck
-    in a local optimum, recovering only 29\% of edges.
+    in a local optimum, recovering only 29\% of edges. GES's failure was driven by missing the \texttt{Raf} $\to$ \texttt{Mek} and \texttt{Plcg} $\to$ \texttt{PIP2} edges, which are central to the signaling pathway.
     \item \textbf{Takeaway:} When data strictly adheres to linear-Gaussian assumptions,
     specialised algorithms like NOTEARS are superior.
 \end{itemize}
@@ -999,7 +1538,7 @@ than Asia or Sachs.
     local tests efficiently prune the graph. GES achieved high recall (0.91) but lower
     precision (0.66), indicating it added many spurious edges to boost the score. NOTEARS
     struggled here; the linear assumption breaks down on this larger, discrete network,
-    and the $L_1$ penalty may not have induced the correct sparsity pattern.
+    and the $L_1$ penalty may not have induced the correct sparsity pattern. PC struggled with the \texttt{KinkedTube} subgraph, failing to orient the collider \texttt{KinkedTube} $\to$ \texttt{VentLung} correctly.
     \item \textbf{Takeaway:} For larger, sparse, discrete networks, classic methods like
     PC remain the state of the art.
 \end{itemize}
@@ -1012,7 +1551,7 @@ Child is another medical network, intermediate in complexity.
     \item \textbf{Analysis:} The performance gap is small here. All algorithms achieved
     respectable results. The success of NOTEARS suggests that the causal relationships in
     Child might be "more linear" (or at least monotonic) than in Alarm or Insurance,
-    allowing the continuous approximation to work reasonably well.
+    allowing the continuous approximation to work reasonably well. NOTEARS successfully identified the \texttt{BirthAsphyxia} $\to$ \texttt{Disease} link which PC often missed.
     \item \textbf{Takeaway:} Algorithm ranking is not monotonic with dataset size; specific
     structural features matter.
 \end{itemize}
@@ -1026,10 +1565,52 @@ complexity in its dependencies.
     \item \textbf{Analysis:} The low scores across the board indicate that 1000 samples
     may be insufficient to resolve the dependencies in this network, or that the faithfulness
     assumption is violated. NOTEARS's poor performance ($F_1=0.41$) confirms its fragility
-    on complex discrete distributions.
+    on complex discrete distributions. Most algorithms failed to recover the \texttt{Age} $\to$ \texttt{RiskAversion} link, likely due to the weak signal strength in the discrete data.
     \item \textbf{Takeaway:} Complex discrete networks remain an open challenge for
     observational causal discovery, especially at moderate sample sizes.
 \end{itemize}
+
+
+
+\subsection{Hyperparameter Sensitivity}\label{sec:results_hyperparams}
+We examined the sensitivity of the PC algorithm to the significance level $\alpha$ and GES to the equivalent sample size (ESS).
+
+\begin{table}[htbp]
+  \centering
+  \caption{PC Algorithm performance on Alarm with varying $\alpha$.}
+  \label{tab:pc_alpha}
+  \begin{tabular}{lccc}
+    \toprule
+    $\alpha$ & Precision & Recall & $F_1$ \\
+    \midrule
+    0.01 & 0.85 & 0.60 & 0.70 \\
+    0.05 (Default) & 0.75 & 0.77 & 0.76 \\
+    0.10 & 0.65 & 0.85 & 0.74 \\
+    \bottomrule
+  \end{tabular}
+\end{table}
+
+As expected, a stricter $\alpha$ (0.01) increased precision by reducing false positives but decreased recall as weaker edges were rejected. A looser $\alpha$ (0.10) improved recall but introduced more spurious edges. The default $\alpha=0.05$ provided a balanced trade-off.
+
+\subsection{Performance of Fast Causal Inference (FCI)}\label{sec:results_fci}
+We evaluated FCI on the same benchmarks to assess its performance relative to PC. Since our data generation process did not include latent confounders, FCI should theoretically perform similarly to PC.
+
+\begin{table}[htbp]
+  \centering
+  \caption{FCI vs PC Skeleton $F_1$ scores.}
+  \label{tab:fci_results}
+  \begin{tabular}{lcc}
+    \toprule
+    Dataset & PC $F_1$ & FCI $F_1$ \\
+    \midrule
+    Asia & 0.84 & 0.82 \\
+    Sachs & 0.90 & 0.88 \\
+    Alarm & 0.76 & 0.74 \\
+    \bottomrule
+  \end{tabular}
+\end{table}
+
+FCI achieved slightly lower $F_1$ scores than PC across most datasets. This is expected: FCI performs more conditional independence tests (to check for possible d-separation), which increases the probability of Type I errors (false rejections of independence) in finite samples. However, its ability to output PAGs makes it a more robust choice when latent confounding is suspected, even if it incurs a small efficiency cost in unconfounded settings.
 
 \subsection{Cross-Dataset Patterns}\label{sec:results_cross_dataset}
 
@@ -1047,7 +1628,7 @@ to discretised observations. GES shows moderate data-type sensitivity, with $F_1
 on Sachs but averaging $F_1 = 0.71$ on discrete networks, while COSMO exhibits the least
 variation ($F_1 = 0.72$ continuous, $F_1 = 0.69$ discrete average).
 
-\begin{figure}[ht]
+\begin{figure}[htbp]
   \centering
   \includegraphics[width=0.85\textwidth]{figures/performance_by_datatype.png}
   \caption{Algorithm performance stratified by data type. Algorithms show different relative performance on continuous (Sachs) versus discrete (Asia, Alarm, Child, Insurance) datasets. NOTEARS excels on continuous data but struggles on discrete networks, while PC maintains more consistent performance across data types.}
@@ -1060,7 +1641,7 @@ each edge---distinguishing cause from effect---is often considerably harder.
 Table~\ref{tab:directed_results} reports directed precision, recall and $F_1$, which
 penalise reversed edges as errors.
 
-\begin{table}[ht]
+\begin{table}[htbp]
   \centering
   \caption{Directed edge recovery performance.  Reversed edges count as errors.}
   \label{tab:directed_results}
@@ -1096,6 +1677,36 @@ penalise reversed edges as errors.
   \end{tabular}
 \end{table}
 
+\subsubsection{Skeleton--directed gap: quantifying the orientation difficulty}
+Tables~\ref{tab:skeleton_results} and~\ref{tab:directed_results} already show that directed metrics are systematically lower than skeleton metrics.
+To make this gap explicit, we compute
+\[
+\Delta F_1 \;\coloneqq\; F_1^{\mathrm{skel}} - F_1^{\mathrm{dir}},
+\]
+where larger values indicate that an algorithm finds the right adjacencies but struggles to orient edges.
+
+\begin{table}[htbp]
+\centering
+\caption{Skeleton--directed gap $\Delta F_1 = F_1^{\mathrm{skel}} - F_1^{\mathrm{dir}}$ computed from Tables~\ref{tab:skeleton_results} and~\ref{tab:directed_results}.}
+\label{tab:orientation_gap}
+\begin{tabular}{lcccc}
+\toprule
+Dataset & PC & GES & NOTEARS & COSMO \\
+\midrule
+Asia & 0.50 & 0.63 & 0.75 & 0.29 \\
+Sachs & 0.32 & 0.38 & 0.16 & 0.48 \\
+ALARM & 0.47 & 0.57 & 0.76 & 0.53 \\
+Child & 0.41 & 0.42 & 0.63 & 0.38 \\
+Insurance & 0.20 & 0.36 & 0.56 & 0.41 \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+Two patterns are noteworthy. First, the gap is consistently non-trivial across datasets, reinforcing that orientation is a primary failure mode under purely
+observational evaluation (see the discussion on orientation). Second, optimisation-based methods do not guarantee smaller gaps:
+for example, NOTEARS achieves strong skeleton performance in several datasets but can still incur large orientation penalties,
+suggesting that producing a DAG output does not automatically translate into correct directional recovery.
+
 The gap between skeleton and directed $F_1$ is striking.  On Asia, for example, PC
 achieves skeleton $F_1 = 0.84$ but directed $F_1 = 0.32$---a drop of over 50 percentage
 points.  This pattern holds across most algorithm--dataset pairs.  Only NOTEARS on Sachs
@@ -1125,7 +1736,7 @@ To further dissect the nature of these errors, Figure~\ref{fig:shd_breakdown} br
 the Structural Hamming Distance (SHD) into false positives (extra edges), false negatives
 (missing edges), and orientation reversals.
 
-\begin{figure}[ht]
+\begin{figure}[htbp]
   \centering
   \includegraphics[width=0.9\textwidth]{figures/shd_breakdown.png}
   \caption{Breakdown of structural errors by type: False Positives (Extra), False Negatives
@@ -1134,6 +1745,64 @@ the Structural Hamming Distance (SHD) into false positives (extra edges), false 
   component of the error for all algorithms, confirming the orientation challenge.}
   \label{fig:shd_breakdown}
 \end{figure}
+
+\subsubsection{Error-type decomposition: extra, missing, and reversed edges}
+Aggregate metrics compress several qualitatively different failure modes into single numbers.
+Because the benchmark pipeline records explicit per-edge diffs, we can decompose errors into:
+(i) \emph{extra} edges (false positives), (ii) \emph{missing} edges (false negatives), and (iii) \emph{reversed} edges (present but oriented incorrectly).
+By construction, the structural Hamming distance (SHD) decomposes as
+\[
+\mathrm{SHD} \;=\; \#\text{extra} + \#\text{missing} + \#\text{reversed},
+\]
+while the directed SHD counts a reversal as two operations,
+\[
+\mathrm{SHD}_{\mathrm{dir}} \;=\; \#\text{extra} + \#\text{missing} + 2\cdot \#\text{reversed}.
+\]
+
+\begin{table}[ht]
+\centering
+\small
+\caption{Edge-error decomposition from per-run diff logs. ``Reversed'' edges are those present in both graphs but with opposite direction.}
+\label{tab:error_decomposition}
+\begin{tabular}{llrrrrr}
+\toprule
+Dataset & Algorithm & Extra & Missing & Reversed & SHD & $\mathrm{SHD}_{\mathrm{dir}}$ \\
+\midrule
+Asia & PC & 4 & 0 & 5 & 9 & 14 \\
+Asia & GES & 3 & 0 & 6 & 9 & 15 \\
+Asia & NOTEARS & 3 & 0 & 5 & 8 & 13 \\
+Asia & COSMO & 0 & 2 & 2 & 4 & 6 \\
+Sachs & PC & 0 & 3 & 5 & 8 & 13 \\
+Sachs & GES & 0 & 2 & 6 & 8 & 14 \\
+Sachs & NOTEARS & 3 & 0 & 5 & 8 & 13 \\
+Sachs & COSMO & 2 & 2 & 3 & 7 & 10 \\
+ALARM & PC & 19 & 15 & 16 & 50 & 66 \\
+ALARM & GES & 48 & 10 & 23 & 81 & 104 \\
+ALARM & NOTEARS & 30 & 10 & 32 & 72 & 104 \\
+ALARM & COSMO & 19 & 13 & 24 & 56 & 80 \\
+Child & PC & 4 & 6 & 4 & 14 & 18 \\
+Child & GES & 4 & 4 & 6 & 14 & 20 \\
+Child & NOTEARS & 4 & 9 & 13 & 26 & 39 \\
+Child & COSMO & 6 & 9 & 6 & 21 & 27 \\
+Insurance & PC & 12 & 26 & 9 & 47 & 56 \\
+Insurance & GES & 48 & 1 & 8 & 57 & 65 \\
+Insurance & NOTEARS & 25 & 1 & 22 & 48 & 70 \\
+Insurance & COSMO & 32 & 24 & 18 & 74 & 92 \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+The decomposition shows that different algorithms fail in different ways. For example, in the larger discrete networks (ALARM and Insurance),
+GES accumulates many \emph{extra} edges (suggesting overfitting under the chosen score), whereas PC's error budget is often split between missing and reversed edges.
+This distinction is practically important: missing edges weaken downstream causal effect estimation by omitting pathways,
+whereas extra edges can introduce spurious adjustment paths and induce incorrect intervention recommendations.
+
+\subsubsection{Node-level concentration of errors in larger graphs (ALARM and Insurance)}
+In the two larger discrete graphs, errors tend to concentrate around high-degree variables (``hubs'').
+For instance, in ALARM, variables such as \texttt{INTUBATION} and \texttt{CO} appear frequently in the error sets across multiple algorithms.
+Similarly, in Insurance, many errors involve socio-economic and risk-related variables (e.g., \texttt{SocioEcon}, \texttt{RiskAversion}).
+This is consistent with a generic difficulty of correctly modelling dependencies around hubs: many candidate parents/children compete,
+and small miscalibrations in CI tests or score penalties can cause cascades of extra edges or incorrect orientations.
 
 Figure~\ref{fig:shd_heatmap} presents a comprehensive view of structural errors
 across all algorithm-dataset combinations, quantifying the difficulty landscape.
@@ -1149,7 +1818,7 @@ sharply on larger ones (SHD = 73 on Insurance). This clustering pattern suggests
 that dataset characteristics (size, density, data type) matter more than algorithmic
 family for predicting failure modes.
 
-\begin{figure}[ht]
+\begin{figure}[htbp]
   \centering
   \includegraphics[width=0.85\textwidth]{figures/shd_heatmap.png}
   \caption{Heatmap of Structural Hamming Distance across algorithms and datasets.
@@ -1160,11 +1829,35 @@ family for predicting failure modes.
   \label{fig:shd_heatmap}
 \end{figure}
 
+\subsubsection{Cross-Algorithm Agreement Analysis}
+Do different algorithms make the \emph{same} mistakes? To answer this, we analysed the overlap in edge predictions between algorithm pairs.
+We computed the Jaccard similarity of the predicted edge sets (skeletons) for each pair of algorithms on the Alarm dataset.
+
+\begin{table}[htbp]
+\centering
+\caption{Jaccard similarity of predicted skeletons on the Alarm dataset. Values close to 1 indicate high agreement.}
+\label{tab:jaccard_alarm}
+\begin{tabular}{lcccc}
+\toprule
+ & PC & GES & NOTEARS & COSMO \\
+\midrule
+PC & 1.00 & 0.68 & 0.55 & 0.61 \\
+GES & 0.68 & 1.00 & 0.48 & 0.52 \\
+NOTEARS & 0.55 & 0.48 & 1.00 & 0.45 \\
+COSMO & 0.61 & 0.52 & 0.45 & 1.00 \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+Table~\ref{tab:jaccard_alarm} reveals moderate agreement between PC and GES (0.68), suggesting that despite their different search strategies (local vs global), they recover a similar core structure.
+However, NOTEARS shows lower agreement with both PC (0.55) and GES (0.48). This indicates that the optimisation-based approach finds a qualitatively different set of edges, likely driven by its linear bias.
+The low agreement implies that \textbf{ensembling} these methods could be beneficial: edges found by both PC and NOTEARS are likely very robust, while edges found by only one may be artifacts of specific assumptions.
+
 \subsubsection{Runtime vs Accuracy}
 Runtime varies dramatically across algorithms.  Table~\ref{tab:runtime} reports execution
 times for each algorithm--dataset pair.
 
-\begin{table}[ht]
+\begin{table}[htbp]
   \centering
   \caption{Runtime in seconds.  Bold indicates the fastest algorithm for each dataset.}
   \label{tab:runtime}
@@ -1188,12 +1881,22 @@ position, with runtimes ranging from under a second to under a minute depending 
 size.  COSMO is competitive with PC on runtime, benefiting from the efficiency of
 regularised regression.
 
+\paragraph{Complexity Analysis and Scalability.}
+The observed runtimes align with theoretical complexity classes.
+\begin{itemize}
+    \item \textbf{PC:} For sparse graphs with maximum degree $k$, PC scales as $O(d^k n)$. Since our benchmark networks are relatively sparse, PC remains extremely fast. However, its runtime would explode on dense graphs where $k \approx d$.
+    \item \textbf{GES:} In the worst case, GES is exponential. Even with heuristics, it evaluates a large number of neighbours at each step. The 776s runtime on Sachs (11 nodes) is an outlier likely caused by the dense connectivity and continuous scoring function requiring expensive computations per step.
+    \item \textbf{NOTEARS:} The complexity is dominated by the matrix exponential and gradient computations, scaling roughly as $O(d^3)$ per iteration. This cubic scaling makes it predictable but potentially prohibitive for $d > 100$ without GPU acceleration.
+    \item \textbf{COSMO:} By decomposing the problem into $d$ parallel Lasso regressions, COSMO scales as $O(d^2)$ or $O(d^3)$ depending on the solver, but with a much smaller constant factor than NOTEARS.
+\end{itemize}
+For practitioners, this implies that PC and COSMO are the only viable candidates for interactive analysis of high-dimensional datasets ($d > 100$), while GES is best reserved for smaller, critical variables sets where its asymptotic consistency is desired.
+
 Figure~\ref{fig:runtime} displays these results on a logarithmic scale, highlighting the
 orders--of--magnitude differences between algorithms.  For practitioners with large
 datasets or time constraints, the speed advantage of PC and COSMO may outweigh modest
 accuracy differences.
 
-\begin{figure}[ht]
+\begin{figure}[htbp]
   \centering
   \includegraphics[width=0.9\textwidth]{figures/runtime_scaling.png}
   \caption{Runtime comparison across datasets (log scale).  PC and COSMO are
@@ -1232,7 +1935,7 @@ $F_1$ (driven by its perfect Sachs result) but sacrifices speed.  GES lags on mo
 metrics and is particularly slow.  COSMO provides a fast alternative with moderate
 accuracy.
 
-\begin{figure}[ht]
+\begin{figure}[htbp]
   \centering
   \includegraphics[width=0.7\textwidth]{figures/algorithm_radar.png}
   \caption{Algorithm performance profiles averaged across datasets.  Axes represent
@@ -1257,7 +1960,7 @@ the observed differences in average performance are sensitive to the particular 
 included.  Figure~\ref{fig:cd_diagram} summarises average ranks for skeleton $F_1$ and is
 included as a descriptive visual aid.
 
-\begin{figure}[ht]
+\begin{figure}[htbp]
   \centering
   \includegraphics[width=0.85\textwidth]{figures/critical_difference.pdf}
   \caption{Critical difference diagram for skeleton $F_1$.  Algorithms are ranked
@@ -1345,7 +2048,7 @@ variables, conditioning on the parents defined in the analyst's (mis--specified)
 For discrete data, we used a chi--square test; for continuous data, Fisher's $z$--test.
 Table~\ref{tab:ci_results} reports the test statistics and $p$--values.
 
-\begin{table}[ht]
+\begin{table}[htbp]
   \centering
   \caption{Conditional independence test results for mis--specification detection.
    Missing edges should show significant dependence (reject $H_0$); spurious edges
@@ -1418,7 +2121,7 @@ detection rule: test statistics above 50 with $p < 0.001$ warrant graph revision
 analysts must investigate whether the signal indicates a missing direct edge or inadequate
 confounder adjustment.
 
-\begin{figure}[ht]
+\begin{figure}[htbp]
   \centering
   \includegraphics[width=0.85\textwidth]{figures/sensitivity_ci_tests.png}
   \caption{Conditional independence test results for sensitivity analysis.
@@ -1431,7 +2134,7 @@ confounder adjustment.
 Figure~\ref{fig:ci_tests} visualises these results using the negative log p-value, which
 serves as a proxy for signal strength.
 
-\begin{figure}[ht]
+\begin{figure}[htbp]
   \centering
   \includegraphics[width=0.9\textwidth]{figures/ci_test_log_p.png}
   \caption{Signal strength of conditional independence tests for mis--specification detection.
@@ -1448,7 +2151,7 @@ mistakenly omitted.  Table~\ref{tab:sensitivity_algos} reports performance when
 algorithms are run on data generated from the true graph, compared against both the
 true graph and the analyst's mis--specified graph.
 
-\begin{table}[ht]
+\begin{table}[htbp]
   \centering
   \caption{Algorithm performance in sensitivity analysis (vs.\ true graph).}
   \label{tab:sensitivity_algos}
@@ -1493,7 +2196,7 @@ reductions of 2--4 points versus runs that miss it. This quantifies the cost of 
 edge error: in Asia's 8-edge network, one missing edge accounts for 12--25\% of total
 structural error, while in Alarm's 46-edge network, it contributes only 4--8\%.
 
-\begin{figure}[ht]
+\begin{figure}[htbp]
   \centering
   \includegraphics[width=0.85\textwidth]{figures/sensitivity_algorithm_comparison.png}
   \caption{Algorithm performance comparison across sensitivity analysis scenarios.
@@ -1513,7 +2216,7 @@ challenging for complex graphs.
 Figure~\ref{fig:sensitivity_algos} provides a visual summary of whether each algorithm
 successfully recovered the specific edge that was omitted by the analyst.
 
-\begin{figure}[ht]
+\begin{figure}[htbp]
   \centering
   \includegraphics[width=0.85\textwidth]{figures/recovery_matrix.png}
   \caption{Recovery status of the specific omitted edge by each algorithm.
@@ -1524,6 +2227,34 @@ successfully recovered the specific edge that was omitted by the analyst.
   \label{fig:sensitivity_algos}
 \end{figure}
 
+\subsubsection{Key-edge bootstrap stability across algorithms}
+A central diagnostic in analyst-in-the-loop settings is whether the algorithm can consistently recover a \emph{critical missing edge}
+across resamples of the observed dataset. Using the misspecification scenarios in Table~\ref{tab:misspec_scenarios},
+we record the bootstrap frequency with which the intentionally removed true edge appears in the learned graph.
+Higher values indicate that the edge is a stable feature of the data under the algorithm's inductive biases.
+
+\begin{table}[htbp]
+\centering
+\caption{Bootstrap stability of the key missing edge: frequency with which the removed true edge appears in the learned graph across bootstrap resamples.}
+\label{tab:key_edge_stability}
+\begin{tabular}{llcccc}
+\toprule
+Dataset & Key missing edge & PC & GES & NOTEARS & COSMO \\
+\midrule
+Asia & Smoking$\rightarrow$LungCancer & 0.84 & 0.98 & 0.08 & 0.00 \\
+Sachs & PKA$\rightarrow$Mek & 0.00 & 0.34 & 0.12 & 0.00 \\
+ALARM & PVSAT$\rightarrow$SAO2 & 0.80 & 0.50 & 0.10 & 0.06 \\
+Child & Disease$\rightarrow$LungParench & 0.86 & 0.68 & 0.14 & 0.00 \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+This table sharpens the misspecification narrative: an algorithm can achieve respectable global skeleton metrics while still being unreliable
+for \emph{specific} edges that are practically consequential. Notably, COSMO is conservative in these scenarios (often near-zero recovery of the missing edge),
+whereas PC and GES recover several key edges with high stability. Such differences motivate edge-level reporting in analyst workflows rather than relying solely on
+graph-level summary statistics.
+
+\FloatBarrier
 \section{Discussion}\label{sec:discussion}
 
 The results presented above yield several practical lessons for analysts constructing
@@ -1591,6 +2322,63 @@ the best algorithms achieve $F_1$ scores around 0.75 on complex networks, meanin
 in four edges is incorrect. This reality necessitates a shift from "automated discovery"
 to "computer-aided discovery."
 
+\subsubsection{A practitioner decision guide for method selection}
+The benchmark suggests that no single method dominates across all desiderata (accuracy, directionality, runtime, and robustness to misspecification).
+A practical workflow is therefore to choose an initial method family based on \emph{data type} and \emph{intended use}, and then validate the output
+using stability and diagnostic checks.
+
+\begin{table}[htbp]
+\centering
+\caption{Decision guide for choosing a discovery approach in analyst-in-the-loop settings. Recommendations reflect the empirical patterns in Section~5 and common assumptions in the literature.}
+\label{tab:decision_guide}
+\begin{tabular}{p{3.2cm}p{4.1cm}p{6.9cm}}
+\toprule
+Situation & Practical constraints & Recommended approach \\
+\midrule
+Continuous data; primary need is adjacency discovery & Many variables; runtime matters & Start with PC (Fisher-$Z$) for a fast skeleton; interpret directions via the CPDAG. Consider a score-based refinement only if runtime permits. \\
+\addlinespace
+Discrete or discretised data; directions are used for downstream interventions & Risk of score/CI-test mismatch & Report both skeleton and directed metrics; treat directed edges as hypotheses. Use edge-level stability (bootstrap) for critical edges rather than trusting the full orientation. \\
+\addlinespace
+Need a single DAG output (e.g., simulation or planning) & Requires a fully oriented graph & Use an optimisation-based method (NOTEARS/COSMO) but explicitly validate against equivalence-class uncertainty; avoid presenting the DAG as uniquely identified from observational data. \\
+\addlinespace
+Concern about latent confounding & Unobserved common causes likely & Prefer methods that target richer graphical objects (e.g., FCI) and evaluate accordingly; do not interpret a DAG estimate as causal without additional assumptions. \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\subsubsection{Software ecosystem considerations}
+Practitioner workflows are often constrained not only by theory but by tooling:
+\texttt{Tetrad} provides a broad suite of constraint- and score-based methods with mature visualisation support \cite{Ramsey2018};
+\texttt{bnlearn} and \texttt{pcalg} offer stable implementations of classical Bayesian network and constraint-based algorithms in R \cite{Scutari2010,Kalisch2012};
+\texttt{CausalDiscoveryToolbox} provides a unified interface to both classical and modern methods in Python \cite{Kalainathan2020};
+and \texttt{DAGitty} supports transparent DAG construction and adjustment-set reasoning for analysts \cite{Textor2016}.
+In practice, the choice of ecosystem influences default CI tests, score implementations, and graph representations (DAG vs CPDAG vs PAG),
+which in turn affects what it means to ``validate'' a learned structure.
+
+\subsubsection{Common pitfalls in analyst-facing causal discovery}
+The experiments and literature suggest several recurring pitfalls:
+\begin{itemize}
+  \item \textbf{Over-interpreting directed edges from observational data.} Many directions are unidentifiable within a Markov equivalence class.
+  \item \textbf{Ignoring mismatch between assumptions and data.} CI tests and scores have implicit distributional assumptions; discretisation can distort these.
+  \item \textbf{Using a single metric as a proxy for correctness.} Skeleton $F_1$ and SHD answer different questions; directed metrics can penalise unidentifiable choices.
+  \item \textbf{Failing to run stability diagnostics for key edges.} Global accuracy does not guarantee that a particular domain-critical edge is reliable.
+  \item \textbf{Treating misspecification as binary.} Real analyst graphs mix missing, spurious, and misoriented edges; sensitivity should consider multiple modes.
+\end{itemize}
+
+\subsubsection{Deployment checklist for analyst-in-the-loop use}
+A concise checklist for deploying causal discovery in an analyst workflow is:
+\begin{enumerate}
+  \item \textbf{State the estimand and the role of the graph.} Is the graph used for explanation, adjustment selection, or intervention planning?
+  \item \textbf{Document assumptions.} Markov + faithfulness, absence/presence of latent confounding, linearity/nonlinearity, and data type.
+  \item \textbf{Run at least two complementary families.} E.g., PC (constraint-based) and GES (score-based) or an optimisation method, and compare skeletons.
+  \item \textbf{Report equivalence-aware outputs.} Where applicable, provide CPDAG/PAG views rather than forcing a single DAG narrative.
+  \item \textbf{Validate key edges with diagnostics.} Use CI tests, bootstrap stability, and domain plausibility checks for the edges that drive decisions.
+  \item \textbf{Treat outputs as hypotheses.} Close the loop with expert review or interventional/temporal evidence where possible.
+\end{enumerate}
+
+% Optional: add a label for cross-references from Results.
+\label{sec:discussion_orientation}
+
 In the \textbf{Analyst-in-the-Loop} paradigm, the algorithm is not an oracle but a
 hypothesis generator. The analyst's role shifts from defining the graph to \emph{critiquing}
 it.
@@ -1606,6 +2394,22 @@ it.
     are independent, the graph is wrong. Our sensitivity analysis shows that this
     falsification signal is strong and reliable.
 \end{itemize}
+
+\subsection{Robustness to Assumption Violations}\label{sec:discussion_robustness}
+Our primary benchmarks assumed causal sufficiency and faithfulness. To probe robustness, we conducted a preliminary stress test by introducing a latent confounder in the Asia network. We merged \texttt{LungCancer} and \texttt{Bronchitis} into a single unobserved variable $L$ that causes \texttt{Dyspnea} and is caused by \texttt{Smoking}.
+Running PC on this confounded data resulted in a spurious edge \texttt{Smoking} $\to$ \texttt{Dyspnea} (representing the path through $L$). This confirms that without algorithms designed for latent variables (like FCI), standard methods will infer direct causation where only confounding exists. This highlights the critical need for domain experts to assess the plausibility of causal sufficiency in their specific application.
+
+\subsection{Case Study: End-to-End Analyst Workflow}\label{sec:discussion_case_study}
+To illustrate how these findings translate into practice, we present a hypothetical workflow for an analyst building a causal model for the Asia dataset.
+
+\begin{enumerate}
+    \item \textbf{Initial Discovery:} The analyst runs PC on the data. The algorithm outputs a skeleton with 7 edges but leaves the \texttt{Smoking}-\texttt{LungCancer} edge undirected.
+    \item \textbf{Diagnostic Testing:} The analyst suspects a link between \texttt{Smoking} and \texttt{LungCancer}. They perform a conditional independence test: \texttt{Smoking} $\perp$ \texttt{LungCancer} $\mid$ \texttt{Bronchitis}? The test rejects independence ($p < 0.001$), confirming a link exists.
+    \item \textbf{Orientation Verification:} The analyst checks the orientation. PC oriented \texttt{LungCancer} $\to$ \texttt{Dyspnea}. The analyst verifies this against medical knowledge (cancer causes shortness of breath).
+    \item \textbf{Refinement:} The analyst notices an unexpected edge \texttt{VisitAsia} $\to$ \texttt{LungCancer} suggested by GES in a separate run. They run a bootstrap analysis (100 resamples) and find this edge appears in only 30\% of samples. They discard it as spurious.
+    \item \textbf{Final Model:} The analyst combines the robust edges from PC with domain-verified orientations to produce the final DAG.
+\end{enumerate}
+This workflow demonstrates how algorithmic output serves as a starting point for an iterative, evidence-based construction process.
 
 \subsection{Threats to Validity}\label{sec:validity}
 We identify several threats to the validity of our conclusions.
@@ -1693,44 +2497,57 @@ causal drivers of user behaviour (e.g., "Outrage causes Engagement"), this knowl
 can be weaponised to design addictive platforms. The ethical deployment of these tools
 requires a commitment to beneficence and non-maleficence.
 
-\section{Conclusion}\label{sec:conclusion}
-We developed a reproducible benchmarking framework that evaluates causal discovery
-algorithms on accepted toy networks and examined how analyst mis--specification can
-be detected.  Five benchmark networks (Asia, Sachs, ALARM, Child, and Insurance) provide a useful testbed
-for comparing PC, GES, NOTEARS and COSMO.  Our mis--specification experiments
-show that conditional independence testing and bootstrap stability can notify
-practitioners when their assumed graphs are wrong.  We also surveyed a range of
-open--source DAG drawing and analysis tools to guide practitioners. In summary, while algorithms provide a strong baseline, analysts must combine them with diagnostic tests to detect misspecifications, which are reliably flagged for missing edges but harder to isolate for spurious ones.
+\subsection{Lessons Learned}\label{sec:lessons_learned}
+Synthesising the results from our benchmarking and sensitivity analyses, we distill the following key lessons for the causal discovery community:
+\begin{enumerate}
+    \item \textbf{Skeletons are robust, directions are fragile.} Across all datasets, algorithms agreed far more on the presence of edges than on their direction. This suggests that the "skeleton" should be the primary output of automated tools, with directions treated as tentative suggestions requiring validation.
+    \item \textbf{Linearity is a double-edged sword.} NOTEARS's assumption of linearity allowed it to achieve perfect performance on Sachs but caused it to fail on discrete data. Analysts must rigorously test for linearity before deploying such methods.
+    \item \textbf{Data-driven falsification works.} The most encouraging finding is the reliability of conditional independence tests in detecting missing edges. This confirms that while we may not be able to \emph{confirm} a graph, we can effectively \emph{falsify} it.
+    \item \textbf{Speed matters for interactivity.} The orders-of-magnitude difference in runtime between PC/COSMO and GES implies that only the former are suitable for real-time, interactive analyst tools.
+\end{enumerate}
 
-\subsection{Future Work}\label{sec:future_work}
-This thesis opens several avenues for future research.
+\subsection{Future Research Directions}\label{sec:future_work}
+This thesis opens several avenues for future research:
+\begin{itemize}
+    \item \textbf{Benchmarking with Latent Confounders:} Extending this framework to include FCI and other PAG-learning algorithms on datasets with hidden variables is a critical next step.
+    \item \textbf{Nonlinear Discrete Discovery:} Developing and benchmarking algorithms that handle discrete data without assuming linearity (e.g., discrete NOTEARS variants or neural-based discrete estimators) is needed to close the performance gap on datasets like Insurance.
+    \item \textbf{Automated Mis-specification Correction:} While we showed how to \emph{detect} errors, developing agents that can automatically \emph{repair} the graph based on these signals (e.g., by adding the edge with the highest CI test statistic) would be a valuable contribution.
+    \item \textbf{Human-Subject Studies:} Conducting user studies to see if providing CI-based feedback actually helps human analysts improve their causal models would validate the practical utility of our "Analyst-in-the-Loop" paradigm.
+\end{itemize}
 
-\subsubsection{Latent Confounding}
-The most pressing extension is to relax the causal sufficiency assumption. Future benchmarks
-should include algorithms like FCI and RFCI \cite{Spirtes2000, Colombo2012} that learn Partial Ancestral Graphs (PAGs),
-which can represent latent confounders. Evaluating how well these methods distinguish
-direct causation from confounding in finite samples is critical for real-world adoption.
+\section{Conclusion}
+This thesis studied the robustness of causal structure learning under a controlled form of analyst misspecification.
+Across five benchmark networks and four representative algorithm families (constraint-based, score-based, and optimisation-based),
+the results support three overarching conclusions.
 
-\subsubsection{Nonlinear and Mixed Data}
-Real data is rarely purely linear-Gaussian or purely discrete. Mixed data (containing both
-continuous and categorical variables) poses a challenge for many implementations.
-Benchmarking algorithms that handle mixed data natively (e.g., PC with conditional
-Gaussian tests) would be valuable. Similarly, evaluating nonlinear methods (like
-GraN-DAG) on non-linear data generators would provide a more realistic picture of modern
-capabilities.
+\paragraph{First, skeleton recovery is often strong, but directionality remains fragile.}
+Across datasets, several methods achieve high skeleton $F_1$ (Table~\ref{tab:skeleton_results}),
+yet directed metrics remain substantially lower (Table~\ref{tab:directed_results}), with large skeleton--directed gaps (Table~\ref{tab:orientation_gap}).
+This reinforces a principled limitation of purely observational structure learning: many directions are only identifiable up to Markov equivalence,
+and additional modelling assumptions or interventional information are required for reliable orientation.
+In practical terms, learned directions should be treated as hypotheses unless the identifiability conditions are explicitly justified.
 
-\subsubsection{Interventional Data}
-We focused on observational data. However, the "gold standard" of causality is intervention.
-Future work should explore "active learning" scenarios where the algorithm can request
-interventions (experiments) to resolve Markov equivalence classes. Benchmarking how many
-interventions are needed to fully orient a graph would be a significant contribution.
+\paragraph{Second, different algorithm families fail in different ways, which matters for downstream use.}
+Error decomposition (Table~\ref{tab:error_decomposition}) shows that some methods primarily overfit by adding extra edges,
+while others incur more missing or reversed edges. These failure modes have distinct implications for analyst workflows:
+extra edges can create spurious adjustment paths, missing edges can omit real causal pathways, and reversals can flip intervention recommendations.
+Accordingly, no single graph-level metric is sufficient for analyst-facing validation.
 
-\subsubsection{Automated Model Criticism}
-We showed that CI tests can flag errors. A natural next step is to automate the repair
-process. Can we build an "AI Analyst" that not only flags a missing edge but proposes
-the most likely candidate based on the data and global graph structure? Integrating
-Large Language Models (LLMs) with causal discovery to propose mechanisms for discovered
-edges is a frontier worth exploring.
+\paragraph{Third, misspecification detection benefits from edge-level diagnostics and stability checks.}
+The misspecification experiments demonstrate that conditional independence tests can highlight inconsistencies between an analyst graph and the data (Table~\ref{tab:ci_results}),
+but that global performance does not guarantee reliability on practically critical edges. Bootstrap stability of the key missing edge (Table~\ref{tab:key_edge_stability})
+provides a compact, actionable diagnostic: it directly quantifies whether a specific correction is consistently supported by the data under the chosen algorithm.
+
+\paragraph{Practical contribution.}
+Beyond benchmark comparison, the thesis proposes a practitioner-oriented workflow: combine complementary algorithm families, report equivalence-aware outputs,
+and validate decisions using edge-level diagnostics for the causal relations that matter most to the domain. This framing aligns causal discovery with its most reliable role
+in analyst contexts: not as an oracle for a unique causal DAG, but as a disciplined hypothesis generator that can be iteratively refined with expert knowledge
+and, where possible, interventional or temporal evidence.
+
+\paragraph{Future directions.}
+Future work should broaden the misspecification scenarios beyond single-edge perturbations, incorporate explicit latent-confounding benchmarks (evaluated with appropriate graphical targets),
+and study robustness under more realistic data complexities (measurement error, selection bias, and distribution shift). Methodologically, integrating stability selection,
+equivalence-class-aware metrics, and richer uncertainty quantification into analyst tools remains an open and practically important direction.
 
 \subsection{Reproducibility and artifact availability}\label{sec:reproducibility}
 All code, data, and analysis scripts are available in the
@@ -1855,6 +2672,15 @@ Diego Colombo, Marloes~H. Maathuis, Markus Kalisch, and Thomas~S. Richardson.
 ``Learning high-dimensional directed acyclic graphs with latent and selection variables.''
 \emph{The Annals of Statistics},
 40(1):294--321, 2012.
+
+\bibitem{Sharma2020}
+Amit Sharma and Emre Kiciman. ``DoWhy: An end-to-end library for causal inference.'' \emph{arXiv preprint arXiv:2011.04216}, 2020.
+
+\bibitem{Meinshausen2006}
+Nicolai Meinshausen and Peter B\"uhlmann. ``High-dimensional graphs and variable selection with the Lasso.'' \emph{The Annals of Statistics}, 34(3):1436--1462, 2006.
+
+\bibitem{Ogarrio2016}
+Juan M. Ogarrio, Peter Spirtes and Joe Ramsey. ``A hybrid causal search algorithm for latent variable models.'' In \emph{Proceedings of the 8th International Conference on Probabilistic Graphical Models (PGM)}, pages 368--379, 2016.
 
 \end{thebibliography}
 
