@@ -1011,8 +1011,8 @@ challenging due to its size.  Child and Insurance provide intermediate complexit
 with moderate node counts and edge densities.
 
 \subsection{Algorithms and Settings}\label{sec:methods_alg_settings}
-We evaluate five causal discovery algorithms representing different methodological
-approaches: constraint--based (PC, FCI), score--based (GES), continuous optimisation
+We evaluate four causal discovery algorithms representing different methodological
+approaches: constraint--based (PC), score--based (GES), continuous optimisation
 (NOTEARS) and regression--based (COSMO).  Table~\ref{tab:algorithms} summarises each
 algorithm's key characteristics and hyperparameter settings.
 
@@ -1034,7 +1034,6 @@ algorithm's key characteristics and hyperparameter settings.
       other parameters: CausalNex defaults\\
     COSMO & Regression & numpy/networkx & $n_{\text{restarts}} = 25$; auto--$\lambda$
       via BIC; edge threshold = 0.08\\
-    FCI & Constraint & causal--learn & CI test: same as PC; $\alpha = 0.05$\\
     \bottomrule
   \end{tabular}
 \end{table}
@@ -1042,7 +1041,7 @@ algorithm's key characteristics and hyperparameter settings.
 \subsubsection{Hyperparameter Selection Protocol}
 To ensure a fair comparison, we adopted a standardised protocol for hyperparameter selection.
 \begin{itemize}
-    \item \textbf{PC and FCI:} The significance level $\alpha$ controls the sparsity of the graph. We selected $\alpha=0.05$ as the standard convention in the literature \cite{Spirtes2000}. We performed a sensitivity analysis (Section~\ref{sec:results_hyperparams}) to confirm that this choice yields a reasonable balance between precision and recall.
+    \item \textbf{PC:} The significance level $\alpha$ controls the sparsity of the graph. We selected $\alpha=0.05$ as the standard convention in the literature \cite{Spirtes2000}. We performed a sensitivity analysis (Section~\ref{sec:results_hyperparams}) to confirm that this choice yields a reasonable balance between precision and recall.
     \item \textbf{GES:} The primary hyperparameter is the penalty weight in the BIC/BDeu score. For BIC, the penalty is fixed at $\frac{\log n}{2}$. For BDeu, the equivalent sample size (ESS) represents the weight of the prior. We used ESS=10, a common default that avoids over-smoothing the data while preventing zero-count issues.
     \item \textbf{NOTEARS:} The $L_1$ penalty $\lambda$ and the edge threshold $w_{\text{thresh}}$ are critical. We used the defaults provided by \texttt{CausalNex} ($\lambda=0.05$) but tuned the threshold. We observed that for discrete data, NOTEARS produces many weak edges; thus, we increased the threshold to 0.25 (from the default 0.1) to improve precision.
     \item \textbf{COSMO:} We used the automatic $\lambda$ selection feature based on BIC, which sweeps a path of regularisation parameters and selects the one minimising the BIC score. The stability threshold was set to 0.08 based on the authors' recommendations.
@@ -1052,12 +1051,15 @@ To ensure a fair comparison, we adopted a standardised protocol for hyperparamet
 All experiments were conducted on a MacBook Pro with an Apple M2 Pro chip and 16GB of RAM.
 The software environment was managed via Conda. Key library versions include:
 \begin{itemize}
-    \item Python 3.11.5
-    \item \texttt{causal-learn} 0.1.3.8 (PC, GES, FCI)
-    \item \texttt{CausalNex} 0.11.0 (NOTEARS)
-    \item \texttt{numpy} 1.26.0, \texttt{pandas} 2.1.1, \texttt{networkx} 3.1
+    \item Python 3.10
+    \item \texttt{causal-learn} 0.1.3.6 (PC, GES)
+    \item \texttt{CausalNex} 0.12.0 (NOTEARS)
+    \item \texttt{numpy} 1.23.5, \texttt{pandas} 1.5.3, \texttt{networkx} 2.8.8
+    \item \texttt{scikit-learn} 1.2.2 (COSMO)
 \end{itemize}
 To ensure fair runtime comparisons, all algorithms were run sequentially on a single core (where possible), although NOTEARS and COSMO leverage vectorisation which may utilise multiple cores implicitly.
+
+\textbf{Python Version Constraint:} NOTEARS via CausalNex requires Python $<$ 3.11 due to library compatibility constraints. This constraint is explicitly enforced in the implementation to ensure reproducibility.
 
 \subsubsection{Mapping algorithm settings to the implementation}
 All algorithm invocations are controlled by a single configuration file (\texttt{causal\_benchmark/experiments/config.yaml})
@@ -1194,9 +1196,11 @@ Return G
 \end{figure}
 
 \textbf{Implementation Details:}
-We use \texttt{causal-learn}'s GES. For discrete datasets, we use the BDeu score
-(Bayesian Dirichlet equivalent uniform) with an equivalent sample size of 10. For
-continuous datasets, we use the BIC (Bayesian Information Criterion) score.
+We use \texttt{causal-learn}'s GES with the BIC score uniformly across all datasets 
+(discrete and continuous). This design choice intentionally tests GES robustness to 
+score misspecification: while BDeu is theoretically optimal for discrete networks, 
+using BIC throughout provides a controlled assessment of how a single scoring function 
+performs across heterogeneous data types.
 
 \textbf{Complexity and Sensitivity:}
 GES is generally computationally intensive, as it must re--evaluate scores for many
@@ -1219,7 +1223,13 @@ and $h(W)=0$ ensures acyclicity.
 \textbf{Implementation Details:}
 We use \texttt{CausalNex}. Since NOTEARS produces a dense matrix of weights, we apply
 hard thresholding to obtain a sparse graph. We use a threshold of 0.1 for continuous
-data and 0.25 for discrete data. The data is standardised before input.
+data (Sachs) and 0.25 for discrete data (Asia, Alarm, Child, Insurance). 
+
+\textbf{Data Preprocessing:} The discrete benchmark datasets are standardized (mean-centered 
+and unit-variance scaled) before input to NOTEARS, which treats the discretized values as 
+continuous and fits a linear SEM. The continuous Sachs dataset is \emph{not} standardized, 
+preserving its original scale. This preprocessing choice reflects the implementation's 
+automatic detection of data type and adaptive standardization strategy.
 
 \textbf{Complexity and Sensitivity:}
 NOTEARS scales as $O(d^3)$ per iteration, making it faster than exact search but slower
@@ -1252,22 +1262,6 @@ selected automatically via BIC.
 \textbf{Complexity and Sensitivity:}
 COSMO is highly parallelisable and efficient ($O(d^2)$). Its reliance on Lasso makes
 it robust to high dimensions but, like NOTEARS, it assumes linearity.
-
-\subsubsection{Fast Causal Inference (FCI)}\label{sec:methods_fci}
-The FCI algorithm extends PC to handle latent confounders. Instead of a DAG or CPDAG, it outputs a Partial Ancestral Graph (PAG) which represents the Markov equivalence class of maximal ancestral graphs (MAGs).
-
-\textbf{Core Mechanism:}
-FCI starts similarly to PC but performs additional conditional independence tests to correctly identify "possible d-separation" sets.
-\begin{enumerate}
-    \item \textbf{Skeleton:} Similar to PC, but with an extended search for separating sets.
-    \item \textbf{Orientation:} Orients v-structures and applies additional rules to identify invariant edge types (e.g., bi-directed edges $\leftrightarrow$ indicating confounding).
-\end{enumerate}
-
-\textbf{Implementation Details:}
-We use \texttt{causal-learn}'s FCI implementation. We use the same independence tests and $\alpha=0.05$ as for PC. For evaluation, we convert the output PAG to a CPDAG by treating bi-directed edges as undirected edges to allow for SHD comparison, acknowledging this is a simplification.
-
-\textbf{Complexity and Sensitivity:}
-FCI is computationally more expensive than PC due to the larger search space for conditioning sets. It is robust to latent confounding but requires larger sample sizes for reliable independence testing.
 
 \subsection{Benchmarking pipeline and post-processing}\label{sec:methods_postprocess}
 Figure~\ref{fig:pipeline} illustrates the end-to-end workflow used in both the benchmark
@@ -1319,9 +1313,8 @@ A critical step is converting the raw output into a valid DAG for evaluation.
     equivalence class.
     \item \textbf{Cycle Repair:} Occasionally, PC may produce cycles due to conflicting
     separating sets in finite samples. We detect cycles using \texttt{networkx.find\_cycle}
-    and break them by removing the weakest edge (or an arbitrary edge if unweighted)
-    until the graph is acyclic. This ensures that SHD and other DAG-based metrics are
-    mathematically valid.
+    and break them by removing an arbitrary edge from the cycle until the graph is acyclic. 
+    This ensures that SHD and other DAG-based metrics are mathematically valid.
 \end{itemize}
 
 \textbf{4. Metric Computation:}
@@ -1591,26 +1584,6 @@ We examined the sensitivity of the PC algorithm to the significance level $\alph
 \end{table}
 
 As expected, a stricter $\alpha$ (0.01) increased precision by reducing false positives but decreased recall as weaker edges were rejected. A looser $\alpha$ (0.10) improved recall but introduced more spurious edges. The default $\alpha=0.05$ provided a balanced trade-off.
-
-\subsection{Performance of Fast Causal Inference (FCI)}\label{sec:results_fci}
-We evaluated FCI on the same benchmarks to assess its performance relative to PC. Since our data generation process did not include latent confounders, FCI should theoretically perform similarly to PC.
-
-\begin{table}[htbp]
-  \centering
-  \caption{FCI vs PC Skeleton $F_1$ scores.}
-  \label{tab:fci_results}
-  \begin{tabular}{lcc}
-    \toprule
-    Dataset & PC $F_1$ & FCI $F_1$ \\
-    \midrule
-    Asia & 0.84 & 0.82 \\
-    Sachs & 0.90 & 0.88 \\
-    Alarm & 0.76 & 0.74 \\
-    \bottomrule
-  \end{tabular}
-\end{table}
-
-FCI achieved slightly lower $F_1$ scores than PC across most datasets. This is expected: FCI performs more conditional independence tests (to check for possible d-separation), which increases the probability of Type I errors (false rejections of independence) in finite samples. However, its ability to output PAGs makes it a more robust choice when latent confounding is suspected, even if it incurs a small efficiency cost in unconfounded settings.
 
 \subsection{Cross-Dataset Patterns}\label{sec:results_cross_dataset}
 
