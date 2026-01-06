@@ -1,0 +1,270 @@
+[
+  {
+    "source": "SocioEcon",
+    "target": "GoodStudent"
+  },
+  {
+    "source": "SocioEcon",
+    "target": "OtherCar"
+  },
+  {
+    "source": "RiskAversion",
+    "target": "Mileage"
+  },
+  {
+    "source": "RiskAversion",
+    "target": "SeniorTrain"
+  },
+  {
+    "source": "RiskAversion",
+    "target": "HomeBase"
+  },
+  {
+    "source": "RiskAversion",
+    "target": "DrivQuality"
+  },
+  {
+    "source": "RiskAversion",
+    "target": "ThisCarDam"
+  },
+  {
+    "source": "VehicleYear",
+    "target": "OtherCar"
+  },
+  {
+    "source": "VehicleYear",
+    "target": "Airbag"
+  },
+  {
+    "source": "MakeModel",
+    "target": "Mileage"
+  },
+  {
+    "source": "MakeModel",
+    "target": "AntiTheft"
+  },
+  {
+    "source": "MakeModel",
+    "target": "Antilock"
+  },
+  {
+    "source": "HomeBase",
+    "target": "SocioEcon"
+  },
+  {
+    "source": "RuggedAuto",
+    "target": "PropCost"
+  },
+  {
+    "source": "Antilock",
+    "target": "VehicleYear"
+  },
+  {
+    "source": "Antilock",
+    "target": "AntiTheft"
+  },
+  {
+    "source": "Antilock",
+    "target": "Airbag"
+  },
+  {
+    "source": "CarValue",
+    "target": "Age"
+  },
+  {
+    "source": "CarValue",
+    "target": "Mileage"
+  },
+  {
+    "source": "CarValue",
+    "target": "MakeModel"
+  },
+  {
+    "source": "CarValue",
+    "target": "Antilock"
+  },
+  {
+    "source": "Airbag",
+    "target": "GoodStudent"
+  },
+  {
+    "source": "Airbag",
+    "target": "Theft"
+  },
+  {
+    "source": "DrivingSkill",
+    "target": "SeniorTrain"
+  },
+  {
+    "source": "Theft",
+    "target": "AntiTheft"
+  },
+  {
+    "source": "Cushioning",
+    "target": "Mileage"
+  },
+  {
+    "source": "Cushioning",
+    "target": "SocioEcon"
+  },
+  {
+    "source": "Cushioning",
+    "target": "GoodStudent"
+  },
+  {
+    "source": "Cushioning",
+    "target": "OtherCar"
+  },
+  {
+    "source": "Cushioning",
+    "target": "CarValue"
+  },
+  {
+    "source": "Cushioning",
+    "target": "Airbag"
+  },
+  {
+    "source": "Cushioning",
+    "target": "DrivQuality"
+  },
+  {
+    "source": "DrivQuality",
+    "target": "DrivingSkill"
+  },
+  {
+    "source": "DrivHist",
+    "target": "DrivingSkill"
+  },
+  {
+    "source": "DrivHist",
+    "target": "DrivQuality"
+  },
+  {
+    "source": "Accident",
+    "target": "Age"
+  },
+  {
+    "source": "Accident",
+    "target": "Mileage"
+  },
+  {
+    "source": "Accident",
+    "target": "OtherCar"
+  },
+  {
+    "source": "Accident",
+    "target": "SeniorTrain"
+  },
+  {
+    "source": "Accident",
+    "target": "DrivQuality"
+  },
+  {
+    "source": "Accident",
+    "target": "DrivHist"
+  },
+  {
+    "source": "Accident",
+    "target": "MedCost"
+  },
+  {
+    "source": "ThisCarDam",
+    "target": "SeniorTrain"
+  },
+  {
+    "source": "ThisCarDam",
+    "target": "RuggedAuto"
+  },
+  {
+    "source": "OtherCarCost",
+    "target": "Age"
+  },
+  {
+    "source": "OtherCarCost",
+    "target": "OtherCar"
+  },
+  {
+    "source": "OtherCarCost",
+    "target": "SeniorTrain"
+  },
+  {
+    "source": "OtherCarCost",
+    "target": "Accident"
+  },
+  {
+    "source": "MedCost",
+    "target": "Mileage"
+  },
+  {
+    "source": "MedCost",
+    "target": "AntiTheft"
+  },
+  {
+    "source": "MedCost",
+    "target": "Cushioning"
+  },
+  {
+    "source": "MedCost",
+    "target": "ILiCost"
+  },
+  {
+    "source": "ILiCost",
+    "target": "Mileage"
+  },
+  {
+    "source": "ILiCost",
+    "target": "DrivingSkill"
+  },
+  {
+    "source": "ILiCost",
+    "target": "Cushioning"
+  },
+  {
+    "source": "ILiCost",
+    "target": "DrivHist"
+  },
+  {
+    "source": "ThisCarCost",
+    "target": "Age"
+  },
+  {
+    "source": "ThisCarCost",
+    "target": "Mileage"
+  },
+  {
+    "source": "ThisCarCost",
+    "target": "SocioEcon"
+  },
+  {
+    "source": "ThisCarCost",
+    "target": "SeniorTrain"
+  },
+  {
+    "source": "ThisCarCost",
+    "target": "Airbag"
+  },
+  {
+    "source": "ThisCarCost",
+    "target": "Theft"
+  },
+  {
+    "source": "ThisCarCost",
+    "target": "OtherCarCost"
+  },
+  {
+    "source": "PropCost",
+    "target": "SeniorTrain"
+  },
+  {
+    "source": "PropCost",
+    "target": "HomeBase"
+  },
+  {
+    "source": "PropCost",
+    "target": "Airbag"
+  },
+  {
+    "source": "PropCost",
+    "target": "ThisCarCost"
+  }
+]

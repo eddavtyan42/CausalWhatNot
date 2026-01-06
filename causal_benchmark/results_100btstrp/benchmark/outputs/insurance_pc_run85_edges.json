@@ -1,0 +1,150 @@
+[
+  {
+    "source": "Age",
+    "target": "MakeModel"
+  },
+  {
+    "source": "Age",
+    "target": "DrivingSkill"
+  },
+  {
+    "source": "Age",
+    "target": "DrivQuality"
+  },
+  {
+    "source": "Age",
+    "target": "DrivHist"
+  },
+  {
+    "source": "Age",
+    "target": "ILiCost"
+  },
+  {
+    "source": "Mileage",
+    "target": "OtherCar"
+  },
+  {
+    "source": "Mileage",
+    "target": "CarValue"
+  },
+  {
+    "source": "SocioEcon",
+    "target": "OtherCar"
+  },
+  {
+    "source": "SocioEcon",
+    "target": "MakeModel"
+  },
+  {
+    "source": "SocioEcon",
+    "target": "CarValue"
+  },
+  {
+    "source": "GoodStudent",
+    "target": "SocioEcon"
+  },
+  {
+    "source": "RiskAversion",
+    "target": "RuggedAuto"
+  },
+  {
+    "source": "RiskAversion",
+    "target": "OtherCarCost"
+  },
+  {
+    "source": "VehicleYear",
+    "target": "RiskAversion"
+  },
+  {
+    "source": "HomeBase",
+    "target": "RiskAversion"
+  },
+  {
+    "source": "HomeBase",
+    "target": "CarValue"
+  },
+  {
+    "source": "HomeBase",
+    "target": "Theft"
+  },
+  {
+    "source": "HomeBase",
+    "target": "DrivHist"
+  },
+  {
+    "source": "RuggedAuto",
+    "target": "SocioEcon"
+  },
+  {
+    "source": "RuggedAuto",
+    "target": "MakeModel"
+  },
+  {
+    "source": "RuggedAuto",
+    "target": "CarValue"
+  },
+  {
+    "source": "CarValue",
+    "target": "MakeModel"
+  },
+  {
+    "source": "CarValue",
+    "target": "Accident"
+  },
+  {
+    "source": "CarValue",
+    "target": "ThisCarCost"
+  },
+  {
+    "source": "Airbag",
+    "target": "Cushioning"
+  },
+  {
+    "source": "Cushioning",
+    "target": "MakeModel"
+  },
+  {
+    "source": "Accident",
+    "target": "DrivQuality"
+  },
+  {
+    "source": "Accident",
+    "target": "ThisCarDam"
+  },
+  {
+    "source": "Accident",
+    "target": "OtherCarCost"
+  },
+  {
+    "source": "ThisCarDam",
+    "target": "OtherCarCost"
+  },
+  {
+    "source": "ThisCarDam",
+    "target": "PropCost"
+  },
+  {
+    "source": "OtherCarCost",
+    "target": "MedCost"
+  },
+  {
+    "source": "OtherCarCost",
+    "target": "PropCost"
+  },
+  {
+    "source": "MedCost",
+    "target": "Cushioning"
+  },
+  {
+    "source": "ILiCost",
+    "target": "RiskAversion"
+  },
+  {
+    "source": "ILiCost",
+    "target": "DrivQuality"
+  },
+  {
+    "source": "ILiCost",
+    "target": "DrivHist"
+  }
+]

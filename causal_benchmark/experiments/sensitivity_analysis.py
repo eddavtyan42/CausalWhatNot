@@ -17,7 +17,7 @@ from algorithms import pc, ges, notears, cosmo
 from utils import create_mis_specified_graph
 from utils.loaders import load_dataset, is_discrete
 from utils.helpers import edge_differences
-from metrics.metrics import precision_recall_f1, shd
+from metrics.metrics import precision_recall_f1, shd, sid
 from metrics.bootstrap import bootstrap_edge_stability
 from experiments.perturbation_scenarios import SCENARIOS
 from causallearn.utils.cit import FisherZ, Chisq_or_Gsq
@@ -37,6 +37,16 @@ def compare_graphs(pred: nx.DiGraph, ref: nx.DiGraph):
 
     metrics = precision_recall_f1(pred, ref)
     metrics["shd"] = shd(pred, ref)
+    
+    # Check for bidirectional edges (undirected in CPDAG representation)
+    has_undirected = False
+    for u, v in pred.edges():
+        if pred.has_edge(v, u):
+            has_undirected = True
+            break
+            
+    metrics["sid"] = sid(pred, ref, has_undirected_edges=has_undirected)
+    
     extra, missing, reversed_edges = edge_differences(pred, ref)
     return metrics, extra, missing, reversed_edges
 

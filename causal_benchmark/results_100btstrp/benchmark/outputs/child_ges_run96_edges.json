@@ -1,0 +1,170 @@
+[
+  {
+    "source": "BirthAsphyxia",
+    "target": "Disease"
+  },
+  {
+    "source": "Disease",
+    "target": "CardiacMixing"
+  },
+  {
+    "source": "Disease",
+    "target": "LowerBodyO2"
+  },
+  {
+    "source": "Disease",
+    "target": "RUQO2"
+  },
+  {
+    "source": "LVH",
+    "target": "Disease"
+  },
+  {
+    "source": "LVH",
+    "target": "LVHreport"
+  },
+  {
+    "source": "DuctFlow",
+    "target": "Disease"
+  },
+  {
+    "source": "DuctFlow",
+    "target": "Sick"
+  },
+  {
+    "source": "DuctFlow",
+    "target": "HypDistrib"
+  },
+  {
+    "source": "CardiacMixing",
+    "target": "HypDistrib"
+  },
+  {
+    "source": "CardiacMixing",
+    "target": "HypoxiaInO2"
+  },
+  {
+    "source": "CardiacMixing",
+    "target": "LowerBodyO2"
+  },
+  {
+    "source": "CardiacMixing",
+    "target": "RUQO2"
+  },
+  {
+    "source": "LungParench",
+    "target": "Disease"
+  },
+  {
+    "source": "LungParench",
+    "target": "CardiacMixing"
+  },
+  {
+    "source": "LungParench",
+    "target": "HypoxiaInO2"
+  },
+  {
+    "source": "LungFlow",
+    "target": "DuctFlow"
+  },
+  {
+    "source": "LungFlow",
+    "target": "CO2"
+  },
+  {
+    "source": "LungFlow",
+    "target": "ChestXray"
+  },
+  {
+    "source": "Sick",
+    "target": "Age"
+  },
+  {
+    "source": "LVHreport",
+    "target": "Disease"
+  },
+  {
+    "source": "HypDistrib",
+    "target": "LowerBodyO2"
+  },
+  {
+    "source": "HypoxiaInO2",
+    "target": "LowerBodyO2"
+  },
+  {
+    "source": "HypoxiaInO2",
+    "target": "RUQO2"
+  },
+  {
+    "source": "CO2",
+    "target": "Disease"
+  },
+  {
+    "source": "CO2",
+    "target": "CardiacMixing"
+  },
+  {
+    "source": "CO2",
+    "target": "LungParench"
+  },
+  {
+    "source": "CO2",
+    "target": "RUQO2"
+  },
+  {
+    "source": "ChestXray",
+    "target": "Disease"
+  },
+  {
+    "source": "ChestXray",
+    "target": "LungParench"
+  },
+  {
+    "source": "Grunting",
+    "target": "LungParench"
+  },
+  {
+    "source": "Grunting",
+    "target": "Sick"
+  },
+  {
+    "source": "Grunting",
+    "target": "CO2Report"
+  },
+  {
+    "source": "Age",
+    "target": "Disease"
+  },
+  {
+    "source": "LowerBodyO2",
+    "target": "RUQO2"
+  },
+  {
+    "source": "CO2Report",
+    "target": "LungParench"
+  },
+  {
+    "source": "CO2Report",
+    "target": "CO2"
+  },
+  {
+    "source": "XrayReport",
+    "target": "HypDistrib"
+  },
+  {
+    "source": "XrayReport",
+    "target": "ChestXray"
+  },
+  {
+    "source": "GruntingReport",
+    "target": "LungParench"
+  },
+  {
+    "source": "GruntingReport",
+    "target": "Sick"
+  },
+  {
+    "source": "GruntingReport",
+    "target": "Grunting"
+  }
+]

@@ -1,0 +1,250 @@
+[
+  {
+    "source": "SocioEcon",
+    "target": "Mileage"
+  },
+  {
+    "source": "SocioEcon",
+    "target": "GoodStudent"
+  },
+  {
+    "source": "SocioEcon",
+    "target": "OtherCar"
+  },
+  {
+    "source": "RiskAversion",
+    "target": "SeniorTrain"
+  },
+  {
+    "source": "RiskAversion",
+    "target": "DrivHist"
+  },
+  {
+    "source": "MakeModel",
+    "target": "Mileage"
+  },
+  {
+    "source": "HomeBase",
+    "target": "ThisCarDam"
+  },
+  {
+    "source": "RuggedAuto",
+    "target": "AntiTheft"
+  },
+  {
+    "source": "Antilock",
+    "target": "VehicleYear"
+  },
+  {
+    "source": "CarValue",
+    "target": "Age"
+  },
+  {
+    "source": "CarValue",
+    "target": "Mileage"
+  },
+  {
+    "source": "CarValue",
+    "target": "RiskAversion"
+  },
+  {
+    "source": "CarValue",
+    "target": "MakeModel"
+  },
+  {
+    "source": "Airbag",
+    "target": "AntiTheft"
+  },
+  {
+    "source": "Airbag",
+    "target": "Antilock"
+  },
+  {
+    "source": "Airbag",
+    "target": "Theft"
+  },
+  {
+    "source": "DrivingSkill",
+    "target": "SeniorTrain"
+  },
+  {
+    "source": "Theft",
+    "target": "VehicleYear"
+  },
+  {
+    "source": "Theft",
+    "target": "AntiTheft"
+  },
+  {
+    "source": "Cushioning",
+    "target": "Age"
+  },
+  {
+    "source": "Cushioning",
+    "target": "Mileage"
+  },
+  {
+    "source": "Cushioning",
+    "target": "SocioEcon"
+  },
+  {
+    "source": "Cushioning",
+    "target": "SeniorTrain"
+  },
+  {
+    "source": "Cushioning",
+    "target": "CarValue"
+  },
+  {
+    "source": "Cushioning",
+    "target": "Airbag"
+  },
+  {
+    "source": "Cushioning",
+    "target": "DrivingSkill"
+  },
+  {
+    "source": "Cushioning",
+    "target": "Theft"
+  },
+  {
+    "source": "Cushioning",
+    "target": "DrivQuality"
+  },
+  {
+    "source": "DrivQuality",
+    "target": "DrivingSkill"
+  },
+  {
+    "source": "DrivHist",
+    "target": "DrivingSkill"
+  },
+  {
+    "source": "DrivHist",
+    "target": "DrivQuality"
+  },
+  {
+    "source": "Accident",
+    "target": "Mileage"
+  },
+  {
+    "source": "Accident",
+    "target": "VehicleYear"
+  },
+  {
+    "source": "Accident",
+    "target": "DrivQuality"
+  },
+  {
+    "source": "Accident",
+    "target": "ILiCost"
+  },
+  {
+    "source": "ThisCarDam",
+    "target": "Mileage"
+  },
+  {
+    "source": "ThisCarDam",
+    "target": "GoodStudent"
+  },
+  {
+    "source": "ThisCarDam",
+    "target": "SeniorTrain"
+  },
+  {
+    "source": "ThisCarDam",
+    "target": "RuggedAuto"
+  },
+  {
+    "source": "ThisCarDam",
+    "target": "PropCost"
+  },
+  {
+    "source": "OtherCarCost",
+    "target": "OtherCar"
+  },
+  {
+    "source": "OtherCarCost",
+    "target": "DrivHist"
+  },
+  {
+    "source": "OtherCarCost",
+    "target": "ThisCarCost"
+  },
+  {
+    "source": "MedCost",
+    "target": "SocioEcon"
+  },
+  {
+    "source": "MedCost",
+    "target": "OtherCar"
+  },
+  {
+    "source": "MedCost",
+    "target": "RuggedAuto"
+  },
+  {
+    "source": "MedCost",
+    "target": "DrivingSkill"
+  },
+  {
+    "source": "MedCost",
+    "target": "Cushioning"
+  },
+  {
+    "source": "ILiCost",
+    "target": "DrivHist"
+  },
+  {
+    "source": "ILiCost",
+    "target": "MedCost"
+  },
+  {
+    "source": "ThisCarCost",
+    "target": "Age"
+  },
+  {
+    "source": "ThisCarCost",
+    "target": "SocioEcon"
+  },
+  {
+    "source": "ThisCarCost",
+    "target": "Antilock"
+  },
+  {
+    "source": "ThisCarCost",
+    "target": "Theft"
+  },
+  {
+    "source": "ThisCarCost",
+    "target": "DrivQuality"
+  },
+  {
+    "source": "ThisCarCost",
+    "target": "Accident"
+  },
+  {
+    "source": "PropCost",
+    "target": "SocioEcon"
+  },
+  {
+    "source": "PropCost",
+    "target": "OtherCar"
+  },
+  {
+    "source": "PropCost",
+    "target": "SeniorTrain"
+  },
+  {
+    "source": "PropCost",
+    "target": "Antilock"
+  },
+  {
+    "source": "PropCost",
+    "target": "DrivingSkill"
+  },
+  {
+    "source": "PropCost",
+    "target": "OtherCarCost"
+  }
+]

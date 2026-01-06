@@ -1,0 +1,266 @@
+[
+  {
+    "source": "SocioEcon",
+    "target": "GoodStudent"
+  },
+  {
+    "source": "SocioEcon",
+    "target": "OtherCar"
+  },
+  {
+    "source": "SocioEcon",
+    "target": "ThisCarDam"
+  },
+  {
+    "source": "RiskAversion",
+    "target": "HomeBase"
+  },
+  {
+    "source": "MakeModel",
+    "target": "Mileage"
+  },
+  {
+    "source": "HomeBase",
+    "target": "RuggedAuto"
+  },
+  {
+    "source": "HomeBase",
+    "target": "DrivHist"
+  },
+  {
+    "source": "Antilock",
+    "target": "Airbag"
+  },
+  {
+    "source": "Antilock",
+    "target": "Theft"
+  },
+  {
+    "source": "CarValue",
+    "target": "Mileage"
+  },
+  {
+    "source": "CarValue",
+    "target": "RiskAversion"
+  },
+  {
+    "source": "CarValue",
+    "target": "MakeModel"
+  },
+  {
+    "source": "CarValue",
+    "target": "AntiTheft"
+  },
+  {
+    "source": "Airbag",
+    "target": "GoodStudent"
+  },
+  {
+    "source": "Airbag",
+    "target": "VehicleYear"
+  },
+  {
+    "source": "DrivingSkill",
+    "target": "SeniorTrain"
+  },
+  {
+    "source": "Theft",
+    "target": "VehicleYear"
+  },
+  {
+    "source": "Theft",
+    "target": "SeniorTrain"
+  },
+  {
+    "source": "Theft",
+    "target": "AntiTheft"
+  },
+  {
+    "source": "Theft",
+    "target": "Airbag"
+  },
+  {
+    "source": "Cushioning",
+    "target": "Age"
+  },
+  {
+    "source": "Cushioning",
+    "target": "OtherCar"
+  },
+  {
+    "source": "Cushioning",
+    "target": "AntiTheft"
+  },
+  {
+    "source": "Cushioning",
+    "target": "Antilock"
+  },
+  {
+    "source": "Cushioning",
+    "target": "DrivingSkill"
+  },
+  {
+    "source": "DrivQuality",
+    "target": "DrivingSkill"
+  },
+  {
+    "source": "DrivHist",
+    "target": "DrivingSkill"
+  },
+  {
+    "source": "DrivHist",
+    "target": "DrivQuality"
+  },
+  {
+    "source": "Accident",
+    "target": "Mileage"
+  },
+  {
+    "source": "Accident",
+    "target": "DrivQuality"
+  },
+  {
+    "source": "Accident",
+    "target": "ILiCost"
+  },
+  {
+    "source": "ThisCarDam",
+    "target": "GoodStudent"
+  },
+  {
+    "source": "ThisCarDam",
+    "target": "OtherCar"
+  },
+  {
+    "source": "ThisCarDam",
+    "target": "PropCost"
+  },
+  {
+    "source": "OtherCarCost",
+    "target": "Mileage"
+  },
+  {
+    "source": "OtherCarCost",
+    "target": "MedCost"
+  },
+  {
+    "source": "MedCost",
+    "target": "Mileage"
+  },
+  {
+    "source": "MedCost",
+    "target": "Antilock"
+  },
+  {
+    "source": "MedCost",
+    "target": "Airbag"
+  },
+  {
+    "source": "MedCost",
+    "target": "DrivingSkill"
+  },
+  {
+    "source": "MedCost",
+    "target": "Cushioning"
+  },
+  {
+    "source": "MedCost",
+    "target": "DrivHist"
+  },
+  {
+    "source": "MedCost",
+    "target": "Accident"
+  },
+  {
+    "source": "ILiCost",
+    "target": "SeniorTrain"
+  },
+  {
+    "source": "ILiCost",
+    "target": "CarValue"
+  },
+  {
+    "source": "ILiCost",
+    "target": "DrivHist"
+  },
+  {
+    "source": "ThisCarCost",
+    "target": "Age"
+  },
+  {
+    "source": "ThisCarCost",
+    "target": "GoodStudent"
+  },
+  {
+    "source": "ThisCarCost",
+    "target": "SeniorTrain"
+  },
+  {
+    "source": "ThisCarCost",
+    "target": "AntiTheft"
+  },
+  {
+    "source": "ThisCarCost",
+    "target": "Antilock"
+  },
+  {
+    "source": "ThisCarCost",
+    "target": "Airbag"
+  },
+  {
+    "source": "ThisCarCost",
+    "target": "Theft"
+  },
+  {
+    "source": "ThisCarCost",
+    "target": "DrivQuality"
+  },
+  {
+    "source": "ThisCarCost",
+    "target": "DrivHist"
+  },
+  {
+    "source": "ThisCarCost",
+    "target": "OtherCarCost"
+  },
+  {
+    "source": "PropCost",
+    "target": "Age"
+  },
+  {
+    "source": "PropCost",
+    "target": "GoodStudent"
+  },
+  {
+    "source": "PropCost",
+    "target": "OtherCar"
+  },
+  {
+    "source": "PropCost",
+    "target": "AntiTheft"
+  },
+  {
+    "source": "PropCost",
+    "target": "Antilock"
+  },
+  {
+    "source": "PropCost",
+    "target": "Airbag"
+  },
+  {
+    "source": "PropCost",
+    "target": "DrivingSkill"
+  },
+  {
+    "source": "PropCost",
+    "target": "Theft"
+  },
+  {
+    "source": "PropCost",
+    "target": "DrivQuality"
+  },
+  {
+    "source": "PropCost",
+    "target": "ThisCarCost"
+  }
+]

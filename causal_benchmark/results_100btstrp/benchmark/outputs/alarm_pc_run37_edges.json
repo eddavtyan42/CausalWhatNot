@@ -1,0 +1,310 @@
+[
+  {
+    "source": "LVFAILURE",
+    "target": "HISTORY"
+  },
+  {
+    "source": "LVFAILURE",
+    "target": "LVEDVOLUME"
+  },
+  {
+    "source": "LVFAILURE",
+    "target": "STROKEVOLUME"
+  },
+  {
+    "source": "LVFAILURE",
+    "target": "PCWP"
+  },
+  {
+    "source": "ERRLOWOUTPUT",
+    "target": "STROKEVOLUME"
+  },
+  {
+    "source": "ERRLOWOUTPUT",
+    "target": "HRBP"
+  },
+  {
+    "source": "INTUBATION",
+    "target": "SHUNT"
+  },
+  {
+    "source": "INTUBATION",
+    "target": "PRESS"
+  },
+  {
+    "source": "INTUBATION",
+    "target": "MINVOL"
+  },
+  {
+    "source": "INTUBATION",
+    "target": "VENTALV"
+  },
+  {
+    "source": "INTUBATION",
+    "target": "ARTCO2"
+  },
+  {
+    "source": "INTUBATION",
+    "target": "SAO2"
+  },
+  {
+    "source": "INTUBATION",
+    "target": "CATECHOL"
+  },
+  {
+    "source": "MINVOLSET",
+    "target": "VENTMACH"
+  },
+  {
+    "source": "MINVOLSET",
+    "target": "VENTTUBE"
+  },
+  {
+    "source": "MINVOLSET",
+    "target": "VENTLUNG"
+  },
+  {
+    "source": "MINVOLSET",
+    "target": "MINVOL"
+  },
+  {
+    "source": "STROKEVOLUME",
+    "target": "HISTORY"
+  },
+  {
+    "source": "STROKEVOLUME",
+    "target": "LVEDVOLUME"
+  },
+  {
+    "source": "STROKEVOLUME",
+    "target": "TPR"
+  },
+  {
+    "source": "STROKEVOLUME",
+    "target": "CVP"
+  },
+  {
+    "source": "TPR",
+    "target": "ANAPHYLAXIS"
+  },
+  {
+    "source": "TPR",
+    "target": "VENTALV"
+  },
+  {
+    "source": "TPR",
+    "target": "BP"
+  },
+  {
+    "source": "PAP",
+    "target": "PULMEMBOLUS"
+  },
+  {
+    "source": "PAP",
+    "target": "SHUNT"
+  },
+  {
+    "source": "PAP",
+    "target": "HRBP"
+  },
+  {
+    "source": "VENTMACH",
+    "target": "INSUFFANESTH"
+  },
+  {
+    "source": "VENTMACH",
+    "target": "VENTTUBE"
+  },
+  {
+    "source": "VENTMACH",
+    "target": "VENTALV"
+  },
+  {
+    "source": "CVP",
+    "target": "LVEDVOLUME"
+  },
+  {
+    "source": "CVP",
+    "target": "PCWP"
+  },
+  {
+    "source": "CVP",
+    "target": "VENTLUNG"
+  },
+  {
+    "source": "VENTTUBE",
+    "target": "DISCONNECT"
+  },
+  {
+    "source": "VENTTUBE",
+    "target": "MINVOL"
+  },
+  {
+    "source": "PRESS",
+    "target": "KINKEDTUBE"
+  },
+  {
+    "source": "PRESS",
+    "target": "MINVOLSET"
+  },
+  {
+    "source": "PRESS",
+    "target": "VENTTUBE"
+  },
+  {
+    "source": "PRESS",
+    "target": "VENTLUNG"
+  },
+  {
+    "source": "PRESS",
+    "target": "MINVOL"
+  },
+  {
+    "source": "PRESS",
+    "target": "VENTALV"
+  },
+  {
+    "source": "PRESS",
+    "target": "EXPCO2"
+  },
+  {
+    "source": "VENTLUNG",
+    "target": "PVSAT"
+  },
+  {
+    "source": "VENTLUNG",
+    "target": "EXPCO2"
+  },
+  {
+    "source": "MINVOL",
+    "target": "VENTLUNG"
+  },
+  {
+    "source": "MINVOL",
+    "target": "PVSAT"
+  },
+  {
+    "source": "MINVOL",
+    "target": "EXPCO2"
+  },
+  {
+    "source": "MINVOL",
+    "target": "HRBP"
+  },
+  {
+    "source": "MINVOL",
+    "target": "HREKG"
+  },
+  {
+    "source": "VENTALV",
+    "target": "VENTTUBE"
+  },
+  {
+    "source": "VENTALV",
+    "target": "CO"
+  },
+  {
+    "source": "PVSAT",
+    "target": "FIO2"
+  },
+  {
+    "source": "PVSAT",
+    "target": "HRBP"
+  },
+  {
+    "source": "PVSAT",
+    "target": "BP"
+  },
+  {
+    "source": "ARTCO2",
+    "target": "VENTALV"
+  },
+  {
+    "source": "ARTCO2",
+    "target": "EXPCO2"
+  },
+  {
+    "source": "ARTCO2",
+    "target": "HREKG"
+  },
+  {
+    "source": "SAO2",
+    "target": "FIO2"
+  },
+  {
+    "source": "SAO2",
+    "target": "SHUNT"
+  },
+  {
+    "source": "SAO2",
+    "target": "PVSAT"
+  },
+  {
+    "source": "SAO2",
+    "target": "HR"
+  },
+  {
+    "source": "SAO2",
+    "target": "CATECHOL"
+  },
+  {
+    "source": "EXPCO2",
+    "target": "ERRCAUTER"
+  },
+  {
+    "source": "EXPCO2",
+    "target": "CATECHOL"
+  },
+  {
+    "source": "HR",
+    "target": "HREKG"
+  },
+  {
+    "source": "HR",
+    "target": "HRSAT"
+  },
+  {
+    "source": "HR",
+    "target": "CO"
+  },
+  {
+    "source": "HRBP",
+    "target": "CATECHOL"
+  },
+  {
+    "source": "HRBP",
+    "target": "HREKG"
+  },
+  {
+    "source": "HRSAT",
+    "target": "HRBP"
+  },
+  {
+    "source": "HRSAT",
+    "target": "HREKG"
+  },
+  {
+    "source": "CO",
+    "target": "HRBP"
+  },
+  {
+    "source": "CO",
+    "target": "HRSAT"
+  },
+  {
+    "source": "BP",
+    "target": "HR"
+  },
+  {
+    "source": "BP",
+    "target": "HRSAT"
+  },
+  {
+    "source": "BP",
+    "target": "CO"
+  },
+  {
+    "source": "BP",
+    "target": "CATECHOL"
+  }
+]

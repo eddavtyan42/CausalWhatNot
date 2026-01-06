@@ -1,0 +1,90 @@
+[
+  {
+    "source": "Disease",
+    "target": "BirthAsphyxia"
+  },
+  {
+    "source": "Disease",
+    "target": "LVH"
+  },
+  {
+    "source": "Disease",
+    "target": "CardiacMixing"
+  },
+  {
+    "source": "Disease",
+    "target": "LungParench"
+  },
+  {
+    "source": "Disease",
+    "target": "Age"
+  },
+  {
+    "source": "LVH",
+    "target": "LVHreport"
+  },
+  {
+    "source": "LungParench",
+    "target": "CO2"
+  },
+  {
+    "source": "LungFlow",
+    "target": "LowerBodyO2"
+  },
+  {
+    "source": "HypDistrib",
+    "target": "DuctFlow"
+  },
+  {
+    "source": "HypoxiaInO2",
+    "target": "CardiacMixing"
+  },
+  {
+    "source": "HypoxiaInO2",
+    "target": "RUQO2"
+  },
+  {
+    "source": "HypoxiaInO2",
+    "target": "GruntingReport"
+  },
+  {
+    "source": "CO2",
+    "target": "CO2Report"
+  },
+  {
+    "source": "ChestXray",
+    "target": "XrayReport"
+  },
+  {
+    "source": "Grunting",
+    "target": "LungParench"
+  },
+  {
+    "source": "Grunting",
+    "target": "Age"
+  },
+  {
+    "source": "Age",
+    "target": "Sick"
+  },
+  {
+    "source": "LowerBodyO2",
+    "target": "CardiacMixing"
+  },
+  {
+    "source": "LowerBodyO2",
+    "target": "HypDistrib"
+  },
+  {
+    "source": "LowerBodyO2",
+    "target": "HypoxiaInO2"
+  },
+  {
+    "source": "XrayReport",
+    "target": "LungFlow"
+  },
+  {
+    "source": "GruntingReport",
+    "target": "Grunting"
+  }
+]

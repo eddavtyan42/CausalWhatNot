@@ -16,6 +16,7 @@ sys.path.append(str(Path(__file__).resolve().parents[1]))
 
 from utils.loaders import load_dataset
 from utils.helpers import edge_differences, dump_edge_differences_json
+from utils.graph_ops import dag_to_cpdag
 from utils.logging_utils import setup_logging
 from utils.provenance import save_run_metadata, save_graph_artifacts
 from metrics.metrics import (
@@ -23,6 +24,7 @@ from metrics.metrics import (
     precision_recall_f1,
     directed_precision_recall_f1,
     shd_dir,
+    sid,
 )
 from metrics.bootstrap import bootstrap_edge_stability
 
@@ -157,6 +159,42 @@ def run(
                 if orient_metrics:
                     metrics.update(directed_precision_recall_f1(graph, true_graph))
                     metrics["shd_dir"] = shd_dir(graph, true_graph)
+                    # Compute SID (Structural Intervention Distance)
+                    # Only meaningful for fully directed graphs (not CPDAGs)
+                    has_undirected = len(info.get("undirected_edges", [])) > 0
+                    metrics["sid"] = sid(
+                        graph, 
+                        true_graph, 
+                        has_undirected_edges=has_undirected,
+                        timeout_seconds=30.0
+                    )
+
+                # CPDAG evaluation (Theory-aligned)
+                try:
+                    true_cpdag = dag_to_cpdag(true_graph)
+                    
+                    # Reconstruct predicted CPDAG from DAG + undirected info
+                    pred_cpdag = graph.copy()
+                    undirected = info.get("undirected_edges", [])
+                    # Ensure undirected edges are bidirectional
+                    for u, v in undirected:
+                        if pred_cpdag.has_edge(u, v) and not pred_cpdag.has_edge(v, u):
+                            pred_cpdag.add_edge(v, u)
+                        elif pred_cpdag.has_edge(v, u) and not pred_cpdag.has_edge(u, v):
+                            pred_cpdag.add_edge(u, v)
+                    
+                    # Use directed metrics on CPDAGs (where undirected = bidirectional)
+                    cpdag_metrics = directed_precision_recall_f1(pred_cpdag, true_cpdag)
+                    metrics["cpdag_precision"] = cpdag_metrics["directed_precision"]
+                    metrics["cpdag_recall"] = cpdag_metrics["directed_recall"]
+                    metrics["cpdag_f1"] = cpdag_metrics["directed_f1"]
+                    metrics["shd_cpdag"] = shd_dir(pred_cpdag, true_cpdag)
+                except Exception as e:
+                    logger.warning("CPDAG metric calculation failed: %s", str(e))
+                    metrics["cpdag_precision"] = float('nan')
+                    metrics["cpdag_recall"] = float('nan')
+                    metrics["cpdag_f1"] = float('nan')
+                    metrics["shd_cpdag"] = float('nan')
 
                 extra, missing, rev = edge_differences(graph, true_graph)
                 with open(diff_path, "a") as df:
@@ -225,6 +263,7 @@ def run(
                 if orient_metrics:
                     metrics.update(directed_precision_recall_f1(empty, true_graph))
                     metrics["shd_dir"] = shd_dir(empty, true_graph)
+                    metrics["sid"] = sid(empty, true_graph, has_undirected_edges=False)
                 logger.info("Run produced empty graph: dataset=%s algo=%s bootstrap=%d", alias, algo_name, b)
 
             run_metrics.append(metrics)
@@ -238,6 +277,13 @@ def run(
         d_rec = np.array([], dtype=float)
         d_f1 = np.array([], dtype=float)
         shd_dir_vals = np.array([], dtype=float)
+        sid_vals = np.array([], dtype=float)
+        # Initialize CPDAG metric arrays
+        cpdag_prec = np.array([], dtype=float)
+        cpdag_rec = np.array([], dtype=float)
+        cpdag_f1 = np.array([], dtype=float)
+        shd_cpdag_vals = np.array([], dtype=float)
+
         if len(ok_metrics) == 0:
             # If every run failed, fall back to the metrics computed for the
             # empty graphs recorded above.  This provides defined precision,
@@ -251,6 +297,15 @@ def run(
                 d_rec = np.array([m["directed_recall"] for m in run_metrics], dtype=float)
                 d_f1 = np.array([m["directed_f1"] for m in run_metrics], dtype=float)
                 shd_dir_vals = np.array([m["shd_dir"] for m in run_metrics], dtype=float)
+                sid_vals = np.array([m.get("sid", float('nan')) for m in run_metrics], dtype=float)
+            
+            # Extract CPDAG metrics if available
+            if run_metrics and "cpdag_precision" in run_metrics[0]:
+                cpdag_prec = np.array([m.get("cpdag_precision", float('nan')) for m in run_metrics], dtype=float)
+                cpdag_rec = np.array([m.get("cpdag_recall", float('nan')) for m in run_metrics], dtype=float)
+                cpdag_f1 = np.array([m.get("cpdag_f1", float('nan')) for m in run_metrics], dtype=float)
+                shd_cpdag_vals = np.array([m.get("shd_cpdag", float('nan')) for m in run_metrics], dtype=float)
+
             times = np.array(run_times, dtype=float)
         else:
             prec = np.array([m["precision"] for m in ok_metrics], dtype=float)
@@ -262,6 +317,15 @@ def run(
                 d_rec = np.array([m["directed_recall"] for m in ok_metrics], dtype=float)
                 d_f1 = np.array([m["directed_f1"] for m in ok_metrics], dtype=float)
                 shd_dir_vals = np.array([m["shd_dir"] for m in ok_metrics], dtype=float)
+                sid_vals = np.array([m.get("sid", float('nan')) for m in ok_metrics], dtype=float)
+            
+            # Extract CPDAG metrics if available
+            if ok_metrics and "cpdag_precision" in ok_metrics[0]:
+                cpdag_prec = np.array([m.get("cpdag_precision", float('nan')) for m in ok_metrics], dtype=float)
+                cpdag_rec = np.array([m.get("cpdag_recall", float('nan')) for m in ok_metrics], dtype=float)
+                cpdag_f1 = np.array([m.get("cpdag_f1", float('nan')) for m in ok_metrics], dtype=float)
+                shd_cpdag_vals = np.array([m.get("shd_cpdag", float('nan')) for m in ok_metrics], dtype=float)
+
             times = np.array(ok_times, dtype=float)
         n_fail = sum(1 for e in errors if e and e != "timeout")
         n_timeout = sum(1 for e in errors if e == "timeout")
@@ -280,6 +344,13 @@ def run(
                             f" directed_recall={m['directed_recall']:.3f},"
                             f" directed_f1={m['directed_f1']:.3f},"
                             f" shd_dir={m['shd_dir']}"
+                        )
+                    if "cpdag_precision" in m:
+                        line += (
+                            f", cpdag_precision={m['cpdag_precision']:.3f},"
+                            f" cpdag_recall={m['cpdag_recall']:.3f},"
+                            f" cpdag_f1={m['cpdag_f1']:.3f},"
+                            f" shd_cpdag={m['shd_cpdag']}"
                         )
                     f.write(line + "\n")
             # Helper to format mean±std without emitting warnings on empty arrays
@@ -301,6 +372,14 @@ def run(
                     f"directed_recall={fmt(d_rec)}, "
                     f"directed_f1={fmt(d_f1)}, "
                     f"shd_dir={fmt(shd_dir_vals)}, "
+                    f"sid={fmt(sid_vals)}, "
+                )
+            if cpdag_prec.size > 0:
+                summary_line += (
+                    f"cpdag_precision={fmt(cpdag_prec)}, "
+                    f"cpdag_recall={fmt(cpdag_rec)}, "
+                    f"cpdag_f1={fmt(cpdag_f1)}, "
+                    f"shd_cpdag={fmt(shd_cpdag_vals)}, "
                 )
             # Runtime with 2 decimals
             def fmt_time(arr: np.ndarray) -> str:
@@ -349,8 +428,21 @@ def run(
                     "directed_f1_std": d_f1.std(ddof=0) if d_f1.size else np.nan,
                     "shd_dir": shd_dir_vals.mean() if shd_dir_vals.size else np.nan,
                     "shd_dir_std": shd_dir_vals.std(ddof=0) if shd_dir_vals.size else np.nan,
+                    "sid": sid_vals.mean() if sid_vals.size else np.nan,
+                    "sid_std": sid_vals.std(ddof=0) if sid_vals.size else np.nan,
                 }
             )
+        if cpdag_prec.size > 0:
+            row.update({
+                "cpdag_precision": cpdag_prec.mean() if cpdag_prec.size else np.nan,
+                "cpdag_precision_std": cpdag_prec.std(ddof=0) if cpdag_prec.size else np.nan,
+                "cpdag_recall": cpdag_rec.mean() if cpdag_rec.size else np.nan,
+                "cpdag_recall_std": cpdag_rec.std(ddof=0) if cpdag_rec.size else np.nan,
+                "cpdag_f1": cpdag_f1.mean() if cpdag_f1.size else np.nan,
+                "cpdag_f1_std": cpdag_f1.std(ddof=0) if cpdag_f1.size else np.nan,
+                "shd_cpdag": shd_cpdag_vals.mean() if shd_cpdag_vals.size else np.nan,
+                "shd_cpdag_std": shd_cpdag_vals.std(ddof=0) if shd_cpdag_vals.size else np.nan,
+            })
         if record_stability and bootstrap > 0:
             freqs = bootstrap_edge_stability(
                 lambda d: mod.run(d.copy(), **params),

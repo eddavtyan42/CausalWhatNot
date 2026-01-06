@@ -1,0 +1,370 @@
+[
+  {
+    "source": "LVFAILURE",
+    "target": "HYPOVOLEMIA"
+  },
+  {
+    "source": "LVFAILURE",
+    "target": "STROKEVOLUME"
+  },
+  {
+    "source": "LVFAILURE",
+    "target": "PCWP"
+  },
+  {
+    "source": "HYPOVOLEMIA",
+    "target": "CVP"
+  },
+  {
+    "source": "ERRCAUTER",
+    "target": "INSUFFANESTH"
+  },
+  {
+    "source": "ANAPHYLAXIS",
+    "target": "TPR"
+  },
+  {
+    "source": "INTUBATION",
+    "target": "KINKEDTUBE"
+  },
+  {
+    "source": "INTUBATION",
+    "target": "VENTTUBE"
+  },
+  {
+    "source": "INTUBATION",
+    "target": "PRESS"
+  },
+  {
+    "source": "INTUBATION",
+    "target": "MINVOL"
+  },
+  {
+    "source": "FIO2",
+    "target": "VENTALV"
+  },
+  {
+    "source": "FIO2",
+    "target": "PVSAT"
+  },
+  {
+    "source": "PULMEMBOLUS",
+    "target": "INTUBATION"
+  },
+  {
+    "source": "PULMEMBOLUS",
+    "target": "PRESS"
+  },
+  {
+    "source": "PULMEMBOLUS",
+    "target": "VENTALV"
+  },
+  {
+    "source": "PULMEMBOLUS",
+    "target": "PVSAT"
+  },
+  {
+    "source": "PULMEMBOLUS",
+    "target": "SAO2"
+  },
+  {
+    "source": "PULMEMBOLUS",
+    "target": "HRSAT"
+  },
+  {
+    "source": "KINKEDTUBE",
+    "target": "DISCONNECT"
+  },
+  {
+    "source": "MINVOLSET",
+    "target": "VENTMACH"
+  },
+  {
+    "source": "INSUFFANESTH",
+    "target": "HR"
+  },
+  {
+    "source": "HISTORY",
+    "target": "LVFAILURE"
+  },
+  {
+    "source": "HISTORY",
+    "target": "STROKEVOLUME"
+  },
+  {
+    "source": "LVEDVOLUME",
+    "target": "HYPOVOLEMIA"
+  },
+  {
+    "source": "LVEDVOLUME",
+    "target": "CVP"
+  },
+  {
+    "source": "LVEDVOLUME",
+    "target": "EXPCO2"
+  },
+  {
+    "source": "STROKEVOLUME",
+    "target": "HYPOVOLEMIA"
+  },
+  {
+    "source": "STROKEVOLUME",
+    "target": "ERRLOWOUTPUT"
+  },
+  {
+    "source": "STROKEVOLUME",
+    "target": "LVEDVOLUME"
+  },
+  {
+    "source": "PAP",
+    "target": "PULMEMBOLUS"
+  },
+  {
+    "source": "PAP",
+    "target": "SHUNT"
+  },
+  {
+    "source": "SHUNT",
+    "target": "INTUBATION"
+  },
+  {
+    "source": "SHUNT",
+    "target": "PULMEMBOLUS"
+  },
+  {
+    "source": "SHUNT",
+    "target": "PVSAT"
+  },
+  {
+    "source": "SHUNT",
+    "target": "SAO2"
+  },
+  {
+    "source": "PCWP",
+    "target": "LVEDVOLUME"
+  },
+  {
+    "source": "PCWP",
+    "target": "PAP"
+  },
+  {
+    "source": "VENTTUBE",
+    "target": "DISCONNECT"
+  },
+  {
+    "source": "VENTTUBE",
+    "target": "VENTMACH"
+  },
+  {
+    "source": "PRESS",
+    "target": "KINKEDTUBE"
+  },
+  {
+    "source": "PRESS",
+    "target": "VENTTUBE"
+  },
+  {
+    "source": "VENTLUNG",
+    "target": "VENTMACH"
+  },
+  {
+    "source": "VENTLUNG",
+    "target": "PRESS"
+  },
+  {
+    "source": "MINVOL",
+    "target": "KINKEDTUBE"
+  },
+  {
+    "source": "MINVOL",
+    "target": "VENTTUBE"
+  },
+  {
+    "source": "MINVOL",
+    "target": "PRESS"
+  },
+  {
+    "source": "MINVOL",
+    "target": "VENTLUNG"
+  },
+  {
+    "source": "VENTALV",
+    "target": "INTUBATION"
+  },
+  {
+    "source": "VENTALV",
+    "target": "VENTLUNG"
+  },
+  {
+    "source": "VENTALV",
+    "target": "EXPCO2"
+  },
+  {
+    "source": "PVSAT",
+    "target": "VENTALV"
+  },
+  {
+    "source": "PVSAT",
+    "target": "HR"
+  },
+  {
+    "source": "ARTCO2",
+    "target": "VENTLUNG"
+  },
+  {
+    "source": "ARTCO2",
+    "target": "VENTALV"
+  },
+  {
+    "source": "ARTCO2",
+    "target": "EXPCO2"
+  },
+  {
+    "source": "SAO2",
+    "target": "INTUBATION"
+  },
+  {
+    "source": "SAO2",
+    "target": "TPR"
+  },
+  {
+    "source": "SAO2",
+    "target": "PVSAT"
+  },
+  {
+    "source": "SAO2",
+    "target": "ARTCO2"
+  },
+  {
+    "source": "SAO2",
+    "target": "HR"
+  },
+  {
+    "source": "EXPCO2",
+    "target": "VENTLUNG"
+  },
+  {
+    "source": "EXPCO2",
+    "target": "MINVOL"
+  },
+  {
+    "source": "CATECHOL",
+    "target": "HYPOVOLEMIA"
+  },
+  {
+    "source": "CATECHOL",
+    "target": "INTUBATION"
+  },
+  {
+    "source": "CATECHOL",
+    "target": "SAO2"
+  },
+  {
+    "source": "CATECHOL",
+    "target": "HRBP"
+  },
+  {
+    "source": "CATECHOL",
+    "target": "BP"
+  },
+  {
+    "source": "HR",
+    "target": "INTUBATION"
+  },
+  {
+    "source": "HR",
+    "target": "STROKEVOLUME"
+  },
+  {
+    "source": "HR",
+    "target": "CO"
+  },
+  {
+    "source": "HRBP",
+    "target": "ERRLOWOUTPUT"
+  },
+  {
+    "source": "HRBP",
+    "target": "ARTCO2"
+  },
+  {
+    "source": "HRBP",
+    "target": "SAO2"
+  },
+  {
+    "source": "HRBP",
+    "target": "HR"
+  },
+  {
+    "source": "HRBP",
+    "target": "CO"
+  },
+  {
+    "source": "HREKG",
+    "target": "ERRCAUTER"
+  },
+  {
+    "source": "HREKG",
+    "target": "SAO2"
+  },
+  {
+    "source": "HREKG",
+    "target": "EXPCO2"
+  },
+  {
+    "source": "HREKG",
+    "target": "CATECHOL"
+  },
+  {
+    "source": "HREKG",
+    "target": "HR"
+  },
+  {
+    "source": "HREKG",
+    "target": "HRSAT"
+  },
+  {
+    "source": "HRSAT",
+    "target": "HR"
+  },
+  {
+    "source": "HRSAT",
+    "target": "HRBP"
+  },
+  {
+    "source": "HRSAT",
+    "target": "CO"
+  },
+  {
+    "source": "CO",
+    "target": "INTUBATION"
+  },
+  {
+    "source": "CO",
+    "target": "TPR"
+  },
+  {
+    "source": "CO",
+    "target": "MINVOL"
+  },
+  {
+    "source": "CO",
+    "target": "VENTALV"
+  },
+  {
+    "source": "CO",
+    "target": "ARTCO2"
+  },
+  {
+    "source": "BP",
+    "target": "TPR"
+  },
+  {
+    "source": "BP",
+    "target": "HRSAT"
+  },
+  {
+    "source": "BP",
+    "target": "CO"
+  }
+]

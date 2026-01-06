@@ -1,0 +1,1 @@
+{"extra": [["Akt", "PKC"], ["Jnk", "Mek"], ["Jnk", "Raf"], ["PIP3", "P38"]], "missing": [["PKA", "Jnk"], ["PKA", "Mek"]], "reversed": [["Akt", "Erk"], ["Akt", "PKA"], ["P38", "PKA"], ["P38", "PKC"], ["PIP2", "PIP3"], ["Raf", "PKA"]]}

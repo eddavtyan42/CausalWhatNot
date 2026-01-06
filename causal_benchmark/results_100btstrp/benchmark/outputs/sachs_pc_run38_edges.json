@@ -1,0 +1,34 @@
+[
+  {
+    "source": "PKC",
+    "target": "Jnk"
+  },
+  {
+    "source": "PKC",
+    "target": "Raf"
+  },
+  {
+    "source": "PKC",
+    "target": "Akt"
+  },
+  {
+    "source": "Raf",
+    "target": "Erk"
+  },
+  {
+    "source": "Erk",
+    "target": "PKA"
+  },
+  {
+    "source": "Erk",
+    "target": "Mek"
+  },
+  {
+    "source": "Akt",
+    "target": "PKA"
+  },
+  {
+    "source": "Akt",
+    "target": "Erk"
+  }
+]

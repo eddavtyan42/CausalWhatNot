@@ -1,0 +1,166 @@
+[
+  {
+    "source": "Disease",
+    "target": "BirthAsphyxia"
+  },
+  {
+    "source": "Disease",
+    "target": "LVH"
+  },
+  {
+    "source": "Disease",
+    "target": "DuctFlow"
+  },
+  {
+    "source": "Disease",
+    "target": "CardiacMixing"
+  },
+  {
+    "source": "Disease",
+    "target": "LungParench"
+  },
+  {
+    "source": "Disease",
+    "target": "LungFlow"
+  },
+  {
+    "source": "Disease",
+    "target": "Sick"
+  },
+  {
+    "source": "Disease",
+    "target": "CO2"
+  },
+  {
+    "source": "Disease",
+    "target": "ChestXray"
+  },
+  {
+    "source": "Disease",
+    "target": "Age"
+  },
+  {
+    "source": "Disease",
+    "target": "XrayReport"
+  },
+  {
+    "source": "LVH",
+    "target": "CardiacMixing"
+  },
+  {
+    "source": "LVH",
+    "target": "LVHreport"
+  },
+  {
+    "source": "DuctFlow",
+    "target": "CardiacMixing"
+  },
+  {
+    "source": "DuctFlow",
+    "target": "LungParench"
+  },
+  {
+    "source": "DuctFlow",
+    "target": "LungFlow"
+  },
+  {
+    "source": "DuctFlow",
+    "target": "HypDistrib"
+  },
+  {
+    "source": "DuctFlow",
+    "target": "ChestXray"
+  },
+  {
+    "source": "DuctFlow",
+    "target": "LowerBodyO2"
+  },
+  {
+    "source": "DuctFlow",
+    "target": "CO2Report"
+  },
+  {
+    "source": "CardiacMixing",
+    "target": "HypoxiaInO2"
+  },
+  {
+    "source": "CardiacMixing",
+    "target": "CO2"
+  },
+  {
+    "source": "CardiacMixing",
+    "target": "ChestXray"
+  },
+  {
+    "source": "CardiacMixing",
+    "target": "Age"
+  },
+  {
+    "source": "CardiacMixing",
+    "target": "LowerBodyO2"
+  },
+  {
+    "source": "CardiacMixing",
+    "target": "RUQO2"
+  },
+  {
+    "source": "CardiacMixing",
+    "target": "XrayReport"
+  },
+  {
+    "source": "LungFlow",
+    "target": "Age"
+  },
+  {
+    "source": "LungFlow",
+    "target": "XrayReport"
+  },
+  {
+    "source": "ChestXray",
+    "target": "LungParench"
+  },
+  {
+    "source": "ChestXray",
+    "target": "LungFlow"
+  },
+  {
+    "source": "ChestXray",
+    "target": "HypoxiaInO2"
+  },
+  {
+    "source": "ChestXray",
+    "target": "Age"
+  },
+  {
+    "source": "ChestXray",
+    "target": "LowerBodyO2"
+  },
+  {
+    "source": "ChestXray",
+    "target": "XrayReport"
+  },
+  {
+    "source": "Age",
+    "target": "Sick"
+  },
+  {
+    "source": "Age",
+    "target": "GruntingReport"
+  },
+  {
+    "source": "LowerBodyO2",
+    "target": "HypDistrib"
+  },
+  {
+    "source": "LowerBodyO2",
+    "target": "HypoxiaInO2"
+  },
+  {
+    "source": "LowerBodyO2",
+    "target": "RUQO2"
+  },
+  {
+    "source": "LowerBodyO2",
+    "target": "XrayReport"
+  }
+]

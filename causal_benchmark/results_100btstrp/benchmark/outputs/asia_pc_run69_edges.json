@@ -1,0 +1,54 @@
+[
+  {
+    "source": "VisitAsia",
+    "target": "Tuberculosis"
+  },
+  {
+    "source": "Smoking",
+    "target": "Xray"
+  },
+  {
+    "source": "Smoking",
+    "target": "LungCancer"
+  },
+  {
+    "source": "Bronchitis",
+    "target": "Smoking"
+  },
+  {
+    "source": "Either",
+    "target": "VisitAsia"
+  },
+  {
+    "source": "Either",
+    "target": "Tuberculosis"
+  },
+  {
+    "source": "Either",
+    "target": "LungCancer"
+  },
+  {
+    "source": "Xray",
+    "target": "Either"
+  },
+  {
+    "source": "Dyspnea",
+    "target": "Smoking"
+  },
+  {
+    "source": "Dyspnea",
+    "target": "LungCancer"
+  },
+  {
+    "source": "Dyspnea",
+    "target": "Bronchitis"
+  },
+  {
+    "source": "Dyspnea",
+    "target": "Either"
+  },
+  {
+    "source": "Dyspnea",
+    "target": "Xray"
+  }
+]

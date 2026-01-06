@@ -1,0 +1,182 @@
+[
+  {
+    "source": "Disease",
+    "target": "BirthAsphyxia"
+  },
+  {
+    "source": "Disease",
+    "target": "DuctFlow"
+  },
+  {
+    "source": "Disease",
+    "target": "CardiacMixing"
+  },
+  {
+    "source": "Disease",
+    "target": "LungFlow"
+  },
+  {
+    "source": "Disease",
+    "target": "HypoxiaInO2"
+  },
+  {
+    "source": "Disease",
+    "target": "CO2"
+  },
+  {
+    "source": "Disease",
+    "target": "ChestXray"
+  },
+  {
+    "source": "Disease",
+    "target": "Age"
+  },
+  {
+    "source": "Disease",
+    "target": "XrayReport"
+  },
+  {
+    "source": "DuctFlow",
+    "target": "LungFlow"
+  },
+  {
+    "source": "DuctFlow",
+    "target": "HypDistrib"
+  },
+  {
+    "source": "DuctFlow",
+    "target": "CO2"
+  },
+  {
+    "source": "DuctFlow",
+    "target": "Age"
+  },
+  {
+    "source": "DuctFlow",
+    "target": "LowerBodyO2"
+  },
+  {
+    "source": "CardiacMixing",
+    "target": "HypDistrib"
+  },
+  {
+    "source": "CardiacMixing",
+    "target": "HypoxiaInO2"
+  },
+  {
+    "source": "CardiacMixing",
+    "target": "Age"
+  },
+  {
+    "source": "CardiacMixing",
+    "target": "RUQO2"
+  },
+  {
+    "source": "LungParench",
+    "target": "HypoxiaInO2"
+  },
+  {
+    "source": "LungParench",
+    "target": "CO2Report"
+  },
+  {
+    "source": "LungParench",
+    "target": "XrayReport"
+  },
+  {
+    "source": "LungParench",
+    "target": "GruntingReport"
+  },
+  {
+    "source": "LungFlow",
+    "target": "LVH"
+  },
+  {
+    "source": "LungFlow",
+    "target": "ChestXray"
+  },
+  {
+    "source": "LungFlow",
+    "target": "Age"
+  },
+  {
+    "source": "HypoxiaInO2",
+    "target": "GruntingReport"
+  },
+  {
+    "source": "CO2",
+    "target": "ChestXray"
+  },
+  {
+    "source": "CO2",
+    "target": "RUQO2"
+  },
+  {
+    "source": "CO2",
+    "target": "CO2Report"
+  },
+  {
+    "source": "CO2",
+    "target": "XrayReport"
+  },
+  {
+    "source": "CO2",
+    "target": "LungParench"
+  },
+  {
+    "source": "ChestXray",
+    "target": "LungParench"
+  },
+  {
+    "source": "ChestXray",
+    "target": "Age"
+  },
+  {
+    "source": "ChestXray",
+    "target": "LowerBodyO2"
+  },
+  {
+    "source": "LowerBodyO2",
+    "target": "CardiacMixing"
+  },
+  {
+    "source": "LowerBodyO2",
+    "target": "HypDistrib"
+  },
+  {
+    "source": "LowerBodyO2",
+    "target": "HypoxiaInO2"
+  },
+  {
+    "source": "LowerBodyO2",
+    "target": "Age"
+  },
+  {
+    "source": "LowerBodyO2",
+    "target": "RUQO2"
+  },
+  {
+    "source": "LowerBodyO2",
+    "target": "XrayReport"
+  },
+  {
+    "source": "RUQO2",
+    "target": "HypoxiaInO2"
+  },
+  {
+    "source": "RUQO2",
+    "target": "CO2Report"
+  },
+  {
+    "source": "XrayReport",
+    "target": "BirthAsphyxia"
+  },
+  {
+    "source": "XrayReport",
+    "target": "HypDistrib"
+  },
+  {
+    "source": "XrayReport",
+    "target": "Age"
+  }
+]

@@ -1,0 +1,30 @@
+[
+  {
+    "source": "Tuberculosis",
+    "target": "VisitAsia"
+  },
+  {
+    "source": "LungCancer",
+    "target": "Smoking"
+  },
+  {
+    "source": "Either",
+    "target": "Tuberculosis"
+  },
+  {
+    "source": "Either",
+    "target": "Xray"
+  },
+  {
+    "source": "Dyspnea",
+    "target": "LungCancer"
+  },
+  {
+    "source": "Dyspnea",
+    "target": "Bronchitis"
+  },
+  {
+    "source": "Dyspnea",
+    "target": "Either"
+  }
+]

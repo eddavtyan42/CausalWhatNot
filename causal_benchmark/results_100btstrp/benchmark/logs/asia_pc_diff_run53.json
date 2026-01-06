@@ -1,0 +1,1 @@
+{"extra": [["Smoking", "Dyspnea"], ["Smoking", "Xray"], ["Xray", "Dyspnea"], ["Xray", "LungCancer"]], "missing": [["Smoking", "Bronchitis"]], "reversed": [["Dyspnea", "Bronchitis"], ["Dyspnea", "Either"], ["Either", "LungCancer"], ["Either", "Tuberculosis"], ["Xray", "Either"]]}

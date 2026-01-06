@@ -1,0 +1,166 @@
+[
+  {
+    "source": "BirthAsphyxia",
+    "target": "Disease"
+  },
+  {
+    "source": "Disease",
+    "target": "LVH"
+  },
+  {
+    "source": "Disease",
+    "target": "LVHreport"
+  },
+  {
+    "source": "Disease",
+    "target": "ChestXray"
+  },
+  {
+    "source": "Disease",
+    "target": "Age"
+  },
+  {
+    "source": "LVH",
+    "target": "LVHreport"
+  },
+  {
+    "source": "DuctFlow",
+    "target": "Disease"
+  },
+  {
+    "source": "DuctFlow",
+    "target": "HypDistrib"
+  },
+  {
+    "source": "CardiacMixing",
+    "target": "Disease"
+  },
+  {
+    "source": "CardiacMixing",
+    "target": "LungParench"
+  },
+  {
+    "source": "CardiacMixing",
+    "target": "HypoxiaInO2"
+  },
+  {
+    "source": "CardiacMixing",
+    "target": "LowerBodyO2"
+  },
+  {
+    "source": "LungParench",
+    "target": "Disease"
+  },
+  {
+    "source": "LungParench",
+    "target": "LungFlow"
+  },
+  {
+    "source": "LungParench",
+    "target": "ChestXray"
+  },
+  {
+    "source": "LungFlow",
+    "target": "ChestXray"
+  },
+  {
+    "source": "Sick",
+    "target": "Age"
+  },
+  {
+    "source": "HypDistrib",
+    "target": "Disease"
+  },
+  {
+    "source": "HypDistrib",
+    "target": "CardiacMixing"
+  },
+  {
+    "source": "HypDistrib",
+    "target": "HypoxiaInO2"
+  },
+  {
+    "source": "HypDistrib",
+    "target": "LowerBodyO2"
+  },
+  {
+    "source": "HypoxiaInO2",
+    "target": "LungParench"
+  },
+  {
+    "source": "HypoxiaInO2",
+    "target": "CO2"
+  },
+  {
+    "source": "HypoxiaInO2",
+    "target": "LowerBodyO2"
+  },
+  {
+    "source": "CO2",
+    "target": "Disease"
+  },
+  {
+    "source": "CO2",
+    "target": "LungParench"
+  },
+  {
+    "source": "Grunting",
+    "target": "Sick"
+  },
+  {
+    "source": "Grunting",
+    "target": "CO2"
+  },
+  {
+    "source": "Grunting",
+    "target": "GruntingReport"
+  },
+  {
+    "source": "LowerBodyO2",
+    "target": "Disease"
+  },
+  {
+    "source": "LowerBodyO2",
+    "target": "LungParench"
+  },
+  {
+    "source": "RUQO2",
+    "target": "CardiacMixing"
+  },
+  {
+    "source": "RUQO2",
+    "target": "LungFlow"
+  },
+  {
+    "source": "RUQO2",
+    "target": "HypoxiaInO2"
+  },
+  {
+    "source": "CO2Report",
+    "target": "LungParench"
+  },
+  {
+    "source": "CO2Report",
+    "target": "CO2"
+  },
+  {
+    "source": "XrayReport",
+    "target": "HypoxiaInO2"
+  },
+  {
+    "source": "XrayReport",
+    "target": "ChestXray"
+  },
+  {
+    "source": "GruntingReport",
+    "target": "Disease"
+  },
+  {
+    "source": "GruntingReport",
+    "target": "LungParench"
+  },
+  {
+    "source": "GruntingReport",
+    "target": "Sick"
+  }
+]

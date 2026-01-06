@@ -1,0 +1,14 @@
+source,target,frequency
+Either,Xray,1.0
+Either,Dyspnea,1.0
+Either,LungCancer,1.0
+Bronchitis,Dyspnea,0.93
+LungCancer,Smoking,1.0
+VisitAsia,Tuberculosis,1.0
+Xray,LungCancer,0.08
+Dyspnea,Smoking,0.39
+Dyspnea,Bronchitis,0.07
+Dyspnea,LungCancer,0.12
+LungCancer,Xray,0.01
+Either,Smoking,0.01
+LungCancer,Dyspnea,0.01
