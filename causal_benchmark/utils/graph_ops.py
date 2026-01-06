@@ -1,5 +1,46 @@
 import networkx as nx
 import numpy as np
+from causallearn.graph.GeneralGraph import GeneralGraph
+from causallearn.graph.GraphNode import GraphNode
+from causallearn.utils.DAG2CPDAG import dag2cpdag
+
+
+def dag_to_cpdag(dag: nx.DiGraph) -> nx.DiGraph:
+    """Convert a DAG to its CPDAG (Markov Equivalence Class).
+    
+    Returns a NetworkX DiGraph where undirected edges are represented
+    as bidirectional edges.
+    """
+    nodes = sorted(list(dag.nodes()))
+    node_map = {n: GraphNode(str(n)) for n in nodes}
+    g_cl = GeneralGraph(list(node_map.values()))
+    for u, v in dag.edges():
+        g_cl.add_directed_edge(node_map[u], node_map[v])
+    
+    cpdag_cl = dag2cpdag(g_cl)
+    amat = cpdag_cl.graph
+    
+    cpdag_nx = nx.DiGraph()
+    cpdag_nx.add_nodes_from(nodes)
+    
+    n = len(nodes)
+    for i in range(n):
+        for j in range(i + 1, n):
+            val_ij = amat[i, j]
+            val_ji = amat[j, i]
+            
+            # i -> j: -1, 1
+            if val_ij == -1 and val_ji == 1:
+                cpdag_nx.add_edge(nodes[i], nodes[j])
+            # j -> i: 1, -1
+            elif val_ij == 1 and val_ji == -1:
+                cpdag_nx.add_edge(nodes[j], nodes[i])
+            # i - j: -1, -1 (or 1, 1)
+            elif (val_ij == -1 and val_ji == -1) or (val_ij == 1 and val_ji == 1):
+                cpdag_nx.add_edge(nodes[i], nodes[j])
+                cpdag_nx.add_edge(nodes[j], nodes[i])
+                
+    return cpdag_nx
 
 
 def cpdag_to_dag(cpdag: nx.DiGraph) -> nx.DiGraph:

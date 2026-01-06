@@ -1,0 +1,9 @@
+,VisitAsia,Smoking,Tuberculosis,LungCancer,Bronchitis,Either,Xray,Dyspnea
+VisitAsia,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0
+Smoking,0.0,0.0,0.0,1.0,1.0,0.0,0.0,0.0
+Tuberculosis,1.0,0.0,0.0,0.0,1.0,0.0,0.0,0.0
+LungCancer,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0
+Bronchitis,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0
+Either,1.0,1.0,0.0,1.0,0.0,0.0,0.0,0.0
+Xray,0.0,1.0,0.0,1.0,0.0,1.0,0.0,0.0
+Dyspnea,0.0,1.0,0.0,1.0,1.0,1.0,1.0,0.0

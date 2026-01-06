@@ -147,7 +147,7 @@ def run(
         Minimum absolute weight to include an edge (default 0.1).
     stability_threshold : float, optional
         Fraction of orderings in which an edge must appear to be included
-        in the final graph (default 0.5). Only used when use_stability=True.
+        in the final graph (default 0.25). Only used when use_stability=True.
     auto_lambda : bool, optional
         If True and lambda1 is None, automatically select lambda1 using BIC.
     use_stability : bool, optional

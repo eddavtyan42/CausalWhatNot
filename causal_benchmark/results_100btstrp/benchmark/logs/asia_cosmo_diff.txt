@@ -1,0 +1,573 @@
+run0:
+missing Smoking->Bronchitis
+missing Tuberculosis->Either
+reversed Either->LungCancer
+reversed LungCancer->Smoking
+run1:
+missing Smoking->Bronchitis
+missing Tuberculosis->Either
+reversed Either->LungCancer
+reversed LungCancer->Smoking
+run2:
+extra Xray->LungCancer
+missing Smoking->Bronchitis
+missing Tuberculosis->Either
+reversed Either->LungCancer
+reversed LungCancer->Smoking
+run3:
+missing Smoking->Bronchitis
+missing Tuberculosis->Either
+reversed Either->LungCancer
+reversed LungCancer->Smoking
+run4:
+missing Smoking->Bronchitis
+missing Tuberculosis->Either
+reversed Either->LungCancer
+reversed LungCancer->Smoking
+run5:
+extra Dyspnea->Smoking
+missing Smoking->Bronchitis
+missing Tuberculosis->Either
+reversed Either->LungCancer
+reversed LungCancer->Smoking
+run6:
+missing Smoking->Bronchitis
+missing Tuberculosis->Either
+reversed Either->LungCancer
+reversed LungCancer->Smoking
+run7:
+missing Smoking->Bronchitis
+missing Tuberculosis->Either
+reversed Either->LungCancer
+reversed LungCancer->Smoking
+run8:
+extra Dyspnea->LungCancer
+missing Smoking->Bronchitis
+missing Tuberculosis->Either
+reversed Either->LungCancer
+reversed LungCancer->Smoking
+run9:
+extra Dyspnea->Smoking
+missing Smoking->Bronchitis
+missing Tuberculosis->Either
+reversed Either->LungCancer
+reversed LungCancer->Smoking
+run10:
+extra Dyspnea->Smoking
+missing Smoking->Bronchitis
+missing Tuberculosis->Either
+reversed Either->LungCancer
+reversed LungCancer->Smoking
+run11:
+extra Dyspnea->LungCancer
+missing Smoking->Bronchitis
+missing Tuberculosis->Either
+reversed Either->LungCancer
+reversed LungCancer->Smoking
+run12:
+extra Dyspnea->Smoking
+missing Smoking->Bronchitis
+missing Tuberculosis->Either
+reversed Either->LungCancer
+reversed LungCancer->Smoking
+run13:
+missing Smoking->Bronchitis
+missing Tuberculosis->Either
+reversed Either->LungCancer
+reversed LungCancer->Smoking
+run14:
+extra LungCancer->Dyspnea
+missing Smoking->Bronchitis
+missing Tuberculosis->Either
+reversed Either->LungCancer
+reversed LungCancer->Smoking
+run15:
+extra Dyspnea->Smoking
+missing Smoking->Bronchitis
+missing Tuberculosis->Either
+reversed Either->LungCancer
+reversed LungCancer->Smoking
+reversed Dyspnea->Bronchitis
+run16:
+extra Dyspnea->Smoking
+missing Smoking->Bronchitis
+missing Tuberculosis->Either
+reversed Either->LungCancer
+reversed LungCancer->Smoking
+run17:
+missing Smoking->Bronchitis
+missing Tuberculosis->Either
+reversed Either->LungCancer
+reversed LungCancer->Smoking
+run18:
+extra Xray->LungCancer
+missing Smoking->Bronchitis
+missing Tuberculosis->Either
+reversed Either->LungCancer
+reversed LungCancer->Smoking
+run19:
+extra Dyspnea->LungCancer
+missing Smoking->Bronchitis
+missing Tuberculosis->Either
+reversed Either->LungCancer
+reversed LungCancer->Smoking
+run20:
+missing Smoking->Bronchitis
+missing Tuberculosis->Either
+reversed Either->LungCancer
+reversed LungCancer->Smoking
+run21:
+missing Smoking->Bronchitis
+missing Tuberculosis->Either
+reversed Either->LungCancer
+reversed LungCancer->Smoking
+run22:
+extra Dyspnea->LungCancer
+missing Smoking->Bronchitis
+missing Tuberculosis->Either
+reversed Either->LungCancer
+reversed LungCancer->Smoking
+run23:
+extra Dyspnea->Smoking
+extra Dyspnea->LungCancer
+missing Smoking->Bronchitis
+missing Tuberculosis->Either
+reversed Either->LungCancer
+reversed LungCancer->Smoking
+run24:
+missing Smoking->Bronchitis
+missing Tuberculosis->Either
+reversed Either->LungCancer
+reversed LungCancer->Smoking
+run25:
+extra Dyspnea->LungCancer
+missing Smoking->Bronchitis
+missing Tuberculosis->Either
+reversed Either->LungCancer
+reversed LungCancer->Smoking
+run26:
+extra Xray->LungCancer
+missing Smoking->Bronchitis
+missing Tuberculosis->Either
+reversed Either->LungCancer
+reversed LungCancer->Smoking
+run27:
+missing Smoking->Bronchitis
+missing Tuberculosis->Either
+reversed Either->LungCancer
+reversed LungCancer->Smoking
+run28:
+extra Dyspnea->Smoking
+missing Smoking->Bronchitis
+missing Tuberculosis->Either
+reversed Either->LungCancer
+reversed LungCancer->Smoking
+run29:
+extra LungCancer->Dyspnea
+extra Dyspnea->Smoking
+missing Smoking->Bronchitis
+missing Tuberculosis->Either
+reversed Either->LungCancer
+reversed LungCancer->Smoking
+run30:
+extra Dyspnea->Smoking
+missing Smoking->Bronchitis
+missing Tuberculosis->Either
+reversed Either->LungCancer
+reversed LungCancer->Smoking
+run31:
+extra Dyspnea->LungCancer
+missing Smoking->Bronchitis
+missing Tuberculosis->Either
+reversed Either->LungCancer
+reversed LungCancer->Smoking
+run32:
+extra Xray->LungCancer
+missing Smoking->Bronchitis
+missing Tuberculosis->Either
+reversed Either->LungCancer
+reversed LungCancer->Smoking
+run33:
+extra Xray->LungCancer
+missing Smoking->Bronchitis
+missing Tuberculosis->Either
+reversed Either->LungCancer
+reversed LungCancer->Smoking
+run34:
+extra Dyspnea->Smoking
+missing Smoking->Bronchitis
+missing Tuberculosis->Either
+reversed Either->LungCancer
+reversed LungCancer->Smoking
+run35:
+missing Smoking->Bronchitis
+missing Tuberculosis->Either
+reversed Either->LungCancer
+reversed LungCancer->Smoking
+run36:
+missing Smoking->Bronchitis
+missing Tuberculosis->Either
+reversed Either->LungCancer
+reversed LungCancer->Smoking
+run37:
+missing Smoking->Bronchitis
+missing Tuberculosis->Either
+reversed Either->LungCancer
+reversed LungCancer->Smoking
+run38:
+extra Xray->LungCancer
+extra Dyspnea->Smoking
+missing Smoking->Bronchitis
+missing Tuberculosis->Either
+reversed Either->LungCancer
+reversed LungCancer->Smoking
+reversed Dyspnea->Bronchitis
+run39:
+extra Dyspnea->Smoking
+missing Smoking->Bronchitis
+missing Tuberculosis->Either
+reversed Either->LungCancer
+reversed LungCancer->Smoking
+run40:
+missing Smoking->Bronchitis
+missing Tuberculosis->Either
+reversed Either->LungCancer
+reversed LungCancer->Smoking
+run41:
+extra Dyspnea->Smoking
+missing Smoking->Bronchitis
+missing Tuberculosis->Either
+reversed Either->LungCancer
+reversed LungCancer->Smoking
+run42:
+extra LungCancer->Dyspnea
+missing Smoking->Bronchitis
+missing Tuberculosis->Either
+reversed Either->LungCancer
+reversed LungCancer->Smoking
+run43:
+extra Dyspnea->Smoking
+extra Dyspnea->LungCancer
+missing Smoking->Bronchitis
+missing Tuberculosis->Either
+reversed Either->LungCancer
+reversed LungCancer->Smoking
+run44:
+extra Dyspnea->Smoking
+extra Dyspnea->LungCancer
+missing Smoking->Bronchitis
+missing Tuberculosis->Either
+reversed Either->LungCancer
+reversed LungCancer->Smoking
+run45:
+missing Smoking->Bronchitis
+missing Tuberculosis->Either
+reversed Either->LungCancer
+reversed LungCancer->Smoking
+run46:
+extra Dyspnea->LungCancer
+missing Smoking->Bronchitis
+missing Tuberculosis->Either
+reversed Either->LungCancer
+reversed LungCancer->Smoking
+run47:
+missing Smoking->Bronchitis
+missing Tuberculosis->Either
+reversed Either->LungCancer
+reversed LungCancer->Smoking
+run48:
+extra Xray->LungCancer
+extra Dyspnea->Smoking
+missing Smoking->Bronchitis
+missing Tuberculosis->Either
+reversed Either->LungCancer
+reversed LungCancer->Smoking
+run49:
+extra Dyspnea->Smoking
+extra Dyspnea->LungCancer
+missing Smoking->Bronchitis
+missing Tuberculosis->Either
+reversed Either->LungCancer
+reversed LungCancer->Smoking
+run50:
+missing Smoking->Bronchitis
+missing Tuberculosis->Either
+reversed Either->LungCancer
+reversed LungCancer->Smoking
+run51:
+missing Smoking->Bronchitis
+missing Tuberculosis->Either
+reversed Either->LungCancer
+reversed LungCancer->Smoking
+run52:
+extra Dyspnea->Smoking
+missing Smoking->Bronchitis
+missing Tuberculosis->Either
+reversed Either->LungCancer
+reversed LungCancer->Smoking
+run53:
+extra Dyspnea->Smoking
+missing Smoking->Bronchitis
+missing Tuberculosis->Either
+reversed Either->LungCancer
+reversed LungCancer->Smoking
+run54:
+extra Dyspnea->Smoking
+missing Smoking->Bronchitis
+missing Tuberculosis->Either
+reversed Either->LungCancer
+reversed LungCancer->Smoking
+run55:
+extra Dyspnea->Smoking
+missing Smoking->Bronchitis
+missing Tuberculosis->Either
+reversed Either->LungCancer
+reversed LungCancer->Smoking
+run56:
+missing Smoking->Bronchitis
+missing Tuberculosis->Either
+reversed Either->LungCancer
+reversed LungCancer->Smoking
+run57:
+extra Dyspnea->LungCancer
+missing Smoking->Bronchitis
+missing Tuberculosis->Either
+reversed Either->LungCancer
+reversed LungCancer->Smoking
+reversed Dyspnea->Bronchitis
+run58:
+missing Smoking->Bronchitis
+missing Tuberculosis->Either
+reversed Either->LungCancer
+reversed LungCancer->Smoking
+run59:
+missing Smoking->Bronchitis
+missing Tuberculosis->Either
+reversed Either->LungCancer
+reversed LungCancer->Smoking
+run60:
+missing Smoking->Bronchitis
+missing Tuberculosis->Either
+reversed Either->LungCancer
+reversed LungCancer->Smoking
+run61:
+missing Smoking->Bronchitis
+missing Tuberculosis->Either
+reversed Either->LungCancer
+reversed LungCancer->Smoking
+run62:
+extra Dyspnea->Smoking
+missing Smoking->Bronchitis
+missing Tuberculosis->Either
+reversed Either->LungCancer
+reversed LungCancer->Smoking
+run63:
+missing Smoking->Bronchitis
+missing Tuberculosis->Either
+reversed Either->LungCancer
+reversed LungCancer->Smoking
+run64:
+extra Dyspnea->Smoking
+missing Smoking->Bronchitis
+missing Tuberculosis->Either
+reversed Either->LungCancer
+reversed LungCancer->Smoking
+run65:
+missing Smoking->Bronchitis
+missing Tuberculosis->Either
+reversed Either->LungCancer
+reversed LungCancer->Smoking
+run66:
+extra Dyspnea->Smoking
+missing Smoking->Bronchitis
+missing Tuberculosis->Either
+reversed Either->LungCancer
+reversed LungCancer->Smoking
+run67:
+missing Smoking->Bronchitis
+missing Tuberculosis->Either
+reversed Either->LungCancer
+reversed LungCancer->Smoking
+run68:
+missing Smoking->Bronchitis
+missing Tuberculosis->Either
+reversed Either->LungCancer
+reversed LungCancer->Smoking
+run69:
+missing Smoking->Bronchitis
+missing Tuberculosis->Either
+reversed Either->LungCancer
+reversed LungCancer->Smoking
+run70:
+missing Smoking->Bronchitis
+missing Tuberculosis->Either
+reversed Either->LungCancer
+reversed LungCancer->Smoking
+run71:
+extra Dyspnea->Smoking
+missing Smoking->Bronchitis
+missing Tuberculosis->Either
+reversed Either->LungCancer
+reversed LungCancer->Smoking
+run72:
+missing Smoking->Bronchitis
+missing Tuberculosis->Either
+reversed Either->LungCancer
+reversed LungCancer->Smoking
+run73:
+missing Smoking->Bronchitis
+missing Tuberculosis->Either
+reversed Either->LungCancer
+reversed LungCancer->Smoking
+run74:
+extra Dyspnea->LungCancer
+missing Smoking->Bronchitis
+missing Tuberculosis->Either
+reversed Either->LungCancer
+reversed LungCancer->Smoking
+run75:
+missing Smoking->Bronchitis
+missing Tuberculosis->Either
+reversed Either->LungCancer
+reversed LungCancer->Smoking
+run76:
+missing Smoking->Bronchitis
+missing Tuberculosis->Either
+reversed Either->LungCancer
+reversed LungCancer->Smoking
+run77:
+extra Dyspnea->Smoking
+missing Smoking->Bronchitis
+missing Tuberculosis->Either
+reversed Either->LungCancer
+reversed LungCancer->Smoking
+run78:
+extra Xray->LungCancer
+extra Dyspnea->Smoking
+missing Smoking->Bronchitis
+missing Tuberculosis->Either
+reversed Either->LungCancer
+reversed LungCancer->Smoking
+run79:
+missing Smoking->Bronchitis
+missing Tuberculosis->Either
+reversed Either->LungCancer
+reversed LungCancer->Smoking
+run80:
+extra Dyspnea->LungCancer
+missing Smoking->Bronchitis
+missing Tuberculosis->Either
+reversed Either->LungCancer
+reversed LungCancer->Smoking
+run81:
+extra Dyspnea->LungCancer
+missing Smoking->Bronchitis
+missing Tuberculosis->Either
+reversed Either->LungCancer
+reversed LungCancer->Smoking
+run82:
+extra Dyspnea->Smoking
+missing Smoking->Bronchitis
+missing Tuberculosis->Either
+reversed Either->LungCancer
+reversed LungCancer->Smoking
+run83:
+missing Smoking->Bronchitis
+missing Tuberculosis->Either
+reversed Either->LungCancer
+reversed LungCancer->Smoking
+run84:
+extra Dyspnea->Smoking
+missing Smoking->Bronchitis
+missing Tuberculosis->Either
+reversed Either->LungCancer
+reversed LungCancer->Smoking
+run85:
+extra Dyspnea->Smoking
+missing Smoking->Bronchitis
+missing Tuberculosis->Either
+reversed Either->LungCancer
+reversed LungCancer->Smoking
+reversed Dyspnea->Bronchitis
+run86:
+extra Dyspnea->Smoking
+missing Smoking->Bronchitis
+missing Tuberculosis->Either
+reversed Either->LungCancer
+reversed LungCancer->Smoking
+run87:
+extra Dyspnea->Smoking
+missing Smoking->Bronchitis
+missing Tuberculosis->Either
+reversed Either->LungCancer
+reversed LungCancer->Smoking
+run88:
+extra Dyspnea->Smoking
+extra Dyspnea->LungCancer
+missing Smoking->Bronchitis
+missing Tuberculosis->Either
+reversed Either->LungCancer
+reversed LungCancer->Smoking
+run89:
+missing Smoking->Bronchitis
+missing Tuberculosis->Either
+reversed Either->LungCancer
+reversed LungCancer->Smoking
+run90:
+extra Dyspnea->Smoking
+extra Dyspnea->LungCancer
+missing Smoking->Bronchitis
+missing Tuberculosis->Either
+reversed Either->LungCancer
+reversed LungCancer->Smoking
+run91:
+extra Dyspnea->Smoking
+missing Smoking->Bronchitis
+missing Tuberculosis->Either
+reversed Either->LungCancer
+reversed LungCancer->Smoking
+run92:
+missing Smoking->Bronchitis
+missing Tuberculosis->Either
+reversed Either->LungCancer
+reversed LungCancer->Smoking
+run93:
+missing Smoking->Bronchitis
+missing Tuberculosis->Either
+reversed Either->LungCancer
+reversed LungCancer->Smoking
+run94:
+missing Smoking->Bronchitis
+missing Tuberculosis->Either
+reversed Either->LungCancer
+reversed LungCancer->Smoking
+run95:
+extra Dyspnea->Smoking
+missing Smoking->Bronchitis
+missing Tuberculosis->Either
+reversed Either->LungCancer
+reversed LungCancer->Smoking
+run96:
+extra Dyspnea->Smoking
+missing Smoking->Bronchitis
+missing Tuberculosis->Either
+reversed Either->LungCancer
+reversed LungCancer->Smoking
+run97:
+extra Dyspnea->Smoking
+missing Smoking->Bronchitis
+missing Tuberculosis->Either
+reversed Either->LungCancer
+reversed LungCancer->Smoking
+run98:
+extra Dyspnea->Smoking
+extra Dyspnea->LungCancer
+missing Smoking->Bronchitis
+missing Tuberculosis->Either
+reversed Either->LungCancer
+reversed LungCancer->Smoking
+run99:
+missing Smoking->Bronchitis
+missing Tuberculosis->Either
+reversed Either->LungCancer
+reversed LungCancer->Smoking

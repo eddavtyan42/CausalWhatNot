@@ -1,0 +1,74 @@
+[
+  {
+    "source": "PKC",
+    "target": "P38"
+  },
+  {
+    "source": "Plcg",
+    "target": "PIP2"
+  },
+  {
+    "source": "Plcg",
+    "target": "Mek"
+  },
+  {
+    "source": "PKA",
+    "target": "P38"
+  },
+  {
+    "source": "PIP3",
+    "target": "Plcg"
+  },
+  {
+    "source": "PIP3",
+    "target": "PIP2"
+  },
+  {
+    "source": "Jnk",
+    "target": "PKC"
+  },
+  {
+    "source": "Jnk",
+    "target": "PKA"
+  },
+  {
+    "source": "Jnk",
+    "target": "PIP3"
+  },
+  {
+    "source": "Raf",
+    "target": "PKC"
+  },
+  {
+    "source": "Raf",
+    "target": "PKA"
+  },
+  {
+    "source": "Raf",
+    "target": "Mek"
+  },
+  {
+    "source": "Mek",
+    "target": "PKC"
+  },
+  {
+    "source": "Mek",
+    "target": "PKA"
+  },
+  {
+    "source": "Erk",
+    "target": "PKA"
+  },
+  {
+    "source": "Erk",
+    "target": "Mek"
+  },
+  {
+    "source": "Akt",
+    "target": "PKA"
+  },
+  {
+    "source": "Akt",
+    "target": "Erk"
+  }
+]

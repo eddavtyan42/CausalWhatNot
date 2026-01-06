@@ -1,0 +1,900 @@
+run0:
+extra Jnk->Raf
+extra Jnk->Erk
+extra PKC->Plcg
+missing PKA->Jnk
+reversed P38->PKA
+reversed P38->PKC
+run1:
+extra Mek->Akt
+missing PKC->PKA
+missing PKA->Mek
+reversed Raf->PKA
+reversed Raf->PKC
+reversed Jnk->PKA
+reversed P38->PKA
+reversed Jnk->PKC
+reversed P38->PKC
+run2:
+extra Jnk->Raf
+extra Jnk->Erk
+missing PKA->Jnk
+reversed P38->PKA
+reversed P38->PKC
+run3:
+missing PKC->PKA
+missing PKA->Mek
+reversed Raf->PKA
+reversed Raf->PKC
+reversed Jnk->PKA
+reversed P38->PKA
+reversed Jnk->PKC
+reversed P38->PKC
+run4:
+extra Jnk->Mek
+extra Plcg->Raf
+reversed P38->PKA
+reversed P38->PKC
+run5:
+extra Jnk->Raf
+extra Jnk->Erk
+extra P38->PIP3
+missing PKA->Mek
+missing PKA->Jnk
+reversed P38->PKA
+reversed Raf->PKA
+reversed P38->PKC
+run6:
+extra Jnk->Raf
+extra Jnk->PIP3
+extra Jnk->Erk
+missing PKA->Jnk
+reversed P38->PKA
+reversed Raf->PKA
+reversed P38->PKC
+run7:
+missing PKC->PKA
+missing PKA->Mek
+reversed Raf->PKA
+reversed Raf->PKC
+reversed Jnk->PKA
+reversed P38->PKA
+reversed Jnk->PKC
+reversed P38->PKC
+run8:
+extra Jnk->Raf
+extra Jnk->Mek
+missing PKA->Jnk
+reversed P38->PKA
+reversed P38->PKC
+run9:
+extra PIP3->P38
+run10:
+missing PKC->PKA
+missing PKA->Mek
+reversed Raf->PKA
+reversed Raf->PKC
+reversed Jnk->PKA
+reversed P38->PKA
+reversed Jnk->PKC
+reversed P38->PKC
+run11:
+missing PKA->Mek
+reversed Raf->PKA
+reversed Jnk->PKA
+reversed P38->PKA
+reversed Jnk->PKC
+reversed P38->PKC
+run12:
+missing PKC->PKA
+missing PKA->Mek
+reversed Raf->PKA
+reversed Raf->PKC
+reversed Jnk->PKA
+reversed P38->PKA
+reversed Jnk->PKC
+reversed P38->PKC
+run13:
+missing PKC->PKA
+missing PKA->Mek
+reversed Raf->PKA
+reversed Raf->PKC
+reversed Jnk->PKA
+reversed P38->PKA
+reversed Jnk->PKC
+reversed P38->PKC
+run14:
+missing PKC->PKA
+missing PKA->Mek
+reversed Raf->PKA
+reversed Raf->PKC
+reversed Jnk->PKA
+reversed P38->PKA
+reversed Jnk->PKC
+reversed P38->PKC
+run15:
+extra PIP3->P38
+missing PKC->PKA
+reversed Raf->PKA
+reversed Raf->PKC
+reversed Jnk->PKA
+reversed P38->PKA
+reversed Jnk->PKC
+reversed P38->PKC
+run16:
+extra Raf->PIP3
+missing PKA->Mek
+reversed Raf->PKA
+reversed Raf->PKC
+reversed Jnk->PKA
+reversed P38->PKA
+reversed Jnk->PKC
+reversed P38->PKC
+run17:
+extra PKC->PIP3
+missing PKC->PKA
+reversed Raf->PKA
+reversed Erk->PKA
+reversed Raf->PKC
+reversed Mek->PKA
+reversed Mek->PKC
+reversed Akt->PKA
+reversed Jnk->PKA
+reversed Akt->Erk
+reversed Erk->Mek
+reversed Jnk->PKC
+run18:
+missing PKA->Mek
+reversed Raf->PKA
+reversed Jnk->PKA
+reversed P38->PKA
+reversed Jnk->PKC
+reversed P38->PKC
+run19:
+missing PKC->PKA
+missing PKA->Mek
+reversed Raf->PKA
+reversed Raf->PKC
+reversed Jnk->PKA
+reversed P38->PKA
+reversed Jnk->PKC
+reversed P38->PKC
+run20:
+missing PKC->PKA
+reversed Raf->PKA
+reversed Erk->PKA
+reversed Raf->PKC
+reversed Mek->PKA
+reversed Mek->PKC
+reversed Akt->PKA
+reversed Jnk->PKA
+reversed Akt->Erk
+reversed Erk->Mek
+reversed Jnk->PKC
+run21:
+missing PKA->Mek
+reversed Raf->PKA
+reversed Jnk->PKA
+reversed P38->PKA
+reversed Jnk->PKC
+reversed P38->PKC
+run22:
+extra Jnk->PIP3
+extra Plcg->Mek
+missing PKC->PKA
+reversed Raf->PKA
+reversed Erk->PKA
+reversed Raf->PKC
+reversed Mek->PKA
+reversed Mek->PKC
+reversed Akt->PKA
+reversed Jnk->PKA
+reversed Akt->Erk
+reversed PIP3->Plcg
+reversed Erk->Mek
+reversed Jnk->PKC
+run23:
+extra PIP3->Jnk
+missing PKC->PKA
+missing PKA->Mek
+reversed Raf->PKA
+reversed Raf->PKC
+reversed PIP2->PIP3
+reversed Jnk->PKA
+reversed P38->PKA
+reversed Jnk->PKC
+reversed P38->PKC
+run24:
+missing PKA->Mek
+reversed Raf->PKA
+reversed Jnk->PKA
+reversed P38->PKA
+reversed Jnk->PKC
+reversed P38->PKC
+run25:
+missing PKA->Mek
+reversed Raf->PKA
+reversed Jnk->PKA
+reversed P38->PKA
+reversed Jnk->PKC
+reversed P38->PKC
+run26:
+extra Jnk->Raf
+extra Jnk->Mek
+missing PKA->Jnk
+reversed P38->PKA
+reversed P38->PKC
+run27:
+extra Mek->PIP2
+reversed Raf->PKA
+reversed Mek->PKA
+reversed Jnk->PKA
+reversed P38->PKA
+reversed Jnk->PKC
+reversed P38->PKC
+run28:
+extra PKC->PIP3
+missing PKA->Mek
+reversed Raf->PKA
+reversed Raf->PKC
+reversed Jnk->PKA
+reversed P38->PKA
+reversed Jnk->PKC
+reversed P38->PKC
+run29:
+reversed Raf->PKA
+reversed Jnk->PKA
+reversed P38->PKA
+reversed Jnk->PKC
+reversed P38->PKC
+run30:
+extra Jnk->Raf
+extra PIP3->Jnk
+extra Jnk->Erk
+missing PKA->Mek
+missing PKA->Jnk
+reversed PIP2->PIP3
+reversed P38->PKA
+reversed Raf->PKA
+reversed P38->PKC
+run31:
+extra Jnk->Raf
+extra Jnk->Erk
+missing PKA->Mek
+missing PKA->Jnk
+reversed P38->PKA
+reversed Raf->PKA
+reversed P38->PKC
+run32:
+missing PKC->PKA
+reversed Raf->PKA
+reversed Erk->PKA
+reversed Raf->PKC
+reversed Mek->PKA
+reversed Mek->PKC
+reversed Akt->PKA
+reversed Jnk->PKA
+reversed Akt->Erk
+reversed Erk->Mek
+reversed Jnk->PKC
+run33:
+extra Jnk->Raf
+extra Jnk->Mek
+extra PIP3->P38
+extra Akt->PKC
+missing PKA->Mek
+missing PKA->Jnk
+reversed Raf->PKA
+reversed PIP2->PIP3
+reversed Akt->PKA
+reversed Akt->Erk
+reversed P38->PKA
+reversed P38->PKC
+run34:
+missing PKC->PKA
+missing PKA->Mek
+reversed Raf->PKA
+reversed Raf->PKC
+reversed Jnk->PKA
+reversed P38->PKA
+reversed Jnk->PKC
+reversed P38->PKC
+run35:
+run36:
+missing PKA->Mek
+reversed Raf->PKA
+reversed Raf->PKC
+reversed Akt->PKA
+reversed PKA->PKC
+reversed Jnk->PKA
+reversed Akt->Erk
+reversed P38->PKA
+reversed Jnk->PKC
+reversed P38->PKC
+run37:
+missing PKC->PKA
+missing PKA->Mek
+reversed Raf->PKA
+reversed Raf->PKC
+reversed Jnk->PKA
+reversed P38->PKA
+reversed Jnk->PKC
+reversed P38->PKC
+run38:
+missing PKC->PKA
+reversed Raf->PKA
+reversed Erk->PKA
+reversed Raf->PKC
+reversed Mek->PKA
+reversed Mek->PKC
+reversed Akt->PKA
+reversed Jnk->PKA
+reversed Akt->Erk
+reversed Erk->Mek
+reversed Jnk->PKC
+run39:
+extra Jnk->Mek
+extra Plcg->Akt
+extra Jnk->PIP2
+reversed Raf->PKA
+reversed Erk->PKA
+reversed Raf->PKC
+reversed Akt->PKA
+reversed P38->PKA
+reversed Akt->Erk
+reversed PIP3->Plcg
+reversed Erk->Mek
+reversed P38->PKC
+run40:
+missing PKC->PKA
+missing PKA->Mek
+reversed Raf->PKA
+reversed Raf->PKC
+reversed Jnk->PKA
+reversed P38->PKA
+reversed Jnk->PKC
+reversed P38->PKC
+run41:
+extra Plcg->Erk
+extra Raf->PIP2
+missing PKA->Mek
+reversed Raf->PKA
+reversed Raf->PKC
+reversed Jnk->PKA
+reversed PIP3->Plcg
+reversed P38->PKA
+reversed Jnk->PKC
+reversed P38->PKC
+run42:
+extra P38->Mek
+reversed P38->PKA
+reversed Raf->PKA
+reversed Jnk->PKC
+reversed Jnk->PKA
+run43:
+extra Jnk->Raf
+extra Jnk->Erk
+missing PKA->Mek
+missing PKA->Jnk
+reversed P38->PKA
+reversed Raf->PKA
+reversed P38->PKC
+run44:
+missing PKC->PKA
+reversed Raf->PKA
+reversed Erk->PKA
+reversed Raf->PKC
+reversed Mek->PKA
+reversed Mek->PKC
+reversed Akt->PKA
+reversed Jnk->PKA
+reversed Akt->Erk
+reversed Erk->Mek
+reversed Jnk->PKC
+run45:
+missing PKC->PKA
+missing PKA->Mek
+reversed Raf->PKA
+reversed Raf->PKC
+reversed Jnk->PKA
+reversed P38->PKA
+reversed Jnk->PKC
+reversed P38->PKC
+run46:
+missing PKA->Mek
+reversed Raf->PKA
+reversed Jnk->PKA
+reversed P38->PKA
+reversed Jnk->PKC
+reversed P38->PKC
+run47:
+missing PKA->Mek
+reversed Raf->PKA
+reversed Raf->PKC
+reversed Akt->PKA
+reversed PKA->PKC
+reversed Jnk->PKA
+reversed Akt->Erk
+reversed P38->PKA
+reversed Jnk->PKC
+reversed P38->PKC
+run48:
+extra Plcg->Mek
+reversed PIP3->Plcg
+run49:
+extra PIP3->P38
+missing PKC->PKA
+reversed Raf->PKA
+reversed Raf->PKC
+reversed Jnk->PKA
+reversed P38->PKA
+reversed Jnk->PKC
+reversed P38->PKC
+run50:
+extra PIP2->P38
+missing PKA->Mek
+reversed PIP2->Plcg
+reversed Raf->PKA
+reversed Raf->PKC
+reversed PIP2->PIP3
+reversed Akt->PKA
+reversed PKA->PKC
+reversed Jnk->PKA
+reversed Akt->Erk
+reversed P38->PKA
+reversed Jnk->PKC
+reversed P38->PKC
+run51:
+extra PKC->Akt
+missing PKC->PKA
+missing PKA->Mek
+reversed Raf->PKA
+reversed Jnk->PKA
+reversed P38->PKA
+reversed Jnk->PKC
+reversed P38->PKC
+run52:
+missing PKC->PKA
+missing PKA->Mek
+reversed Raf->PKA
+reversed Raf->PKC
+reversed Jnk->PKA
+reversed P38->PKA
+reversed Jnk->PKC
+reversed P38->PKC
+run53:
+missing PKC->PKA
+missing PKA->Mek
+reversed Raf->PKA
+reversed Raf->PKC
+reversed Jnk->PKA
+reversed P38->PKA
+reversed Jnk->PKC
+reversed P38->PKC
+run54:
+extra Jnk->PIP2
+reversed Raf->PKA
+reversed Erk->PKA
+reversed Raf->PKC
+reversed Mek->PKA
+reversed Mek->PKC
+reversed Akt->PKA
+reversed PKA->PKC
+reversed Akt->Erk
+reversed P38->PKA
+reversed Erk->Mek
+reversed Jnk->PKC
+reversed P38->PKC
+run55:
+missing PKC->PKA
+reversed Raf->PKA
+reversed Erk->PKA
+reversed Raf->PKC
+reversed Mek->PKA
+reversed Mek->PKC
+reversed Akt->PKA
+reversed Jnk->PKA
+reversed Akt->Erk
+reversed Erk->Mek
+reversed Jnk->PKC
+run56:
+missing PKC->PKA
+missing PKA->Mek
+reversed Raf->PKA
+reversed Raf->PKC
+reversed Jnk->PKA
+reversed P38->PKA
+reversed Jnk->PKC
+reversed P38->PKC
+run57:
+extra Jnk->Raf
+extra Jnk->Mek
+extra PIP3->PKA
+extra Plcg->Raf
+missing Plcg->PIP3
+missing PKA->Jnk
+reversed P38->PKA
+reversed P38->PKC
+run58:
+extra PIP2->PKA
+extra P38->PIP3
+reversed PIP2->PIP3
+reversed P38->PKA
+reversed PIP2->Plcg
+reversed P38->PKC
+run59:
+missing PKC->PKA
+missing PKA->Mek
+reversed Raf->PKA
+reversed Raf->PKC
+reversed Jnk->PKA
+reversed P38->PKA
+reversed Jnk->PKC
+reversed P38->PKC
+run60:
+extra PKC->Akt
+missing PKC->PKA
+missing PKA->Mek
+reversed Raf->PKA
+reversed Jnk->PKA
+reversed P38->PKA
+reversed Jnk->PKC
+reversed P38->PKC
+run61:
+missing PKC->PKA
+reversed Raf->PKA
+reversed Raf->PKC
+reversed Jnk->PKA
+reversed P38->PKA
+reversed Jnk->PKC
+reversed P38->PKC
+run62:
+extra PIP2->Erk
+missing PKA->Mek
+reversed PIP2->Plcg
+reversed Raf->PKA
+reversed Jnk->PKA
+reversed PIP3->Plcg
+reversed P38->PKA
+reversed Jnk->PKC
+reversed P38->PKC
+run63:
+missing PKC->PKA
+reversed Raf->PKA
+reversed Raf->PKC
+reversed Jnk->PKA
+reversed P38->PKA
+reversed Jnk->PKC
+reversed P38->PKC
+run64:
+missing PKA->Mek
+reversed Raf->PKA
+reversed Jnk->PKA
+reversed P38->PKA
+reversed Jnk->PKC
+reversed P38->PKC
+run65:
+extra Plcg->Raf
+missing PKC->PKA
+missing PKA->Mek
+reversed PIP2->Plcg
+reversed Raf->PKA
+reversed Raf->PKC
+reversed Jnk->PKA
+reversed PIP3->Plcg
+reversed P38->PKA
+reversed Jnk->PKC
+reversed P38->PKC
+run66:
+missing PKC->PKA
+reversed Raf->PKA
+reversed Erk->PKA
+reversed Raf->PKC
+reversed Mek->PKA
+reversed Mek->PKC
+reversed Akt->PKA
+reversed Jnk->PKA
+reversed Akt->Erk
+reversed Erk->Mek
+reversed Jnk->PKC
+run67:
+extra Jnk->PIP2
+missing PKC->PKA
+missing PKA->Mek
+reversed Raf->PKA
+reversed Raf->PKC
+reversed Jnk->PKA
+reversed P38->PKA
+reversed Jnk->PKC
+reversed P38->PKC
+run68:
+extra Jnk->Mek
+extra PIP2->PKA
+missing PKA->Mek
+reversed Raf->PKA
+reversed PIP2->PIP3
+reversed Jnk->PKA
+reversed P38->PKA
+reversed P38->PKC
+run69:
+missing PKC->PKA
+reversed Raf->PKA
+reversed Erk->PKA
+reversed Raf->PKC
+reversed Mek->PKA
+reversed Mek->PKC
+reversed Akt->PKA
+reversed Jnk->PKA
+reversed Akt->Erk
+reversed Erk->Mek
+reversed Jnk->PKC
+run70:
+extra Jnk->Raf
+extra Jnk->Erk
+missing PKA->Mek
+missing PKA->Jnk
+reversed P38->PKA
+reversed Raf->PKA
+reversed P38->PKC
+run71:
+missing PKC->PKA
+missing PKA->Mek
+reversed Raf->PKA
+reversed Raf->PKC
+reversed Jnk->PKA
+reversed P38->PKA
+reversed Jnk->PKC
+reversed P38->PKC
+run72:
+extra PIP3->P38
+run73:
+extra PIP3->P38
+extra Akt->PKC
+missing PKA->Mek
+reversed Raf->PKA
+reversed Akt->PKA
+reversed Jnk->PKA
+reversed Akt->Erk
+reversed P38->PKA
+reversed Jnk->PKC
+reversed P38->PKC
+run74:
+missing PKA->Mek
+reversed Raf->PKA
+reversed Jnk->PKA
+reversed P38->PKA
+reversed Jnk->PKC
+reversed P38->PKC
+run75:
+extra PIP2->PKC
+missing PKA->Mek
+reversed PIP2->Plcg
+reversed Raf->PKA
+reversed PIP2->PIP3
+reversed Jnk->PKA
+reversed P38->PKA
+reversed Jnk->PKC
+reversed P38->PKC
+run76:
+missing PKA->Mek
+reversed Raf->PKA
+reversed Jnk->PKA
+reversed P38->PKA
+reversed Jnk->PKC
+reversed P38->PKC
+run77:
+extra PKC->PIP2
+extra Jnk->Raf
+extra Jnk->Erk
+missing PKA->Mek
+missing PKA->Jnk
+reversed P38->PKA
+reversed Raf->PKA
+reversed P38->PKC
+run78:
+extra Plcg->Raf
+missing PKA->Mek
+reversed Raf->PKA
+reversed Jnk->PKA
+reversed PIP3->Plcg
+reversed P38->PKA
+reversed Jnk->PKC
+reversed P38->PKC
+run79:
+extra Plcg->Mek
+missing PKC->PKA
+reversed Raf->PKA
+reversed Raf->PKC
+reversed Jnk->PKA
+reversed P38->PKA
+reversed Jnk->PKC
+reversed P38->PKC
+run80:
+missing PKA->Mek
+reversed Raf->PKA
+reversed Jnk->PKA
+reversed P38->PKA
+reversed Jnk->PKC
+reversed P38->PKC
+run81:
+missing PKA->Mek
+reversed Raf->PKA
+reversed Jnk->PKA
+reversed P38->PKA
+reversed Jnk->PKC
+reversed P38->PKC
+run82:
+missing PKC->PKA
+missing PKA->Mek
+reversed Raf->PKA
+reversed Raf->PKC
+reversed Jnk->PKA
+reversed P38->PKA
+reversed Jnk->PKC
+reversed P38->PKC
+run83:
+extra PIP3->Jnk
+missing PKC->PKA
+reversed Raf->PKA
+reversed Raf->PKC
+reversed PIP2->PIP3
+reversed Jnk->PKA
+reversed P38->PKA
+reversed Jnk->PKC
+reversed P38->PKC
+run84:
+missing PKC->PKA
+missing PKA->Mek
+reversed Raf->PKA
+reversed Raf->PKC
+reversed Jnk->PKA
+reversed P38->PKA
+reversed Jnk->PKC
+reversed P38->PKC
+run85:
+missing PKC->PKA
+missing PKA->Mek
+reversed Raf->PKA
+reversed Raf->PKC
+reversed Jnk->PKA
+reversed P38->PKA
+reversed Jnk->PKC
+reversed P38->PKC
+run86:
+missing PKC->PKA
+reversed Raf->PKA
+reversed Erk->PKA
+reversed Raf->PKC
+reversed Mek->PKA
+reversed Mek->PKC
+reversed Akt->PKA
+reversed Jnk->PKA
+reversed Akt->Erk
+reversed Erk->Mek
+reversed Jnk->PKC
+run87:
+extra Jnk->Raf
+extra Jnk->Erk
+missing PKA->Jnk
+reversed P38->PKA
+reversed P38->PKC
+run88:
+extra PIP2->P38
+missing PKC->PKA
+reversed PIP2->Plcg
+reversed Raf->PKA
+reversed Raf->PKC
+reversed PIP2->PIP3
+reversed Jnk->PKA
+reversed P38->PKA
+reversed Jnk->PKC
+reversed P38->PKC
+run89:
+extra Plcg->Mek
+missing PKC->PKA
+missing PKA->Mek
+reversed Raf->PKA
+reversed Raf->PKC
+reversed Jnk->PKA
+reversed PIP3->Plcg
+reversed P38->PKA
+reversed Jnk->PKC
+reversed P38->PKC
+run90:
+extra Plcg->Raf
+missing PKC->PKA
+missing PKA->Mek
+reversed Raf->PKA
+reversed Raf->PKC
+reversed Jnk->PKA
+reversed PIP3->Plcg
+reversed P38->PKA
+reversed Jnk->PKC
+reversed P38->PKC
+run91:
+extra Plcg->Erk
+missing PKA->Mek
+reversed Raf->PKA
+reversed Jnk->PKA
+reversed PIP3->Plcg
+reversed P38->PKA
+reversed Jnk->PKC
+reversed P38->PKC
+run92:
+extra PIP3->PKC
+missing PKC->PKA
+reversed Raf->PKA
+reversed Raf->PKC
+reversed Jnk->PKA
+reversed P38->PKA
+reversed Jnk->PKC
+reversed P38->PKC
+run93:
+extra Jnk->PIP2
+reversed Raf->PKA
+reversed Erk->PKA
+reversed Raf->PKC
+reversed Mek->PKA
+reversed Mek->PKC
+reversed Akt->PKA
+reversed Jnk->PKA
+reversed Akt->Erk
+reversed P38->PKA
+reversed Erk->Mek
+reversed P38->PKC
+run94:
+missing PKA->Mek
+reversed Raf->PKA
+reversed Jnk->PKA
+reversed P38->PKA
+reversed Jnk->PKC
+reversed P38->PKC
+run95:
+missing PKC->PKA
+reversed Raf->PKA
+reversed Raf->PKC
+reversed Jnk->PKA
+reversed P38->PKA
+reversed Jnk->PKC
+reversed P38->PKC
+run96:
+missing PKC->PKA
+missing PKA->Mek
+reversed Raf->PKA
+reversed Raf->PKC
+reversed Jnk->PKA
+reversed P38->PKA
+reversed Jnk->PKC
+reversed P38->PKC
+run97:
+missing PKC->PKA
+reversed Raf->PKA
+reversed Erk->PKA
+reversed Raf->PKC
+reversed Mek->PKA
+reversed Mek->PKC
+reversed Akt->PKA
+reversed Jnk->PKA
+reversed Akt->Erk
+reversed Erk->Mek
+reversed Jnk->PKC
+run98:
+missing PKC->PKA
+missing PKA->Mek
+reversed Raf->PKA
+reversed Raf->PKC
+reversed Jnk->PKA
+reversed P38->PKA
+reversed Jnk->PKC
+reversed P38->PKC
+run99:
+extra PIP2->PKA
+missing PKC->PKA
+reversed PIP2->Plcg
+reversed Raf->PKA
+reversed Raf->PKC
+reversed PIP2->PIP3
+reversed Jnk->PKA
+reversed P38->PKA
+reversed Jnk->PKC
+reversed P38->PKC

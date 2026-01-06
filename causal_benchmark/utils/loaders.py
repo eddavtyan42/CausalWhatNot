@@ -326,9 +326,30 @@ def is_discrete(df: pd.DataFrame, max_unique: int = 20) -> bool:
     return True
 
 
-def _sample_gaussian(G: nx.DiGraph, n: int, seed: int = 0) -> pd.DataFrame:
+def _sample_gaussian(G: nx.DiGraph, n: int, seed: int = 0, standardize: bool = False) -> pd.DataFrame:
+    """Sample continuous data from a linear Gaussian SEM.
+    
+    Parameters
+    ----------
+    G : nx.DiGraph
+        The ground truth DAG structure.
+    n : int
+        Number of samples to generate.
+    seed : int, optional
+        Random seed for reproducibility.
+    standardize : bool, optional
+        If True, standardize each variable to have mean 0 and std 1.
+        This prevents 'variance sorting' artifacts where downstream variables
+        accumulate variance, giving algorithms an unfair signal.
+    
+    Returns
+    -------
+    pd.DataFrame
+        Generated continuous data.
+    """
     logger = logging.getLogger("benchmark")
-    logger.info("Sample gaussian: nodes=%d edges=%d n=%d seed=%d", G.number_of_nodes(), G.number_of_edges(), n, seed)
+    logger.info("Sample gaussian: nodes=%d edges=%d n=%d seed=%d standardize=%s", 
+                G.number_of_nodes(), G.number_of_edges(), n, seed, standardize)
     rng = np.random.default_rng(seed)
     df = pd.DataFrame(index=range(n))
     for node in nx.topological_sort(G):
@@ -339,16 +360,42 @@ def _sample_gaussian(G: nx.DiGraph, n: int, seed: int = 0) -> pd.DataFrame:
             df[node] = df[parents].to_numpy().dot(w) + noise
         else:
             df[node] = noise
+    
+    # Optionally standardize to prevent variance accumulation along causal paths
+    if standardize:
+        from sklearn.preprocessing import StandardScaler
+        scaler = StandardScaler()
+        df = pd.DataFrame(
+            scaler.fit_transform(df),
+            columns=df.columns,
+            index=df.index
+        )
+        logger.info("Data standardized: all variables now have mean≈0, std≈1")
+    
     return df
 
 
 def _sample_discrete(
     G: nx.DiGraph, states: Dict[str, List[str] | int], n: int, seed: int = 0
 ) -> pd.DataFrame:
-    """Sample discrete data by discretising Gaussian samples."""
+    """Sample discrete data by discretising Gaussian samples.
+    
+    Note: This produces 0-indexed discrete values {0, 1, ..., k-1}
+    for a variable with k states, which is the standard encoding for
+    discrete causal discovery algorithms. np.digitize with k-1 quantile
+    boundaries naturally produces k bins labeled 0 through k-1.
+    
+    The underlying continuous data is generated WITHOUT standardization
+    before discretization, because quantile-based binning is rank-preserving
+    and therefore invariant to the scale of the continuous data. However,
+    this means the quantile boundaries encode the variance accumulation
+    from the causal structure, which could theoretically be exploited.
+    In practice, quantile discretization creates uniform marginals regardless.
+    """
     logger = logging.getLogger("benchmark")
     logger.info("Sample discrete: nodes=%d edges=%d n=%d seed=%d", G.number_of_nodes(), G.number_of_edges(), n, seed)
-    cont = _sample_gaussian(G, n, seed)
+    # Do NOT standardize before discretization - quantiles are scale-invariant
+    cont = _sample_gaussian(G, n, seed, standardize=False)
     df = pd.DataFrame(index=range(n))
     for node in cont.columns:
         state_info = states.get(node, [0, 1])
@@ -356,6 +403,8 @@ def _sample_discrete(
             k = state_info
         else:
             k = len(state_info)
+        # Use quantile-based binning to produce k bins {0, ..., k-1}
+        # This produces perfectly uniform marginal distributions by construction
         quantiles = np.quantile(cont[node], np.linspace(0, 1, k + 1)[1:-1])
         df[node] = np.digitize(cont[node], quantiles)
     return df
@@ -409,7 +458,10 @@ def load_dataset(name: str, n_samples: int = 10000, force: bool = False) -> Tupl
         if data_path.exists() and not force:
             df = pd.read_csv(data_path)
         else:
-            df = _sample_gaussian(G, n_samples)
+            # Generate continuous data WITH standardization to prevent variance sorting
+            # (Reisach et al. 2021: downstream variables accumulate variance, giving
+            # algorithms an unfair signal for inferring causal order)
+            df = _sample_gaussian(G, n_samples, standardize=True)
             df.to_csv(data_path, index=False)
         logger.info("Loaded dataset '%s': shape=%s edges=%d path=%s", name, str(df.shape), G.number_of_edges(), str(data_path))
         return df, G
