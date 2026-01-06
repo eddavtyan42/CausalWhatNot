@@ -826,8 +826,6 @@ so variance accumulation in the underlying continuous data does not leak into th
 The original non-standardized Sachs data exhibited variance ratios of approximately 5:1 between leaf and root nodes, which would have given algorithms
 an unintended signal.
 
-% TODO: After regenerating data with standardize=True for Sachs, verify results are updated
-
 \paragraph{Why this matters.}
 This generator is intentionally simple and reproducible, but it also introduces an important nuance for interpretation:
 although the networks are treated as discrete in the benchmarking code, the underlying data-generating mechanism is a discretised linear-Gaussian SEM.
@@ -906,8 +904,6 @@ with moderate node counts and edge densities.
 \textbf{Data regeneration note:} During final review of the benchmark implementation, we identified that
 the original Sachs dataset was generated without variance standardization, allowing a variance sorting artifact
 to potentially inflate algorithm performance. The dataset has been regenerated with standardization enabled.
-% TODO: Verify that all results in Section 5 reflect the regenerated standardized Sachs data.
-% TODO: If results differ significantly, add a note discussing the impact of variance sorting on previous results.
 
 \subsection{Algorithms and Settings}\label{sec:methods_alg_settings}
 We evaluate four causal discovery algorithms representing different methodological
@@ -926,8 +922,8 @@ algorithm's key characteristics and hyperparameter settings.
     \midrule
     PC & Constraint & causal--learn & CI test: $\chi^2$ (discrete), Fisher-$z$
       (continuous); $\alpha = 0.05$\\
-    GES & Score & causal--learn & Score: BDeu (discrete), BIC (continuous);
-      default equivalent sample size (BDeu)\\
+    GES & Score & causal--learn & Score: BIC (discrete and continuous);
+      fixed penalty\\
     NOTEARS & Optimisation & CausalNex & Threshold: 0.1 (continuous), 0.25 (discrete);
       other parameters: CausalNex defaults\\
     COSMO & Regression & numpy/networkx & $n_{\text{restarts}} = 25$; auto--$\lambda$
@@ -940,9 +936,9 @@ algorithm's key characteristics and hyperparameter settings.
 To ensure a fair comparison, we adopted a standardised protocol for hyperparameter selection.
 \begin{itemize}
     \item \textbf{PC:} The significance level $\alpha$ controls the sparsity of the graph. We selected $\alpha=0.05$ as the standard convention in the literature \cite{Spirtes2000}. We performed a sensitivity analysis (Section~\ref{sec:results_hyperparams}) to confirm that this choice yields a reasonable balance between precision and recall.
-    \item \textbf{GES:} The primary hyperparameter is the penalty weight in the BIC/BDeu score. For BIC, the penalty is fixed at $\frac{\log n}{2}$. For BDeu, the equivalent sample size (ESS) represents the weight of the prior. We used the default ESS provided by \texttt{causal-learn}.
+    \item \textbf{GES:} The primary hyperparameter is the penalty weight in the score. We used the BIC score with the standard penalty $\frac{\log n}{2}$ uniformly for all datasets (discrete and continuous) to evaluate the robustness of a single score choice.
     \item \textbf{NOTEARS:} The $L_1$ penalty $\lambda$ and the edge threshold $w_{\text{thresh}}$ are critical. We used the defaults provided by \texttt{CausalNex} ($\lambda=0.05$) but tuned the threshold. We observed that for discrete data, NOTEARS produces many weak edges; thus, we increased the threshold to 0.25 (from the default 0.1) to improve precision.
-    \item \textbf{COSMO:} We used the automatic $\lambda$ selection feature based on BIC, which sweeps a path of regularisation parameters and selects the one minimising the BIC score. The stability threshold was set to 0.08 based on the authors' recommendations.
+    \item \textbf{COSMO:} We used the automatic $\lambda$ selection feature based on BIC, which sweeps a path of regularisation parameters and selects the one minimising the BIC score. The edge inclusion threshold was set to 0.08, and stability selection retained edges appearing in at least 25\% of random orderings.
 \end{itemize}
 
 \subsubsection{Computational Environment}
@@ -1158,8 +1154,8 @@ this ordering constraint.
 
 \textbf{Implementation Details:}
 We implemented COSMO using \texttt{numpy} and \texttt{scikit-learn}. We use 25 restarts
-and an edge selection threshold of 0.08. The regularisation parameter $\lambda$ is
-selected automatically via BIC.
+and an edge weight threshold of 0.08 for inclusion. The regularisation parameter $\lambda$ is
+selected automatically via BIC. Stability selection retains edges appearing in at least 25\% of restarts.
 
 \textbf{Complexity and Sensitivity:}
 COSMO is highly parallelisable and efficient ($O(d^2)$). Its reliance on Lasso makes
@@ -1468,7 +1464,7 @@ complexity in its dependencies.
 
 
 \subsection{Hyperparameter Sensitivity}\label{sec:results_hyperparams}
-We examined the sensitivity of the PC algorithm to the significance level $\alpha$ and GES to the equivalent sample size (ESS).
+We examined the sensitivity of the PC algorithm to the significance level $\alpha$.
 
 \begin{table}[htbp]
   \centering
@@ -1863,7 +1859,7 @@ direct causal link.
     \item \textbf{GES Result:} Recovered the edge correctly in the sensitivity analysis
     ($F_1=1.0$ for that specific run). The global scoring approach of GES was able to
     identify that orienting the edge as \texttt{Smoking} $\to$ \texttt{LungCancer}
-    yielded a better BDeu score than the reverse.
+    yielded a better BIC score than the reverse.
     \item \textbf{Interpretation:} This edge is part of a chain \texttt{Smoking} $\to$
     \texttt{LungCancer} $\to$ \texttt{Dyspnea}. Without the v-structure at \texttt{Dyspnea},
     the direction is not identifiable from observational data alone. GES's success suggests
@@ -2309,7 +2305,6 @@ Construct validity concerns whether our metrics actually measure "causal discove
     \item \textbf{SHD vs SID:} We relied primarily on SHD and $F_1$. These are structural
     metrics. A graph with low SHD could still yield poor causal effect estimates if the
     few errors are on critical confounding paths (high Structural Intervention Distance).
-    % TODO: Update this paragraph if SID results show significant divergence from SHD.
     Our focus on structure learning justifies SHD, but it is a proxy, not a direct measure
     of downstream utility.
     \item \textbf{DAG vs CPDAG:} We evaluated directed metrics by converting CPDAGs to
